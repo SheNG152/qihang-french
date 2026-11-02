@@ -5,7 +5,7 @@ export function accessibleButtons() {
   // uni-app injects its component defaults after App.vue's CSS. Reset only the
   // low-specificity button defaults after mount; authored class styles still win.
   const style = document.createElement('style');
-  style.textContent = 'uni-button{margin:0;padding:0;border:1px solid transparent;border-radius:14px;background:linear-gradient(150deg,#ffffff70,#ffffff15);color:inherit;line-height:1.4;font:inherit;text-align:left;letter-spacing:normal}uni-button::after{border:0}';
+  style.textContent = 'uni-button{margin:0;padding:0;border:0;border-radius:0;background:none;color:inherit;font:inherit;line-height:1.4;text-align:left;letter-spacing:normal;overflow:visible}uni-button::after{content:none;display:none;border:0}';
   document.head.appendChild(style);
   let layoutHeight=window.innerHeight,layoutWidth=window.innerWidth,keyboardOpen=false,focusTimer,anchorX=window.scrollX,anchorY=window.scrollY;
   const editing=()=>document.activeElement?.matches?.('input,textarea,[contenteditable=true]');
