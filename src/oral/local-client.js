@@ -105,13 +105,13 @@ class LocalChannel {
   try{
    const job=await call('recognize',{audio:row.audio}),started=performance.now();let shown='';
    while(current()){
-    await new Promise(resolve=>setTimeout(resolve,500));if(!current())return;
     result=await call('job',{id:job.job});if(!current())return;
     if(result.state!=='running')break;
     if(performance.now()-started>(job.timeoutMs||600000)+5000){await call('recognize.cancel');throw Error('识别用时过长，已停止，原录音保留 / Reconnaissance trop longue, audio conservé.');}
     const seconds=Math.floor((result.elapsedMs||performance.now()-started)/1000),phase=result.phase==='loading'?'正在加载模型 / Chargement du modèle':result.phase==='finishing'?'正在整理文字 / Finalisation':'正在本机识别 / Transcription locale';
     const message=`${phase} · ${seconds}s${result.percent>0?' · '+result.percent+'%':''}`;
     if(message!==shown){shown=message;this.state('recognizing',message);}
+    await new Promise(resolve=>setTimeout(resolve,120));
    }
   }catch(error){result={state:'failed',error:error.message};}
   if(!current())return;
