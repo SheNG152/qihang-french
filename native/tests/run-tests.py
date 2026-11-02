@@ -12,8 +12,10 @@ args=p.parse_args()
 root=Path(__file__).resolve().parents[2]
 suffix='.exe' if os.name=='nt' else ''
 with tempfile.TemporaryDirectory(prefix='qihang_native_tests_') as temporary:
-    sources=[root/'native/common/cn/qihang/oral'/name for name in ('J.java','Host.java','Examiner.java')]
+    sources=[root/'native/common/cn/qihang/oral'/name for name in ('J.java','Host.java','Examiner.java','SpeechSettings.java')]
     sources+=list((root/'native/tests/stubs').glob('*.java'))
     sources.append(root/'native/tests/ExaminerProtocolTest.java')
+    sources.append(root/'native/tests/SpeechSettingsTest.java')
     subprocess.run([str(args.jdk/'bin'/('javac'+suffix)),'--release','17','-encoding','UTF-8','-cp',str(args.json_jar),'-d',temporary,*map(str,sources)],check=True)
     subprocess.run([str(args.jdk/'bin'/('java'+suffix)),'-Djava.io.tmpdir='+temporary,'-cp',temporary+os.pathsep+str(args.json_jar),'cn.qihang.oral.ExaminerProtocolTest'],check=True,timeout=30)
+    subprocess.run([str(args.jdk/'bin'/('java'+suffix)),'-cp',temporary,'cn.qihang.oral.SpeechSettingsTest'],check=True,timeout=30)

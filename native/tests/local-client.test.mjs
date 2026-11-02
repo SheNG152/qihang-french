@@ -6,11 +6,11 @@ import {performance} from 'node:perf_hooks';
 
 const source=await fs.readFile(new URL('../../src/oral/local-client.js',import.meta.url),'utf8');
 const bank=JSON.parse(await fs.readFile(new URL('../../src/oral/bank-full.json',import.meta.url),'utf8'));
-async function fixture(jobs){
+async function fixture(jobs,options={}){
  const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[];
  let cursor=0,recording=0,recognizedAt=0;
  const call=async(method,args={})=>{
-  if(method==='status')return{model:{ready:true},provider:{status:'connected',hasTask:false}};
+  if(method==='status')return{model:{ready:true},recognizer:{ready:options.prepared!==false},provider:{status:'connected',hasTask:false}};
   if(method==='events')return{cursor,events:nativeEvents.filter(e=>e.seq>args.after)};
   if(method==='session.save'){sessions.set(args.session.id,structuredClone(args.session));return{};}
   if(method==='session.get')return structuredClone(sessions.get(args.id));
@@ -32,20 +32,21 @@ async function fixture(jobs){
  await module.evaluate();
  const channel=window.QihangOralClient.createSocket();channel.onmessage=e=>{if(typeof e.data==='string')messages.push(JSON.parse(e.data));};
  async function until(condition){const end=performance.now()+5000;while(!condition()){assert.ok(performance.now()<end,'test condition timed out');await new Promise(r=>setTimeout(r,5));}}
- async function command(action){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro'}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,'ack',reply.message);}
- await until(()=>channel.readyState===1);await command('start');await until(()=>!channel.inFlight);
+ async function command(action,expected='ack'){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro'}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,expected,reply.message);}
+ await until(()=>channel.readyState===1);if(!options.skipStart){await command('start');await until(()=>!channel.inFlight);}
  return{channel,messages,polls,sent,sessions,until,command};
 }
 
 let passed=0;
 {
- const t=await fixture([{state:'done',text:'Je suis étudiant.',elapsedMs:4}]);
+ const t=await fixture([{state:'done',text:'Je suis étudiant.',elapsedMs:4,backend:'gpu',modelLoadMs:0,inferenceMs:3,encoderMs:2,decoderMs:1,threads:16}]);
  try{
   await t.command('record_start');await t.command('record_stop');await t.until(()=>t.sent.length===2);
   assert.equal(t.polls.length,1);assert.ok(t.polls[0]<250,`Ready result unnecessarily delayed ${t.polls[0]}ms`);
   await t.until(()=>!t.channel.inFlight);
   const saved=[...t.sessions.values()][0],row=saved.messages.find(m=>m.role==='user');
   assert.equal(row.confirmed_text,'Je suis étudiant.');assert.equal(row.audio,'test-recording-1');assert.equal(row.reply_delivered,true);
+  assert.equal(row.recognition.backend,'gpu');assert.equal(row.recognition.model_load_ms,0);assert.equal(row.recognition.inference_ms,3);
   passed++;
  }finally{t.channel.close();}
 }
@@ -66,5 +67,10 @@ let passed=0;
   assert.equal(row.audio,'test-recording-1');assert.equal(row.recognition_status,'failed');assert.equal(row.confirmation_status,'not_sent');
   passed++;
  }finally{t.channel.close();}
+}
+{
+ const t=await fixture([],{prepared:false,skipStart:true});
+ try{await t.command('start','error');assert.equal(t.sessions.size,0,'Preparation must not create a premature exam session');passed++;}
+ finally{t.channel.close();}
 }
 console.log(`Local client: ${passed} groups passed; isolated native bridge, no personal data.`);
