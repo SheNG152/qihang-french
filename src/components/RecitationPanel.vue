@@ -9,10 +9,6 @@
               <view class="recitation-face recitation-front" :aria-hidden="!!flipped[word.id]"><text lang="fr">{{ label(word) }}</text></view>
               <view class="recitation-face recitation-back" :aria-hidden="!flipped[word.id]"><text lang="fr">{{ label(word) }}</text><text class="recitation-pos">{{ word.sourcePos||word.pos }}</text><text class="recitation-meaning">{{ word.meanings.join('；') }}</text><button v-if="flipped[word.id]" hover-class="none" class="recitation-details" @click.stop="$emit('detail',word)" aria-label="详细释义 / Fiche du mot"><view class="recitation-detail-label"><text>释义</text><text>Fiche</text></view><Icon name="arrow" /></button></view>
             </view>
-            <view class="recitation-card-actions">
-
-              <button hover-class="none" class="recitation-audio" :class="{active:word.forms.some(f=>f.id===playing)}" :disabled="!word.forms.some(f=>f.audioKey)" @click.stop="listen(word)" aria-label="播放单词 / Écouter le mot"><Icon name="sound" /></button>
-            </view>
           </view>
         </view>
       </view>

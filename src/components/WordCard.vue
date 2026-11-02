@@ -1,6 +1,6 @@
 <template>
   <view :class="['word-card','glass',{'definition-card':definition}]">
-    <view class="word-heading"><view class="word-meaning"><text>{{ word.meanings.join('；') }}</text><text class="pos">{{ word.sourcePos || word.pos }}</text></view><button hover-class="none" class="icon-button favorite" :class="{ marked: favorite }" @click="$emit('favorite', word)" :aria-label="favorite ? '取消收藏 / Retirer des favoris' : '收藏 / Ajouter aux favoris'"><Icon name="heart" /></button></view>
+    <view class="word-heading"><view class="word-meaning"><text>{{ word.meanings.join('；') }}</text><text class="pos">{{ word.sourcePos || word.pos }}</text></view><button hover-class="none" v-if="!hideFavorite" class="icon-button favorite" :class="{ marked: favorite }" @click="$emit('favorite', word)" :aria-label="favorite ? '取消收藏 / Retirer des favoris' : '收藏 / Ajouter aux favoris'"><Icon name="heart" /></button></view>
     <view class="paired-forms">
       <template v-for="(form,index) in word.forms" :key="form.id">
         <text v-if="index" class="form-separator" aria-hidden="true">/</text>
@@ -20,7 +20,7 @@
 <script setup>
 import { computed } from 'vue'; import ExampleSentence from './ExampleSentence.vue'; import Icon from './Icon.vue'; import Bi from './Bi.vue';
 import { displayForm, sharedExample, exampleAudio } from '../domain/word-display.js';
-const props=defineProps({ word: Object, favorite: Boolean, playing: String, actions: Boolean,practiceSession:Object,definition:Boolean,sourceLabel:String }); defineEmits(['favorite', 'audio', 'practice', 'move']);
+const props=defineProps({ word: Object, hideFavorite:Boolean, favorite: Boolean, playing: String, actions: Boolean,practiceSession:Object,definition:Boolean,sourceLabel:String }); defineEmits(['favorite', 'audio', 'practice', 'move']);
 const shared=computed(()=>sharedExample(props.word));
 const sentenceRecording=computed(()=>exampleAudio(props.word));
 const sharedIpa=computed(()=>{const values=[...new Set(props.word.forms.map(f=>f.ipa).filter(Boolean))];return values.length===1?values[0]:null;});

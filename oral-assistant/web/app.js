@@ -1,15 +1,15 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const S = {boot: null, socket: null, session: null, review: null, state: 'idle', pending: new Map(),
-  epoch: 0, rate: 24000, context: null, sources: new Set(), playUntil: 0,
-  stream: null, inputContext: null, capture: null, micBusy: false, polling: null, actionBusy: false,
+  epoch: 0, rate: 24000, context: null, sources: new Set(), playUntil: 0, audioBacklog: [], audioBacklogBytes: 0, audioRecovering: false,
+  stream: null, inputContext: null, capture: null, micBusy: false, captureEpoch: 0, polling: null, actionBusy: false,
   micStats:null, revisionTarget:null, localReviews:new Set(),recognitionChosen:false,evaluationTimer:null};
 const stageNames = {intro:'引导问答', exchange:'信息交换', roleplay:'情景对话', full:'完整练习'};
 const hintTexts = {intro:'可以从姓名、居住地、学习和爱好说起。用你会的短句即可，不需要背一篇长介绍。',
   exchange:'观察关键词，选择你会的疑问句。你可以询问对方的情况，考官会回答你。',
   roleplay:'先打招呼，再说明你需要什么。需要时询问价格或请对方重复，最后礼貌告别。'};
 function node(tag, text, cls) { const e = document.createElement(tag); if(text !== undefined) e.textContent = text; if(cls) e.className = cls; return e; }
-function notice(message) { $('notice').textContent = message; $('notice').hidden = !message; }
+function notice(message) { $('notice').textContent = message; $('notice').hidden = !message; $('notice').setAttribute('role','alert');$('notice').setAttribute('aria-live','polite'); }
 function show(view) {
   clearTimeout(S.evaluationTimer);
   for (const id of ['home','practice','history','review']) $(id).hidden = id !== view;
@@ -24,6 +24,7 @@ async function api(path, body) {
 function setRecording(player,path){if(window.QihangOralClient)window.QihangOralClient.setAudio(player,path).catch(error=>notice(error.message));else player.src=path;}
 function providerView(data) {
   const ready = data.status === 'ready';
+  const connection=document.querySelector('.connection');if(connection)connection.hidden=!!window.QihangOralClient?.local&&ready;
   $('bindingMessage').textContent = data.message;
   $('connectionDot').classList.toggle('ready', ready);
   $('connectionLabel').textContent = ready ? '绑定就绪' : data.status === 'binding' ? '等待绑定' : '尚未连接';
@@ -36,9 +37,9 @@ function providerView(data) {
 async function refresh() {
   S.boot = await api('/api/bootstrap');providerView(S.boot.provider);
   if(S.boot.bank)$('bankInfo').textContent=`${S.boot.bank.intro_questions}个问句 · ${S.boot.bank.keywords}张词卡 · ${S.boot.bank.scenes}个情景 · 参考公开样题编写`;
-  $('recognitionChoice').hidden=!S.boot.capabilities?.confirm_transcript;
+  $('recognitionChoice').hidden=window.QihangOralClient?.local||!S.boot.capabilities?.confirm_transcript;
   const configured=!!S.boot.capabilities?.independent_fr && !!S.boot.french_asr?.configured;
-  $('recognizerChoice').hidden=!configured;
+  $('recognizerChoice').hidden=window.QihangOralClient?.local||!configured;
   if(!S.recognitionChosen)$('recognitionMode').value=configured?'independent_fr':'xiaozhi';
   $('recognizerMessage').textContent=S.boot.french_asr?.message||'';
   return S.boot;
@@ -55,10 +56,11 @@ async function connectSocket() {
   if(S.socket?.readyState === WebSocket.OPEN) return false;
   if(S.socket?.readyState === WebSocket.CONNECTING) throw Error('练习窗口正在连接，请稍候');
   await new Promise((resolve,reject) => {
-    const ws = window.QihangOralClient?new WebSocket(window.QihangOralClient.socketURL(),window.QihangOralClient.socketProtocols()):new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`);
+    const ws = window.QihangOralClient?.createSocket?window.QihangOralClient.createSocket():window.QihangOralClient?new WebSocket(window.QihangOralClient.socketURL(),window.QihangOralClient.socketProtocols()):new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`);
     S.socket = ws; ws.binaryType = 'arraybuffer';
     const timeout = setTimeout(()=>{ws.close();reject(Error('练习窗口连接超时'));}, 10000);
     ws.onmessage = event => {
+      if(S.socket!==ws)return;
       if(typeof event.data !== 'string') { playPCM(event.data); return; }
       const data = JSON.parse(event.data);
       if(data.type === 'welcome') {clearTimeout(timeout);resolve();}
@@ -81,7 +83,7 @@ async function connectSocket() {
         if(p) {clearTimeout(p.timer);p.resolve(data);S.pending.delete(data.request);}
       }
     };
-    ws.onerror = ()=>{clearTimeout(timeout);reject(Error('练习连接失败，可能已有其他练习窗口打开。请关闭旧窗口后重试。'));};
+    ws.onerror = ()=>{clearTimeout(timeout);reject(Error('口语连接未成功，请重新打开应用 / Rouvrez l’application.'));ws.close();};
     ws.onclose = ()=>{
       clearTimeout(timeout);reject(Error('练习连接已关闭'));
       if(S.socket !== ws) return;
@@ -98,7 +100,7 @@ function send(action, values={}) {
     const request=crypto.randomUUID();
     const timer=setTimeout(()=>{S.pending.delete(request);reject(Error('操作等待超时，请检查连接后重试'));},35000);
     S.pending.set(request,{resolve,reject,timer});
-    S.socket.send(JSON.stringify({action,request,...values}));
+    try{S.socket.send(JSON.stringify({action,request,...values}));}catch(error){clearTimeout(timer);S.pending.delete(request);reject(error);}
   });
 }
 async function action(fn) {
@@ -110,10 +112,15 @@ async function ensureAudio() {
   if(!S.context || S.context.state === 'closed') S.context=new AudioContext();
   await S.context.resume();
 }
-function stopPlayback() {for(const source of S.sources) {try{source.stop();}catch{}} S.sources.clear();S.playUntil=0;}
+function stopPlayback() {for(const source of S.sources) {try{source.stop();}catch{}} S.sources.clear();S.playUntil=0;S.audioBacklog=[];S.audioBacklogBytes=0;if($('resumeAudio'))$('resumeAudio').hidden=true;}
+function drainAudio(){if(S.context?.state!=='running')return;const pending=S.audioBacklog;S.audioBacklog=[];S.audioBacklogBytes=0;if($('resumeAudio'))$('resumeAudio').hidden=true;for(const data of pending)playPCM(data);}
 function playPCM(data) {
   const view=new DataView(data);if(data.byteLength<6 || view.getUint32(0,true)!==S.epoch || !$('lastAudio').paused) return;
-  if(!S.context || S.context.state !== 'running') {notice('浏览器暂停了音频，请点击“继续本环节”恢复播放');return;}
+  if(!S.context || S.context.state !== 'running') {
+    if(S.audioBacklogBytes+data.byteLength>S.rate*2*40){stopPlayback();notice('语音未能播放，可在记录中回听 / Réécoutez la réponse dans l’historique.');return;}
+    S.audioBacklog.push(data.slice(0));S.audioBacklogBytes+=data.byteLength;if($('resumeAudio'))$('resumeAudio').hidden=false;
+    if(!S.audioRecovering){S.audioRecovering=true;ensureAudio().then(()=>{drainAudio();if(S.context?.state!=='running')notice('点按“播放考官语音” / Appuyez sur Écouter.');}).catch(()=>notice('点按“播放考官语音” / Appuyez sur Écouter.')).finally(()=>{S.audioRecovering=false;});}return;
+  }
   const samples=new Int16Array(data,4);const buffer=S.context.createBuffer(1,samples.length,S.rate);const out=buffer.getChannelData(0);
   for(let i=0;i<samples.length;i++) out[i]=samples[i]/32768;
   if(S.playUntil-S.context.currentTime>40) {stopPlayback();notice('播放积压，已停止；请点击“继续本环节”重连');return;}
@@ -126,8 +133,12 @@ function updateButtons() {
   const active=S.session?.phase==='active' && !S.session?.progress?.completed;
   const recording=!!S.stream;
   const confirming=!!S.session?.awaiting_confirmation;
-  $('mic').disabled=!active || confirming || S.actionBusy || S.micBusy || (!recording && (S.state!=='idle' || playing()));
-  $('mic').classList.toggle('recording',recording);$('micLabel').textContent=recording?'我说完了':'开始说话';
+  const local=!!window.QihangOralClient?.local;
+  const channelReady=S.socket?.readyState===WebSocket.OPEN;
+  const canCapture=local?!['recognizing','confirming'].includes(S.state):S.state==='idle'&&!playing();
+  $('mic').disabled=!active || confirming || S.actionBusy || S.micBusy || (!recording&&!canCapture);
+  const label=recording?'我说完了':S.micBusy?'正在开启麦克风':!S.session?'请先开始练习':S.session?.phase==='preparation'?'请先结束准备':S.session?.phase==='ended'?'练习已结束':S.session?.progress?.completed?'本环节已完成':confirming?'请先确认文字':S.state==='recognizing'?'正在识别':S.actionBusy?'正在连接考官':!channelReady?'重新连接并说话':local&&(playing()||S.state==='speaking')?'打断并说话':'开始说话';
+  $('mic').classList.toggle('recording',recording);$('micLabel').textContent=label;$('mic').setAttribute('aria-label',label);$('mic').title=label;
   $('sendText').disabled=!active || S.actionBusy || recording || S.state!=='idle' || playing();
   for(const id of ['nextStage','finishPrep','nextKeyword','resume']) $(id).disabled=S.actionBusy || recording || confirming || S.state==='recognizing';
   $('confirmSpeech').disabled=S.actionBusy || !confirming || !$('confirmedTranscript').value.trim();
@@ -146,7 +157,7 @@ const guideCopy={
 function closeGuide(){const v=$('guideVideo');v.pause();v.removeAttribute('src');v.load();$('guideDialog').close();}
 function showGuideStage(stage){
   if(S.guidePart!=='full'&&!S.guideResume)S.guidePart=stage;
-  const copy=guideCopy[stage];$('guideTitle').textContent=stageNames[stage]+' · 先看懂，再开口';
+  const copy=guideCopy[stage];$('guideTitle').textContent=stageNames[stage];
   const media=S.boot?.examples?.[stage];const v=$('guideVideo');v.pause();v.removeAttribute('src');v.removeAttribute('poster');v.hidden=!media?.video;
   if(media?.poster){if(window.QihangOralClient)window.QihangOralClient.mediaURL(`/examples/${stage}.jpg`).then(url=>v.poster=url).catch(()=>{});else v.poster=`/examples/${stage}.jpg`;}
   if(media?.video){if(window.QihangOralClient)window.QihangOralClient.mediaURL(`/examples/${stage}.mp4`).then(url=>{v.src=url;v.load();}).catch(()=>{});else v.src=`/examples/${stage}.mp4`;}
@@ -157,7 +168,8 @@ function showGuideStage(stage){
 function openGuide(part,resume=false){
   S.guidePart=part;S.guideResume=resume;showGuideStage(part==='full'?'intro':part);
   $('guideStart').disabled=!resume&&S.boot?.provider?.status!=='ready';
-  $('guideStart').textContent=resume?'返回练习 →':S.boot?.provider?.status==='ready'?'直接练习，跳过视频 →':'请先连接考官，再开始练习';
+  $('guideStart').textContent=resume?'返回练习 · Reprendre':S.boot?.provider?.status==='ready'?'开始练习 · Commencer':'请先连接考官 · Connectez l’examinateur';
+  const example=$('guideDialog').querySelector('.guide-example');if(example)example.open=false;
   $('guideDialog').showModal();
 }
 function renderProgress(){
@@ -173,24 +185,24 @@ function renderProgress(){
 }
 function transcript(target, session, audio=false) {
   target.replaceChildren();
-  if(!session.messages.length) {target.append(node('div',session.phase==='preparation'?'准备好后，开始和考官交流。':'考官即将和你打招呼…','empty-dialogue'));return;}
+  if(!session.messages.length) {const current=session.stages[session.stage_index];target.append(node('div',session.phase==='preparation'?'准备好后，开始和考官交流。':current==='exchange'?'轮到你提问 · À vous de poser une question.':current==='roleplay'?'可以先打招呼 · Vous pouvez commencer.':'考官即将和你打招呼…','empty-dialogue'));return;}
   for(const row of session.messages) {
     const box=node('div',undefined,'bubble'+(row.role==='user'?' user':''));
     box.append(node('div',(row.role==='user'?'你':'Camille')+(audio?' · '+(stageNames[row.stage]||''):''),'who'));
-    box.append(node('p',row.text || (row.audio?(row.interrupted?'录音已保存 · 本次发言被中断':'录音已保存 · 等待识别'):'尚未收到识别文字')));
+    box.append(node('p',row.text || (row.audio?(row.interrupted?'录音已保存 · 本次发言被中断':['failed','cancelled'].includes(row.recognition_status)?'未识别成功 · 可回听或重新录音':'录音已保存 · 等待识别'):'尚未收到识别文字')));
     if(row.recognition)box.append(node('small','独立法语识别 · 原始转写','revision-note'));
     if(row.asr_reviews?.length) {
       box.append(node('span','本地法语复核（独立候选）：'+(row.asr_reviews.at(-1).text||'未识别出文字'),'asr-note'));
       box.append(node('small','两种识别都可能出错，请结合原声确认。','asr-note quiet'));
     }
     if(row.revisions?.length) box.append(node('span','你的修订稿：'+row.revisions.at(-1).text,'revision-note'));
-    if(row.confirmation_status) box.append(node('small',row.confirmation_status==='confirmed'?'已由你确认后用于对话':row.confirmation_status==='cancelled'?'此条已放弃，原录音保留':'等待你确认，考官暂不回复','revision-note'));
+    if(row.confirmation_status) box.append(node('small',row.confirmation_status==='automatic'?'本机转写 · 自动回复':row.confirmation_status==='confirmed'?'已由你确认后用于对话':row.confirmation_status==='cancelled'?'此条已放弃，原录音保留':row.confirmation_status==='not_sent'?'尚未发送 · 可重新录音':window.QihangOralClient?.local?'正在本机识别':'等待你确认，考官暂不回复','revision-note'));
     if(row.role==='user' && row.audio && !row.recognition_status && S.boot?.local_asr?.available) {
       const review=node('button',S.localReviews.has(row.id)?'正在本机复核…':row.asr_reviews?.length?'重新复核':'本地法语复核','text-button');
       review.dataset.action='local-review';review.dataset.rowId=row.id;review.disabled=S.localReviews.has(row.id);
       review.onclick=()=>reviewRecording(session.id,row.id,review);box.append(review);
     }
-    if(row.role==='user' && (row.text || row.audio)) {
+    if(!window.QihangOralClient?.local && row.role==='user' && (row.text || row.audio)) {
       const edit=node('button','识别有误？记一份修订稿','text-button');
       edit.onclick=()=>{S.revisionTarget={sid:session.id,row:row.id};$('originalTranscript').textContent=row.text||'（没有收到识别文字）';$('revisionText').value=row.revisions?.at(-1)?.text||row.asr_reviews?.at(-1)?.text||'';$('revisionDialog').showModal();};
       box.append(edit);
@@ -217,12 +229,15 @@ function renderSession() {
   const session=S.session;if(!session) return;
   if(session.phase==='ended') return;
   show('practice');
-  const pending=session.messages.find(m=>m.id===session.awaiting_confirmation);
+  const pending=window.QihangOralClient?.local?null:session.messages.find(m=>m.id===session.awaiting_confirmation);
   const form=$('recognitionForm');form.hidden=!pending;
   if(pending && form.dataset.row!==pending.id) {form.dataset.row=pending.id;$('confirmedTranscript').value=pending.revisions?.at(-1)?.text||pending.text||'';}
   const stage=session.stages[session.stage_index];const def=S.boot.stages[stage];
+  const details=$('taskDetails');if(details&&details.dataset.stage!==session.id+':'+stage+':'+session.phase){details.dataset.stage=session.id+':'+stage+':'+session.phase;details.open=session.phase==='preparation'||window.matchMedia('(min-width:861px)').matches;}
+  const prompt=$('currentPrompt');if(prompt){prompt.hidden=session.phase!=='active'||stage==='intro';prompt.replaceChildren();if(!prompt.hidden)prompt.append(node('span',stage==='exchange'?'当前词卡 · Carte actuelle':'当前任务 · Votre tâche','label'),node('strong',stage==='exchange'?session.keywords[session.keyword_index]:session.scene.task));}
   $('modeTag').textContent=(session.mode==='simulation'?'模拟考试':'陪练')+' · A1';
   $('steps').replaceChildren();
+  $('steps').hidden=session.stages.length<2;
   session.stages.forEach((s,i)=>$('steps').append(node('div',`${String(i+1).padStart(2,'0')}  ${stageNames[s]}`,'step'+(i===session.stage_index?' current':i<session.stage_index?' done':''))));
   $('taskEyebrow').textContent=def.fr;$('taskTitle').textContent=session.phase==='preparation'?'准备时间':def.name;$('taskHint').textContent=def.hint;
   $('prep').hidden=session.phase!=='preparation';
@@ -253,24 +268,55 @@ function renderSession() {
   transcript($('transcript'),{...session,messages:session.messages.filter(m=>m.stage===stage)});renderProgress();updateButtons();
 }
 async function start(part) {if(!S.boot){notice('页面正在连接，请稍候');return;}await action(async()=>{await ensureAudio();await connectSocket();S.state='waiting';await send('start',{part,mode:$('mode').value,scene:$('scene').value,recognition_mode:$('recognitionMode').value,confirm_transcript:!!S.boot.capabilities?.confirm_transcript && $('confirmRecognition').checked});$('hintBox').hidden=true;});}
+function captureCancelled(){const error=Error('录音已取消 / Enregistrement annulé.');error.captureCancelled=true;return error;}
+function requestInput(audio,current){
+  return new Promise((resolve,reject)=>{
+    let settled=false;
+    const timer=setTimeout(()=>{settled=true;reject(Error('麦克风启动超时，请重试 / Réessayez le microphone.'));},15000);
+    navigator.mediaDevices.getUserMedia({audio}).then(stream=>{
+      if(settled||!current()){stream.getTracks().forEach(track=>track.stop());if(!settled){settled=true;clearTimeout(timer);reject(captureCancelled());}return;}
+      settled=true;clearTimeout(timer);resolve(stream);
+    },error=>{if(!settled){settled=true;clearTimeout(timer);reject(current()?error:captureCancelled());}});
+  });
+}
+async function openMicrophone(device,current){
+  try{return await requestInput({channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true,...(device?{deviceId:{exact:device}}:{})},current);}
+  catch(error){
+    if(!current())throw captureCancelled();
+    if(!['NotReadableError','OverconstrainedError','NotFoundError','AbortError'].includes(error.name))throw error;
+    // Retry once with the system default and no processing constraints; a saved device may no longer exist.
+    const stream=await requestInput(true,current);$('inputDevice').value='';return stream;
+  }
+}
+function microphoneError(error){
+  if(error.name==='NotAllowedError')return window.QihangNative?'请在系统应用权限中允许麦克风 / Autorisez le microphone dans les paramètres.':'请允许浏览器使用麦克风 / Autorisez le microphone dans le navigateur.';
+  if(error.name==='NotFoundError')return '没有找到可用麦克风 / Aucun microphone disponible.';
+  if(['NotReadableError','AbortError'].includes(error.name))return '麦克风暂时不可用，请结束其他录音或通话后重试 / Microphone indisponible. Fermez les autres enregistrements ou appels.';
+  return error.message;
+}
 async function beginCapture() {
-  if(S.micBusy) return;
-  S.micBusy=true;updateButtons();
-  let stream,context;
+  if(S.micBusy||S.actionBusy) return;
+  S.micBusy=true;const epoch=++S.captureEpoch;updateButtons();
+  const current=()=>epoch===S.captureEpoch&&!document.hidden;
+  const check=()=>{if(!current())throw captureCancelled();};
+  let stream,context,recordStarted=false;
   try {
+    if(window.QihangOralClient?.local){await ensureAudio();stopPlayback();$('lastAudio').pause();const sessionId=S.session?.id,fresh=await connectSocket();if(fresh)await send('restore',{id:sessionId});await send('prepare_record');}
+    check();
     if(!navigator.mediaDevices?.getUserMedia) throw Error('当前浏览器不支持录音，请用 Edge 或 Chrome 打开本机地址');
     const device=$('inputDevice').value;
-    stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true,...(device?{deviceId:{exact:device}}:{})}});
+    stream=await openMicrophone(device,current);check();
     // Let the browser's audio engine resample, rather than aliasing high frequencies in JS.
-    context=new AudioContext({sampleRate:16000,latencyHint:'interactive'});await context.resume();
-    const devices=await navigator.mediaDevices.enumerateDevices();
+    try{context=new AudioContext({sampleRate:16000,latencyHint:'interactive'});}catch(error){if(error.name!=='NotSupportedError')throw error;context=new AudioContext({latencyHint:'interactive'});}
+    await context.resume();check();
+    const devices=await navigator.mediaDevices.enumerateDevices().catch(()=>[]);check();
     const selected=$('inputDevice').value;$('inputDevice').replaceChildren();
     const defaultOption=node('option','系统默认麦克风');defaultOption.value='';$('inputDevice').append(defaultOption);
     devices.filter(d=>d.kind==='audioinput').forEach((d,i)=>{const option=node('option',d.label||`麦克风 ${i+1}`);option.value=d.deviceId;$('inputDevice').append(option);});
     $('inputDevice').value=selected;
-    $('inputName').textContent='本次输入：'+(stream.getAudioTracks()[0]?.label||'默认麦克风')+' · 处理采样率 '+context.sampleRate+' Hz';
+    $('inputName').textContent='正在使用：'+(stream.getAudioTracks()[0]?.label||'系统默认麦克风');
     S.micStats={peak:0,maxRms:0,clipped:0,blocks:0};
-    await context.audioWorklet.addModule(window.QihangOralClient?.workletURL||'/assets/capture.js');
+    await context.audioWorklet.addModule(window.QihangOralClient?.workletURL||'/assets/capture.js');check();
     const source=context.createMediaStreamSource(stream);const capture=new AudioWorkletNode(context,'oral-capture');
     const gain=context.createGain();gain.gain.value=0;
     const state={buffer:new Float32Array(0),position:0,ratio:context.sampleRate/16000};
@@ -291,15 +337,18 @@ async function beginCapture() {
       if(values.length) {const pcm=new Int16Array(values.length);for(let i=0;i<values.length;i++){const v=Math.max(-1,Math.min(1,values[i]));pcm[i]=Math.round(v*(v<0?32768:32767));}
         if(S.socket.bufferedAmount>32000*5) {notice('网络发送积压，已停止录音');stopCapture(true).catch(e=>notice(e.message));return;} S.socket.send(pcm.buffer);}
     };
-    await send('record_start');
+    await send('record_start');recordStarted=true;check();
     S.stream=stream;S.inputContext=context;S.capture=capture;
     source.connect(capture);capture.connect(gain);gain.connect(context.destination);notice('');
   } catch(e) {
     stream?.getTracks().forEach(t=>t.stop());if(context) await context.close().catch(()=>{});
-    notice(e.name==='NotAllowedError'?'麦克风权限未开启，请在浏览器地址栏允许使用麦克风后重试':e.message);
+    if(S.stream===stream){S.stream=null;S.inputContext=null;if(S.capture){S.capture.disconnect();S.capture.port.onmessage=null;S.capture=null;}}
+    if(recordStarted&&S.socket?.readyState===WebSocket.OPEN)await send('abort').catch(()=>{});
+    if(!e.captureCancelled)notice(microphoneError(e));
   } finally {S.micBusy=false;updateButtons();}
 }
 async function stopCapture(submit=true) {
+  S.captureEpoch++;
   const stream=S.stream,context=S.inputContext;
   if(submit && S.capture && stream) {
     const capture=S.capture;
@@ -381,6 +430,7 @@ $('guideStart').onclick=()=>{const part=S.guidePart;const resume=S.guideResume;c
 $('guideVideo').onerror=()=>{$('guideVideoError').hidden=true; if($('guideVideo').getAttribute('src'))$('guideVideoError').hidden=false;};
 $('viewExample').onclick=()=>openGuide(S.session.stages[S.session.stage_index],true);
 $('mic').onclick=()=>S.stream?action(()=>stopCapture(true)):beginCapture();
+if($('resumeAudio'))$('resumeAudio').onclick=()=>action(async()=>{await ensureAudio();drainAudio();});
 $('recognitionMode').onchange=()=>{S.recognitionChosen=true;};
 $('confirmedTranscript').oninput=updateButtons;
 $('recognitionForm').onsubmit=e=>{e.preventDefault();action(async()=>{await ensureAudio();await send('confirm_transcript',{row:S.session.awaiting_confirmation,text:$('confirmedTranscript').value});});};
@@ -406,22 +456,22 @@ function evaluationLines(state) {
  }
  return lines;
 }
-$('export').onclick=()=>{if(!S.review) return;const s=S.review;const text=['启航法语 · DELF A1 对话记录',new Date(s.created*1000).toLocaleString('zh-CN'),'原始转写可能包含识别错误；不是官方成绩。','',...s.messages.map(m=>`${m.role==='user'?'你':'Camille'} [${stageNames[m.stage]}]：${m.text||'（无识别文字，见原录音）'}${m.recognition?'\n独立法语识别：'+m.recognition.model+'（原始输出）':''}${m.asr_reviews?.length?'\n本地法语复核（独立候选）：'+(m.asr_reviews.at(-1).text||'未识别出文字'):''}${m.revisions?.length?'\n考生修订稿：'+m.revisions.at(-1).text:''}${m.confirmed_text?'\n考生确认文字：'+m.confirmed_text:''}${m.confirmation_status==='cancelled'?'\n此条已放弃，原录音保留':m.confirmation_status==='pending'?'\n待确认':''}`),...evaluationLines(s.evaluation)].join('\n');
+$('export').onclick=()=>{if(!S.review) return;const s=S.review;if(window.QihangOralClient?.exportSession){window.QihangOralClient.exportSession(s.id).catch(e=>notice(e.message));return;}const text=['启航法语 · DELF A1 对话记录',new Date(s.created*1000).toLocaleString('zh-CN'),'原始转写可能包含识别错误；不是官方成绩。','',...s.messages.map(m=>`${m.role==='user'?'你':'Camille'} [${stageNames[m.stage]}]：${m.text||'（无识别文字，见原录音）'}${m.recognition?'\n独立法语识别：'+m.recognition.model+'（原始输出）':''}${m.asr_reviews?.length?'\n本地法语复核（独立候选）：'+(m.asr_reviews.at(-1).text||'未识别出文字'):''}${m.revisions?.length?'\n考生修订稿：'+m.revisions.at(-1).text:''}${m.confirmed_text?'\n考生确认文字：'+m.confirmed_text:''}${m.confirmation_status==='cancelled'?'\n此条已放弃，原录音保留':m.confirmation_status==='pending'?'\n待确认':''}`),...evaluationLines(s.evaluation)].join('\n');
   if(window.QihangOralClient){window.QihangOralClient.exportText('A1-'+s.id.slice(0,8)+'.txt',text);return;}
   const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='A1-'+s.id.slice(0,8)+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('restore').onclick=()=>action(async()=>{await ensureAudio();await connectSocket();await send('restore',{id:S.review.id});});
 $('lastAudio').onplay=()=>{stopPlayback();updateButtons();};$('lastAudio').onpause=$('lastAudio').onended=updateButtons;
 $('revisionCancel').onclick=()=>$('revisionDialog').close();
 $('revisionForm').onsubmit=event=>{event.preventDefault();action(async()=>{const target=S.revisionTarget;if(!target)return;const d=await api(`/api/sessions/${target.sid}/revision`,{row:target.row,text:$('revisionText').value});$('revisionDialog').close();if(S.review?.id===target.sid){S.review=d.session;await openReview(target.sid);}notice('修订稿已单独保存，原始识别文字保留。');});};
-window.addEventListener('beforeunload',()=>{S.stream?.getTracks().forEach(t=>t.stop());S.socket?.close();});
+window.addEventListener('beforeunload',()=>{S.captureEpoch++;S.stream?.getTracks().forEach(t=>t.stop());S.socket?.close();});
 (async()=>{try{await refresh();for(const scene of S.boot.scenes){const option=node('option',scene.title);option.value=scene.id;$('scene').append(option);}
   $('version').textContent=window.QihangOralClient?'DELF A1':'A1 · '+(S.boot.build?.split('web-').at(-1)||'');if(S.boot.provider.status==='binding') pollProvider();
 }catch(e){
-  if(window.QihangOralClient){S.boot=await window.QihangOralClient.offlineBootstrap();providerView(S.boot.provider);$('bankInfo').textContent='42 问句 · 48 词卡 · 12 情景';for(const scene of S.boot.scenes){const option=node('option',scene.title);option.value=scene.id;$('scene').append(option);}window.QihangOralClient.connectionFailed(e.message);notice('请连接口语服务后开始对话 / Connectez le service oral.');}
+  if(window.QihangOralClient){S.boot=await window.QihangOralClient.offlineBootstrap();providerView(S.boot.provider);$('bankInfo').textContent='42 问句 · 48 词卡 · 12 情景';for(const scene of S.boot.scenes){const option=node('option',scene.title);option.value=scene.id;$('scene').append(option);}window.QihangOralClient.connectionFailed(e.message);notice('请在口语设置中完成准备 / Préparez le mode oral.');}
   else notice('无法连接本机服务：'+e.message);
 }})();
 
-window.addEventListener('pagehide',()=>{S.stream?.getTracks().forEach(track=>track.stop());S.socket?.close();stopPlayback();});
+window.addEventListener('pagehide',()=>{S.captureEpoch++;S.stream?.getTracks().forEach(track=>track.stop());S.socket?.close();stopPlayback();});
 
 if(window.QihangOralClient){
  const labels={navPractice:['练习','Pratiquer'],navHistory:['记录','Historique'],bind:{'连接小智':'连接小智 · Connecter','刷新连接':'刷新连接 · Actualiser','等待绑定…':'等待绑定 · Association…'},micLabel:{'开始说话':'开始说话 · Parler','我说完了':'我说完了 · Terminé'},finish:['结束练习','Terminer'],endTop:['结束并保存','Terminer et enregistrer'],full:['开始完整练习','Épreuve complète'],backHome:['返回练习','Pratiquer'],reviewBack:['全部记录','Historique'],evaluate:{'生成评价':'生成评价 · Évaluer','重新评价':'重新评价 · Réévaluer','重试评价':'重试评价 · Réessayer'},export:['导出记录','Exporter']};
@@ -429,4 +479,8 @@ if(window.QihangOralClient){
  update();const observer=new MutationObserver(update);for(const id of Object.keys(labels)){const element=$(id);if(element)observer.observe(element,{childList:true,characterData:true,subtree:true});}window.addEventListener('pagehide',()=>observer.disconnect());
 }
 
-if(window.QihangOralClient)document.addEventListener('visibilitychange',()=>{if(document.hidden){if(S.stream){stopCapture(false);S.socket?.close();}stopPlayback();}});
+if(window.QihangOralClient)document.addEventListener('visibilitychange',()=>{if(document.hidden){const capturing=S.stream||S.micBusy;stopCapture(false);if(capturing)S.socket?.close();stopPlayback();}});
+
+if(window.QihangOralClient)window.addEventListener('message',event=>{if(event.source===parent&&event.origin===location.origin&&event.data?.type==='qihang-oral-suspend'){stopCapture(false);S.socket?.close();stopPlayback();}});
+
+if(window.QihangOralClient?.local){const providerTimer=setInterval(()=>{if(!document.hidden)api('/api/provider').then(data=>{if(S.boot)S.boot.provider=data;providerView(data);}).catch(()=>{});},2500);window.addEventListener('pagehide',()=>clearInterval(providerTimer));}

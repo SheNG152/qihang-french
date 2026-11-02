@@ -1,4 +1,5 @@
 import {quotes} from '../domain/quotes.js';
+import appManifest from '../manifest.json';
 import {themes,drawBackground} from './poster-backgrounds.js';
 export {themes,themePreview} from './poster-backgrounds.js';
 const WIDTH=1080,HEIGHT=1920,MARGIN=88,CONTENT=904;
@@ -44,6 +45,6 @@ export async function drawPoster({stats,theme='galaxy',message=0,custom,position
   if(lessons.length){c.globalAlpha=.8;bottom=textBlock(c,'今日完成 · Leçons du jour',MARGIN,bottom,CONTENT,19,28);c.globalAlpha=1;bottom=textBlock(c,lessons.join('  ·  '),MARGIN,bottom+4,CONTENT,23,32,'Arial',2)+8;}
   if(showWords&&stats.words?.length){c.globalAlpha=.8;textBlock(c,stats.words.slice(0,6).join('  ·  '),MARGIN,bottom,CONTENT,22,31,'Georgia',2);c.globalAlpha=1;}
   c.globalAlpha=.3;c.strokeStyle=ink;c.lineWidth=1;c.beginPath();c.moveTo(MARGIN,1810);c.lineTo(WIDTH-MARGIN,1810);c.stroke();c.globalAlpha=1;
-  c.font='26px Arial';c.fillText('启航法语',MARGIN,1861);c.globalAlpha=.7;c.font='20px Georgia';c.textAlign='right';c.fillText('Cap sur le français',WIDTH-MARGIN,1861);
+  c.font='26px Arial';c.fillText(appManifest.name,MARGIN,1861);c.globalAlpha=.7;c.font='20px Georgia';c.textAlign='right';c.fillText('Cap sur le français',WIDTH-MARGIN,1861);
   return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('图片生成失败 / Création impossible.')),'image/png'));
 }

@@ -88,3 +88,26 @@
 
 .errors-practice-dock>.button{position:relative}.errors-practice-dock>.button>.practice-badge{right:7px;top:6px}
 .lesson-word-main{min-height:54px;padding-top:5px;padding-bottom:5px}
+
+.home-review{position:relative}.home-review>.practice-badge{right:12px;top:11px}
+.daily-review-dock,.errors-practice-dock{display:flex;flex-direction:row;align-items:center;gap:12px;padding:12px 14px}
+.daily-review-dock>.bi,.errors-practice-dock>.toggle-row{flex:1;min-width:0}
+.app-frame .notebook-practice-action{width:144px;min-width:144px;flex:0 0 144px;height:50px;min-height:50px;box-sizing:border-box;padding:8px 12px;gap:8px;border-radius:16px}
+.app-frame .notebook-practice-action>.icon{width:18px;height:18px}.app-frame .notebook-practice-action .bi-zh{font-size:12px}.app-frame .notebook-practice-action .bi-fr{font-size:10px}
+.app-frame :where(uni-button){-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .1s}
+.app-frame :where(uni-button).tap-feedback{animation:smooth-key-press .28s ease-out}
+@keyframes smooth-key-press{0%{filter:brightness(.96);transform:scale(.985)}100%{filter:brightness(1);transform:scale(1)}}
+.app-frame :where(.segments,.notebook-tabs,.settings-panel-tabs)>uni-button{border:1px solid #d5e0ef;border-radius:13px;background:linear-gradient(150deg,#ffffffd9,#f0f4fc);box-shadow:inset 0 1px #fff,0 2px 6px #6079a509}
+.app-frame :where(.segments,.notebook-tabs,.settings-panel-tabs)>uni-button.active{background:linear-gradient(150deg,#e6eefb,#dce6f7);border-color:#9db4d7;box-shadow:inset 0 1px #ffffffb3,0 2px 8px #718ab91a}
+.app-frame .article-menu>uni-button{border-radius:11px;border:1px solid #dbe4f1;background:linear-gradient(150deg,#fff,#f0f5fd)}
+.app-frame .article-menu>uni-button.selected{border-color:#9bb3d8;background:linear-gradient(150deg,#e5eefc,#dbe7f8)}
+@media(max-width:720px){.daily-review-dock,.errors-practice-dock{padding:10px 11px;gap:9px}.app-frame .notebook-practice-action{width:128px;min-width:128px;flex-basis:128px;height:46px;min-height:46px;padding:7px 10px;gap:7px}.app-frame .notebook-practice-action .bi-zh{font-size:11px}.app-frame .notebook-practice-action .bi-fr{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.app-frame :where(uni-button).tap-feedback{animation:none}}
+
+.preview-favorite{width:34px;height:34px;flex:none}.preview-location{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.word-card,.word-preview-content,.definition-screen{min-width:0}.word-card .source,.word-card .word-meaning,.exercise-option>text{min-width:0;overflow-wrap:anywhere}.word-heading{gap:10px;align-items:flex-start}.french-word{line-height:1.6}
+
+.preview-location{flex-direction:column;align-items:flex-start;gap:2px}.grammar-rule-card{overflow:visible}
+
+.preview-location{min-width:0}.preview-lesson-line{display:flex;align-items:center;gap:9px}.preview-favorite.marked{color:#c57a92;background:#faedf3}.preview-favorite.marked .icon{fill:#efd0dd}.wrong-option-word{display:block;margin-top:5px;font:italic 14px/1.5 Georgia,serif;color:#a3646b}.exercise-option{height:auto;min-height:68px;box-sizing:border-box;overflow:visible}.exercise-option>text:nth-child(2){flex:1;line-height:1.5;min-width:0;padding:2px 0}.word-card .source{line-height:1.7}.word-card .word-meaning{line-height:1.6}.word-card .source>text{min-width:0;overflow-wrap:anywhere}
+
+.recitation-face{padding:14px 12px}.recitation-face>text:first-child{flex-shrink:0;padding:2px 0;line-height:1.45}.recitation-details{flex-shrink:0;min-height:27px}.recitation-back{gap:5px}@media(max-width:720px){.recitation-face{padding:10px 8px}.recitation-face>text:first-child{line-height:1.45}.recitation-back{gap:4px}}

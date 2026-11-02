@@ -38,14 +38,29 @@ public final class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest microphoneRequest;
+    private volatile boolean microphonePermissionPending;
     private byte[] pendingBytes;
     private String pendingId;
     private FrameLayout container;
     private boolean resumed;
     private long visualRequest;
+    private volatile cn.qihang.oral.OralCore oralCore;
+    private OralHost oralHost;
+    // JavaScript bridge calls run off the UI thread. Publish navigation trust
+    // from UI callbacks; never call WebView.getUrl() from a bridge method.
+    private volatile boolean bridgeTrusted;
+    private String oralError="";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        try{
+            org.json.JSONObject model=new org.json.JSONObject(new String(cn.qihang.oral.J.read(getAssets().open("native/model-manifest.json"),65536),java.nio.charset.StandardCharsets.UTF_8));
+            org.json.JSONObject schema=new org.json.JSONObject(new String(cn.qihang.oral.J.read(getAssets().open("native/evaluation-schema.json"),65536),java.nio.charset.StandardCharsets.UTF_8));
+            oralHost=new OralHost(this,()->{
+                Intent picker=new Intent(Intent.ACTION_OPEN_DOCUMENT);picker.addCategory(Intent.CATEGORY_OPENABLE);picker.setType("*/*");picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivityForResult(picker,OralHost.IMPORT_MODEL);
+            });
+            oralCore=new cn.qihang.oral.OralCore(new File(getFilesDir(),"oral-v1"),model,schema,oralHost);
+        }catch(Throwable e){oralError="口语服务暂时无法启动，请重新打开 / Rouvrez le mode oral.";}
         getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
         container=new FrameLayout(this);
         container.setBackgroundColor(Color.rgb(243,245,251));
@@ -81,7 +96,7 @@ public final class MainActivity extends Activity {
                 boolean audio=false;for(String resource:request.getResources())if(PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource))audio=true;
                 if(!audio){request.deny();return;}
                 if(checkSelfPermission("android.permission.RECORD_AUDIO")==PackageManager.PERMISSION_GRANTED){request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});return;}
-                if(microphoneRequest!=null)microphoneRequest.deny();microphoneRequest=request;requestPermissions(new String[]{"android.permission.RECORD_AUDIO"},MICROPHONE_PERMISSION);
+                if(microphoneRequest!=null)microphoneRequest.deny();microphoneRequest=request;requestMicrophoneAccess();
             });}
             @Override public void onPermissionRequestCanceled(PermissionRequest request){runOnUiThread(()->{if(microphoneRequest==request)microphoneRequest=null;});}
 
@@ -97,6 +112,9 @@ public final class MainActivity extends Activity {
             }
         });
         webView.setWebViewClient(new WebViewClient(){
+            @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap favicon){
+                bridgeTrusted=url!=null&&assetPath(Uri.parse(url))!=null;
+            }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest request){
                 Uri uri=request.getUrl();String file=assetPath(uri);
                 if(file==null)return oralRequestAllowed(uri)?null:notFound();
@@ -104,7 +122,7 @@ public final class MainActivity extends Activity {
                 catch(IOException error){return notFound();}
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){return assetPath(request.getUrl())==null;}
-            @Override public void onPageFinished(WebView view,String url){openReviewIntent();restoreFrame();}
+            @Override public void onPageFinished(WebView view,String url){bridgeTrusted=url!=null&&assetPath(Uri.parse(url))!=null;openReviewIntent();restoreFrame();}
         });
         container.addView(webView,new FrameLayout.LayoutParams(-1,-1));setContentView(container);
         webView.loadUrl("https://"+HOST+"/index.html");
@@ -129,12 +147,29 @@ public final class MainActivity extends Activity {
         return "https".equals(uri.getScheme())&&service.getHost()!=null&&service.getHost().equals(uri.getHost())&&service.getPort()==uri.getPort()&&(path.startsWith(prefix+"/api/")||path.startsWith(prefix+"/examples/"));
     }
     private static WebResourceResponse notFound(){return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));}
-    private boolean trustedPage(){return webView!=null&&assetPath(Uri.parse(webView.getUrl()==null?"":webView.getUrl()))!=null;}
+    private boolean trustedPage(){return bridgeTrusted;}
     private void event(String name,JSONObject detail){runOnUiThread(()->{if(trustedPage())webView.evaluateJavascript("window.dispatchEvent(new CustomEvent("+JSONObject.quote(name)+",{detail:"+detail.toString()+"}))",null);});}
     private void exportResult(String id,boolean success,boolean cancelled,String message){
         try{JSONObject value=new JSONObject();value.put("id",id);value.put("success",success);value.put("cancelled",cancelled);value.put("message",message);event("qihang-export",value);}catch(Exception ignored){}
     }
     private void permissionResult(){try{JSONObject value=new JSONObject();value.put("permission",ReminderReceiver.permission(this));event("qihang-notification-permission",value);}catch(Exception ignored){}}
+    private String microphonePermission(){
+        if(checkSelfPermission("android.permission.RECORD_AUDIO")==PackageManager.PERMISSION_GRANTED)return "granted";
+        return microphonePermissionPending?"requesting":"denied";
+    }
+    private void microphonePermissionResult(){event("qihang-microphone-permission",cn.qihang.oral.J.o("permission",microphonePermission()));}
+    private void finishMicrophoneRequest(){
+        PermissionRequest pending=microphoneRequest;microphoneRequest=null;if(pending==null)return;
+        if("granted".equals(microphonePermission())&&trustedPage())pending.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else pending.deny();
+    }
+    private void requestMicrophoneAccess(){
+        if(!trustedPage())return;
+        if("granted".equals(microphonePermission())){finishMicrophoneRequest();microphonePermissionResult();return;}
+        if(microphonePermissionPending)return;
+        microphonePermissionPending=true;
+        try{requestPermissions(new String[]{"android.permission.RECORD_AUDIO"},MICROPHONE_PERMISSION);}
+        catch(RuntimeException error){microphonePermissionPending=false;microphonePermissionResult();}
+    }
     private void openReviewIntent(){
         if(getIntent().getBooleanExtra("review",false)&&trustedPage()){
             if(!Uri.parse(webView.getUrl()).getPath().equals("/index.html")){webView.loadUrl("https://"+HOST+"/index.html");return;}
@@ -142,11 +177,21 @@ public final class MainActivity extends Activity {
         }
     }
     public final class NativeBridge {
+        @JavascriptInterface public String oralCall(String payload){
+            try{
+                if(!trustedPage())return "{\"ok\":false,\"error\":\"Accès refusé\"}";
+                final cn.qihang.oral.OralCore current=oralCore;
+                if(current==null)return cn.qihang.oral.J.o("ok",false,"error",oralError).toString();
+                return current.call(payload);
+            }catch(Throwable error){return cn.qihang.oral.J.o("ok",false,"error",cn.qihang.oral.J.safe(error)).toString();}
+        }
         @JavascriptInterface public void openExternalLink(String address){runOnUiThread(()->{try{if(trustedPage()&&"https".equals(Uri.parse(address).getScheme()))startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(address)));}catch(RuntimeException ignored){}});}
         @JavascriptInterface public void configureOralService(String address){
             try{Uri uri=Uri.parse(address);if(!"https".equals(uri.getScheme())||uri.getHost()==null||uri.getUserInfo()!=null||uri.getQuery()!=null||uri.getFragment()!=null)return;getSharedPreferences("oral-service",MODE_PRIVATE).edit().putString("endpoint",address).apply();}catch(RuntimeException ignored){}
         }
         @JavascriptInterface public String notificationPermission(){return ReminderReceiver.permission(MainActivity.this);}
+        @JavascriptInterface public String microphonePermission(){return trustedPage()?MainActivity.this.microphonePermission():"denied";}
+        @JavascriptInterface public void requestMicrophonePermission(){runOnUiThread(()->requestMicrophoneAccess());}
         @JavascriptInterface public void requestNotifications(){runOnUiThread(()->{
             if(!trustedPage())return;
             if(Build.VERSION.SDK_INT>=33&&checkSelfPermission("android.permission.POST_NOTIFICATIONS")!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},NOTIFY_PERMISSION);
@@ -169,7 +214,7 @@ public final class MainActivity extends Activity {
                         try(FileOutputStream output=new FileOutputStream(new File(dir,"learning-card.png"))){output.write(bytes);}
                         Uri uri=Uri.parse("content://"+getPackageName()+".share/learning-card.png");
                         Intent send=new Intent(Intent.ACTION_SEND);send.setType("image/png");send.putExtra(Intent.EXTRA_STREAM,uri);
-                        send.setClipData(ClipData.newUri(getContentResolver(),"启航法语",uri));send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        send.setClipData(ClipData.newUri(getContentResolver(),getApplicationInfo().loadLabel(getPackageManager()),uri));send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         startActivity(Intent.createChooser(send,"分享 / Partager"));exportResult(id,true,false,"");
                     }catch(Exception error){exportResult(id,false,false,"分享失败 / Partage impossible.");}
                     return;
@@ -184,6 +229,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);
+        if(request==OralHost.IMPORT_MODEL){final cn.qihang.oral.ModelStore target=oralHost==null?null:oralHost.takeImportTarget();if(result==RESULT_OK&&data!=null&&data.getData()!=null&&target!=null){final Uri modelUri=data.getData();new Thread(()->{try{target.importFrom(getContentResolver().openInputStream(modelUri));}catch(Exception e){event("qihang-oral-error",cn.qihang.oral.J.o("message",cn.qihang.oral.J.safe(e)));}},"qihang-model-import").start();}return;}
         if(request==PICK_FILE&&fileCallback!=null){
             ArrayList<Uri> uris=new ArrayList<>();
             if(result==RESULT_OK&&data!=null){if(data.getClipData()!=null){for(int i=0;i<data.getClipData().getItemCount();i++)uris.add(data.getClipData().getItemAt(i).getUri());}else if(data.getData()!=null)uris.add(data.getData());}
@@ -197,7 +243,7 @@ public final class MainActivity extends Activity {
             }).start();
         }
     }
-    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==NOTIFY_PERMISSION){permissionResult();ReminderReceiver.check(this);}if(request==MICROPHONE_PERMISSION&&microphoneRequest!=null){PermissionRequest pending=microphoneRequest;microphoneRequest=null;if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&trustedPage())pending.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else pending.deny();}}
+    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==NOTIFY_PERMISSION){permissionResult();ReminderReceiver.check(this);}if(request==MICROPHONE_PERMISSION){microphonePermissionPending=false;finishMicrophoneRequest();microphonePermissionResult();}}
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);openReviewIntent();}
     @Override public void onBackPressed(){
         if(webView.canGoBack()){webView.goBack();return;}
@@ -215,7 +261,7 @@ public final class MainActivity extends Activity {
         current.postDelayed(()->{if(resumed&&webView==current){current.postInvalidateOnAnimation();container.postInvalidateOnAnimation();}},180);
     }
     @Override public void onWindowFocusChanged(boolean focus){super.onWindowFocusChanged(focus);if(focus)restoreFrame();}
-    @Override protected void onResume(){super.onResume();resumed=true;if(webView!=null){webView.onResume();webView.resumeTimers();restoreFrame();openReviewIntent();ReminderReceiver.check(this);}}
-    @Override protected void onPause(){resumed=false;if(webView!=null)webView.onPause();super.onPause();}
-    @Override protected void onDestroy(){if(microphoneRequest!=null){microphoneRequest.deny();microphoneRequest=null;}if(fileCallback!=null)fileCallback.onReceiveValue(null);pendingBytes=null;if(webView!=null){container.removeView(webView);webView.destroy();webView=null;}super.onDestroy();}
+    @Override protected void onResume(){super.onResume();resumed=true;if(webView!=null){webView.onResume();webView.resumeTimers();restoreFrame();openReviewIntent();ReminderReceiver.check(this);microphonePermissionResult();}}
+    @Override protected void onPause(){resumed=false;if(oralCore!=null){final cn.qihang.oral.OralCore current=oralCore;new Thread(current::background,"qihang-oral-pause").start();}if(webView!=null)webView.onPause();super.onPause();}
+    @Override protected void onDestroy(){bridgeTrusted=false;if(oralCore!=null){final cn.qihang.oral.OralCore current=oralCore;oralCore=null;new Thread(current::close,"qihang-oral-close").start();}if(microphoneRequest!=null){microphoneRequest.deny();microphoneRequest=null;}if(fileCallback!=null)fileCallback.onReceiveValue(null);pendingBytes=null;if(webView!=null){container.removeView(webView);webView.destroy();webView=null;}super.onDestroy();}
 }

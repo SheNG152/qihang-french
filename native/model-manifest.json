@@ -1,0 +1,16 @@
+{
+  "id": "whisper-large-v3-french-q5_0",
+  "repository": "bofenghuang/whisper-large-v3-french",
+  "revision": "90a7cd1fea9cd69f80f5a0fc49738418dba96083",
+  "filename": "ggml-model-q5_0.bin",
+  "size": 1081140203,
+  "sha256": "d8da7cb6cdadfac47829abf46fe8cd36fcfef06db5601bfd8acbcd40579010a5",
+  "license": "MIT",
+  "label": "Whisper Large V3 French · Q5",
+  "minimumMemoryBytes": 1887436800,
+  "domesticDeploymentVerified": false,
+  "sources": [
+    {"id":"mirror", "name":"HF-Mirror 镜像 / Miroir", "url":"https://hf-mirror.com/bofenghuang/whisper-large-v3-french/resolve/90a7cd1fea9cd69f80f5a0fc49738418dba96083/ggml-model-q5_0.bin", "mainlandVerified":false},
+    {"id":"origin", "name":"Hugging Face 原站 / Original", "url":"https://huggingface.co/bofenghuang/whisper-large-v3-french/resolve/90a7cd1fea9cd69f80f5a0fc49738418dba96083/ggml-model-q5_0.bin", "mainlandVerified":false}
+  ]
+}

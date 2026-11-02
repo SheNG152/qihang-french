@@ -35,3 +35,8 @@ android/signing/
 
 # Reproducible oral client assets
 /src/static/oral/
+/.native-tools/
+/native/build/
+/native/windows/runtime/
+/android/jniLibs/
+/交付/

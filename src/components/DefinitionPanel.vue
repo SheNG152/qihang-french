@@ -2,7 +2,7 @@
   <view :class="['definition-screen',{'is-celebrating':celebrating}]">
     <view class="definition-title"><Icon name="book" /><Bi zh="释义" fr="Fiche du mot" small /><view v-if="showTools" class="definition-tools"><button hover-class="none" class="text-button" :disabled="busy||celebrating||practiceDisabled" @click="$emit('practice')"><Icon name="repeat" /><Bi zh="专练" fr="Pratiquer" small /></button><button hover-class="none" class="text-button" :disabled="busy||celebrating" @click="$emit('move')"><Icon name="notebook" /><Bi zh="词本" fr="Carnet" small /></button></view></view>
     <view class="definition-scroll">
-      <WordCard :word="word" :favorite="favorite" :playing="playing" definition :source-label="`${pkg.book.title} · ${pkg.lesson.id}`" @favorite="$emit('favorite',word)" @audio="$emit('audio',$event)" />
+      <WordCard :word="word" :hide-favorite="showTools" :favorite="favorite" :playing="playing" definition :source-label="`${pkg.book.title} · ${pkg.lesson.id}`" @favorite="$emit('favorite',word)" @audio="$emit('audio',$event)" />
       <slot />
     </view>
     <view class="exercise-footer definition-actions">

@@ -1,477 +1,247 @@
 <template>
-  <view class="grammar-mode">
-    <!-- 范围选择 -->
-    <template v-if="screen==='home'">
-      <view class="grammar-head">
-        <view class="grammar-intro">
-          <text class="grammar-title">语法练习<text class="grammar-title-fr" lang="fr">Grammaire</text></text>
-          <text class="grammar-sub">Inspire 1 · Leçon 1–14 · {{ stats.points }} 个语法点 · {{ stats.questions }} 道题</text>
-        </view>
-        <view class="grammar-kpi">
-          <view class="kpi"><strong>{{ stats.done }}</strong><Bi zh="已练点" fr="Points vus" small /></view>
-          <view class="kpi"><strong>{{ stats.accuracy }}%</strong><Bi zh="正确率" fr="Réussite" small /></view>
-        </view>
-      </view>
+ <view :class="['grammar-mode','grammar-screen-'+screen]">
+  <Transition name="grammar-screen" mode="out-in" @before-leave="screenSwitching=true" @after-enter="screenSwitching=false" @enter-cancelled="screenSwitching=false" @leave-cancelled="screenSwitching=false">
+   <view :key="screen+(screen==='lesson'?':'+lessonKey+':'+ruleIndex:'')" class="grammar-screen">
+  <template v-if="screen==='home'">
+   <view class="grammar-home">
+    <view class="grammar-head"><view><text class="eyebrow">GRAMMAIRE</text><h1>语法学习<span>Grammaire</span></h1></view></view>
+    <view class="glass grammar-home-progress"><view><Bi zh="学习进度" fr="Votre progression" /><strong>{{ stats.done }}<small> / {{ allPoints.length }}</small></strong></view><view class="grammar-home-track"><view :style="{width:(stats.done/allPoints.length*100)+'%'}" /></view></view>
+    <button hover-class="none" class="grammar-resume glass" :disabled="!canResume" @click="resume"><Icon name="clock" /><Bi zh="继续" fr="Reprendre" small /><text>{{ continueLabel }}</text><Icon name="arrow" /></button>
+    <view class="glass grammar-selection">
+     <button hover-class="none" class="grammar-selection-row" @click="screen='books'"><Icon name="book" /><Bi zh="教材" fr="Manuel" small /><text>Inspire 1</text><Icon name="arrow" /></button>
+     <button hover-class="none" class="grammar-selection-row" @click="screen='units'"><Icon name="grammar" /><Bi zh="课时" fr="Leçon" small /><text>{{ chosenLesson?lessonName(chosenLesson):'选择课时' }}</text><Icon name="arrow" /></button>
+    </view>
+    <view class="grammar-home-actions"><button hover-class="none" class="button primary" @click="startLearning"><Icon name="cards" /><Bi zh="开始学习" fr="Apprendre" /></button><button hover-class="none" class="button secondary" :disabled="!mixedPending&&!filteredPool.length" @click="startMixed"><Icon name="list" /><Bi zh="综合练习" fr="Pratique mixte" small /><text v-if="mixedPending" class="grammar-mixed-count">{{ mixedResumeLabel }}</text></button></view>
+   </view>
+  </template>
 
-      <view class="unit-tabs" role="tablist">
-        <button hover-class="none" v-for="tab in unitTabs" :key="tab.id" :class="['unit-tab',{active:unitId===tab.id}]" @click="unitId=tab.id"><Bi :zh="tab.zh" :fr="tab.fr" small /></button>
-      </view>
+  <template v-else-if="screen==='books'">
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择教材" fr="Choisir un manuel" /></view>
+   <view class="grammar-scroll"><BookPicker :selected="bookId" :lessons="allLessons.length" @select="selectBook" /></view>
+  </template>
 
-      <view class="lesson-grid">
-        <button hover-class="none" v-for="lesson in visibleLessons" :key="lesson.id" :class="['glass','lesson-card',{empty:!lesson.points.length}]" @click="startLesson(lesson)">
-          <view class="lesson-top">
-            <text class="lesson-id">{{ lesson.id==='Summary' ? 'Résumé' : lesson.id }}</text>
-            <view v-if="lesson.points.length" class="lesson-progress"><view class="lesson-progress-bar" :style="{width:lessonPct(lesson)+'%'}" /></view>
-            <Icon :name="lesson.points.length?'arrow':'info'" />
-          </view>
-          <text class="lesson-title" lang="fr">{{ lesson.subtitle || lesson.title }}</text>
-          <text class="lesson-meta">{{ lessonMeta(lesson) }}</text>
-        </button>
-      </view>
+  <template v-else-if="screen==='units'">
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择单元" fr="Choisir une unité" /></view>
+   <view class="grammar-scroll grammar-unit-grid"><button v-for="unit in unitChoices" :key="unit.id" hover-class="none" :class="['glass','grammar-unit-card',{selected:unitId===unit.id}]" @click="selectUnit(unit.id)"><Bi :zh="unit.zh" :fr="unit.fr" /><Icon :name="unitId===unit.id?'check':'arrow'" /></button></view>
+  </template>
 
-      <view class="grammar-actions">
-        <button hover-class="none" class="button primary" :disabled="!stats.questions" @click="startMixed"><Icon name="list" /><Bi zh="综合练习 · 10 题" fr="Entraînement mixte" small /></button>
-        <button hover-class="none" v-if="wrongPool.length" class="button secondary" @click="startWrong"><Icon name="star" /><Bi zh="只练错题" fr="Mes erreurs" small /></button>
-      </view>
-      <text class="grammar-note">题目由《Inspire 1 语法整理》例句与常见错误生成，答错会立即给出规则说明。</text>
-    </template>
+  <template v-else-if="screen==='lessons'">
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='units'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择课时" fr="Choisir une leçon" /></view>
+   <view class="grammar-scroll grammar-lesson-grid">
+    <button v-for="lesson in visibleLessons" :key="lesson.key" hover-class="none" :class="['glass','grammar-lesson-card',{selected:chosenLessonKey===lesson.key}]" @click="selectLesson(lesson)">
+     <view class="grammar-lesson-heading"><text class="grammar-lesson-key">{{ lesson.id==='Summary'?lesson.unitId+' · Résumé':lesson.id }}</text><Icon :name="chosenLessonKey===lesson.key?'check':lesson.points.length?'grammar':'list'" /></view>
+     <text class="grammar-lesson-name" lang="fr">{{ lesson.subtitle||lesson.title }}</text>
+     <Bi class="grammar-lesson-meta" :zh="lessonMeta(lesson)" :fr="lesson.kind==='technique'?'Savoir-faire':lesson.kind==='summary'?'Expressions utiles':lesson.points.length+' points'" small />
+     <view v-if="lesson.points.length" class="grammar-lesson-meter"><view :style="{width:lessonPct(lesson)+'%'}" /></view>
+    </button>
+   </view>
+  </template>
 
-    <!-- 答题 -->
-    <template v-else-if="screen==='quiz' && current">
-      <view class="quiz-bar">
-        <button hover-class="none" class="icon-button" @click="quit" aria-label="退出练习 / Quitter"><Icon name="back" /></button>
-        <view class="quiz-progress"><view class="quiz-progress-bar" :style="{width:((index+1)/questions.length*100)+'%'}" /></view>
-        <text class="quiz-count">{{ index+1 }} / {{ questions.length }}</text>
-      </view>
+  <template v-else-if="screen==='lesson'&&selectedLesson">
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><view><text class="eyebrow">{{ selectedLesson.unitId.replace('U','UNITÉ ') }} · {{ selectedLesson.id==='Summary'?'Résumé':selectedLesson.id }}</text><h2>{{ selectedLesson.subtitle||selectedLesson.title }}</h2></view></view>
+   <view class="grammar-scroll grammar-detail">
+    <view v-for="point in visibleRule" :key="point.id" class="glass grammar-rule-card">
+     <view class="grammar-rule-toggle"><view><text class="grammar-point-title">{{ point.title }}</text><text class="muted" lang="fr">{{ point.raw }}</text></view><text class="grammar-point-count">{{ ruleIndex+1 }} / {{ selectedLesson.points.length }}</text></view>
+     <Transition name="grammar-fold" v-bind="foldTransition"><view v-if="openRules.includes(point.id)" :id="'grammar-rule-'+point.id"><view class="grammar-rule-body"><text v-for="(rule,i) in point.rules" :key="i" class="grammar-rule-text">{{ rule }}</text><view v-for="(example,i) in point.examples" :key="i" class="grammar-example"><text lang="fr">{{ example[0] }}</text><text>{{ example[1] }}</text></view><view v-if="point.hook" class="grammar-hook">{{ point.hook }}</view></view></view></Transition>
+    </view>
+    <section v-if="selectedLesson.checklist?.length&&ruleIndex>=selectedLesson.points.length-1" class="glass grammar-reference"><Bi zh="表达检查清单" fr="Avant de parler" /><view v-for="(item,i) in selectedLesson.checklist" :key="i" class="grammar-check-item"><Icon name="check" /><text>{{ item }}</text></view></section>
+    <section v-if="selectedLesson.phrases?.length&&ruleIndex>=selectedLesson.points.length-1" class="glass grammar-reference"><Bi zh="实用句型" fr="Expressions utiles" /><view v-for="(phrase,i) in selectedLesson.phrases" :key="i" class="grammar-example"><text lang="fr">{{ phraseFields(phrase).fr }}</text><text>{{ phraseFields(phrase).zh }}</text></view></section>
+   </view>
+   <view class="grammar-actions"><button v-if="ruleIndex<selectedLesson.points.length-1" class="button primary" @click="nextRule"><Bi zh="下一个语法点" fr="Point suivant" small/><Icon name="arrow"/></button><button v-else-if="selectedLesson.points.length" hover-class="none" class="button primary" :disabled="!lessonPool.length&&!lessonPending" @click="startLessonPractice"><Bi :zh="lessonPending?'继续课时练习':'开始练习'" :fr="lessonPending?'Reprendre':'Pratiquer'" small /><Icon name="arrow" /></button><button v-else hover-class="none" class="button secondary" @click="screen='home'"><Bi zh="返回主页" fr="Accueil" small /><Icon name="back" /></button></view>
+  </template>
 
-      <view class="glass quiz-card">
-        <view class="quiz-tag">
-          <text class="tag-type">{{ current.type==='translate'?'选出正确法语 · Traduire':'判断对错 · Vrai ou faux' }}</text>
-          <text class="tag-src">{{ current.lessonId }} · {{ current.point.title }}</text>
-        </view>
+  <template v-else-if="screen==='quiz'&&current">
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="leaveQuiz" aria-label="返回 / Retour"><Icon name="back" /></button><view class="quiz-progress"><view :style="{width:(results.length/questions.length*100)+'%'}" /></view><text class="quiz-count">{{ index+1 }} / {{ questions.length }}</text></view>
+   <view class="grammar-scroll grammar-question-scroll">
+    <Transition name="grammar-question" mode="out-in" @before-leave="questionSwitching=true" @after-enter="questionSwitching=false" @enter-cancelled="questionSwitching=false" @leave-cancelled="questionSwitching=false"><view :key="current.id" class="glass quiz-card">
+     <view class="quiz-tag"><Bi :zh="current.type==='translate'?'中译选句':'判断用法'" :fr="current.type==='translate'?'Traduction':'Vrai ou faux'" small /><text>{{ current.lessonId }} · {{ current.point.title }}</text></view>
+     <view class="quiz-prompt"><text :class="current.type==='translate'?'prompt-zh':'prompt-fr'" :lang="current.type==='judge'?'fr':'zh'">{{ current.prompt }}</text><Bi :zh="current.type==='translate'?'选出恰当的法语表达':'这句话符合本题用法吗？'" :fr="current.type==='translate'?'Choisissez la bonne phrase.':'Cet emploi est-il correct ?'" small /></view>
+     <view class="grammar-options"><button v-for="(option,i) in current.options" :key="option.id" hover-class="none" :class="['grammar-option',optionClass(option)]" :disabled="answered||switching" :aria-pressed="pickedId===option.id" @click="pickedId=option.id"><text class="option-key">{{ 'ABCD'[i] }}</text><text class="option-text" lang="fr">{{ option.text }}</text><view class="grammar-option-status"><Transition name="grammar-mark"><Icon v-if="answered&&(option.correct||pickedId===option.id)" :name="option.correct?'check':'close'" /></Transition></view></button></view>
+     <view class="grammar-feedback-slot" aria-live="polite">
+      <Transition name="grammar-fold" v-bind="foldTransition"><view v-if="answered"><view :class="['grammar-feedback',lastCorrect?'ok':'no']"><view class="feedback-head"><Icon :name="lastCorrect?'check':'info'" /><Bi :zh="lastCorrect?'答对了':'再看一眼规则'" :fr="lastCorrect?'Correct':'À revoir'" small /></view><view class="feedback-answer"><Bi zh="正确表达" fr="Bonne formulation" small /><text lang="fr">{{ current.answerText }}</text></view><text class="feedback-rule">{{ current.explain }}</text><view v-if="current.point.hook" class="grammar-hook">{{ current.point.hook }}</view></view></view></Transition>
+     </view>
+    </view></Transition>
+   </view>
+   <view class="grammar-quiz-dock"><button hover-class="none" class="button primary" :disabled="switching||(!answered&&!pickedId)" @click="answered?next():submit()"><Transition name="grammar-label" mode="out-in"><view :key="answered?(index+1<questions.length?'next':'result'):'submit'" class="grammar-action-label"><Bi :zh="answered?(index+1<questions.length?'下一题':'查看结果'):'确认答案'" :fr="answered?(index+1<questions.length?'Suivant':'Résultat'):'Valider'" small /><Icon v-if="answered" name="arrow" /></view></Transition></button></view>
+  </template>
 
-        <view v-if="current.type==='translate'" class="quiz-prompt">
-          <text class="prompt-zh">{{ current.prompt }}</text>
-          <text class="prompt-hint">选出最恰当的法语表达</text>
-        </view>
-        <view v-else class="quiz-prompt">
-          <text class="prompt-fr" lang="fr">{{ current.prompt }}</text>
-          <text class="prompt-hint">这句话符合语法规则吗？</text>
-        </view>
-
-        <view class="options">
-          <button hover-class="none" v-for="(opt,i) in current.options" :key="opt.id" :class="['option',optionClass(opt)]" :disabled="answered" @click="choose(opt)">
-            <text class="option-key">{{ 'ABCD'[i] }}</text>
-            <text class="option-text" lang="fr">{{ opt.text }}</text>
-            <Icon v-if="answered && opt.correct" name="check" />
-            <Icon v-else-if="answered && opt.picked && !opt.correct" name="close" />
-          </button>
-        </view>
-
-        <view v-if="answered" :class="['feedback',lastCorrect?'ok':'no']">
-          <view class="feedback-head"><Icon :name="lastCorrect?'check':'info'" /><Bi :zh="lastCorrect?'答对了':'再看一眼规则'" :fr="lastCorrect?'Correct':'À revoir'" small /></view>
-          <text v-if="current.type==='translate'" class="feedback-answer">正确说法：<text lang="fr">{{ current.answer }}</text></text>
-          <text class="feedback-rule">{{ current.explain }}</text>
-          <view v-if="current.point" class="feedback-hook"><text lang="fr">{{ current.point.hook }}</text></view>
-        </view>
-
-        <view class="quiz-actions">
-          <button v-if="!answered" hover-class="none" class="button primary" :disabled="!picked" @click="submit"><Bi zh="确认" fr="Valider" small /></button>
-          <button v-else hover-class="none" class="button primary" @click="next"><Bi :zh="index+1<questions.length?'下一题':'看结果'" :fr="index+1<questions.length?'Suivant':'Résultat'" small /><Icon name="arrow" /></button>
-        </view>
-      </view>
-    </template>
-
-    <!-- 结果 -->
-    <template v-else-if="screen==='result'">
-      <view class="glass result-card">
-        <view class="result-ring" :style="{background:`conic-gradient(var(--accent) ${accuracy}%, #e6ecf6 0)`}"><view class="result-inner"><strong>{{ accuracy }}%</strong><text>{{ correctCount }}/{{ questions.length }}</text></view></view>
-        <text class="result-title">{{ resultTitle }}</text>
-        <text class="result-sub">{{ resultSub }}</text>
-        <view v-if="wrongList.length" class="wrong-list">
-          <text class="wrong-title">需要复习的 {{ wrongList.length }} 题</text>
-          <view v-for="(item,i) in wrongList.slice(0,5)" :key="i" class="wrong-item">
-            <text class="wrong-fr" lang="fr">{{ item.prompt }}</text>
-            <text class="wrong-answer" lang="fr">→ {{ item.answer }}</text>
-          </view>
-        </view>
-        <view class="result-actions">
-          <button hover-class="none" v-if="wrongList.length" class="button primary" @click="retryWrong"><Icon name="star" /><Bi zh="重练错题" fr="Refaire" small /></button>
-          <button hover-class="none" class="button secondary" @click="backHome"><Bi zh="返回范围选择" fr="Retour" small /></button>
-        </view>
-      </view>
-    </template>
-  </view>
+  <template v-else-if="screen==='result'">
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="本轮完成" fr="Série terminée" /></view>
+   <view class="grammar-scroll grammar-result-scroll">
+    <view class="glass grammar-result-card"><view class="result-ring" :style="{background:'conic-gradient(var(--accent) '+accuracy+'%, #e6ecf6 0)'}"><view class="result-inner"><strong>{{ accuracy }}%</strong><text>{{ correctCount }} / {{ results.length }}</text></view></view><Bi :zh="resultTitle" fr="Chaque exercice compte." /><Bi :zh="'答对 '+correctCount+' 题，共 '+results.length+' 题'" :fr="correctCount+' bonnes réponses sur '+results.length" small /></view>
+    <view v-if="wrongList.length" class="glass grammar-result-errors"><Bi :zh="'需要复习 · '+wrongList.length+' 题'" fr="À revoir" /><view v-for="item in wrongList" :key="item.question.id" class="grammar-error-item"><text class="error-prompt">{{ item.question.prompt }}</text><Bi zh="正确表达" fr="Bonne formulation" small /><text lang="fr">{{ item.question.answerText }}</text><text class="muted">{{ item.question.explain }}</text></view></view>
+   </view>
+   <view class="grammar-actions"><button v-if="wrongList.length" hover-class="none" class="button primary" @click="retryWrong"><Icon name="repeat" /><Bi zh="重练错题" fr="Refaire les erreurs" small /></button><button hover-class="none" class="button secondary" @click="screen='home'"><Bi zh="返回课次" fr="Toutes les leçons" small /></button></view>
+  </template>
+   </view>
+  </Transition>
+ </view>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import Bi from './Bi.vue';
-import Icon from './Icon.vue';
+import {computed,ref,watch,onMounted,onBeforeUnmount} from 'vue';
+import Bi from './Bi.vue';import Icon from './Icon.vue';import BookPicker from './BookPicker.vue';
 import grammarData from '../grammar/grammar-data.json';
-
-const emit = defineEmits(['notice']);
-
-const STORE_KEY = 'qihang-grammar-progress-v1';
-const ROUND_SIZE = 10;
-
-/* ---------- 进度 ---------- */
-let saved = {};
-try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { saved = {}; }
-const progress = ref(saved && typeof saved === 'object' ? saved : {});
-
-function saveProgress() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(progress.value)); } catch { /* 存储不可用时忽略 */ }
+import {buildQuestions,shuffle,normalizeProgress,isMastered} from '../grammar/practice.js';
+import {defaultGrammarSettings,normalizeGrammarSettings} from '../grammar/settings.js';
+import {encodeRound,decodeRound,roundComplete,rememberRound,mixedForUnit} from '../grammar/sessions.js';
+import {playCorrect} from '../platform/feedback-sounds.js';
+import {foldTransition} from '../grammar/motion.js';
+const props=defineProps({settings:{type:Object,default:()=>({...defaultGrammarSettings})},active:{type:Boolean,default:true}});
+const emit=defineEmits(['notice','settings']);
+const settings=computed(()=>normalizeGrammarSettings(props.settings));
+const STORE_KEY='qihang-grammar-progress-v1',ROUND_KEY='qihang-grammar-round-v1';
+const units=grammarData.units;
+const allLessons=units.flatMap(u=>u.lessons.map(l=>({...l,unitId:u.id,key:u.id+':'+l.id})));
+const allPoints=allLessons.flatMap(l=>l.points.map(p=>({...p,lessonId:l.id,unitId:l.unitId})));
+const pool=buildQuestions(allPoints),byId=new Map(pool.map(q=>[q.id,q]));
+const read=key=>{try{return JSON.parse(localStorage.getItem(key)||'null');}catch{return null;}};
+const progress=ref(normalizeProgress(read(STORE_KEY),allPoints.map(p=>p.id)));
+let storageWarning=false;
+function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{if(!storageWarning){storageWarning=true;emit('notice','本轮记录未能保存，请检查存储空间 / Enregistrement impossible.');}}}
+const pointStat=id=>progress.value[id]||{r:0,w:0};
+function recordAnswer(pointId,correct){const s=pointStat(pointId);progress.value={...progress.value,[pointId]:{r:s.r+(correct?1:0),w:s.w+(correct?0:1),at:Date.now()}};persist(STORE_KEY,progress.value);}
+const bookId=ref('inspire1'),unitId=ref('all'),chosenLessonKey=ref(''),lastStudyKey=ref('');
+const screen=ref('home'),lessonKey=ref(''),scopeLabel=ref(''),returnScreen=ref('home');
+const roundKind=ref('lesson'),roundLessonKey=ref(''),cachedRounds=ref({mixed:null,lessons:{}});
+const questions=ref([]),index=ref(0),pickedId=ref(''),answered=ref(false),results=ref([]);
+const rulePages=ref(read('qihang-grammar-rule-pages')||{});const ruleIndex=ref(0);const visibleRule=computed(()=>selectedLesson.value?.points.slice(ruleIndex.value,ruleIndex.value+1)||[]);
+const openRules=ref([]),screenSwitching=ref(false),questionSwitching=ref(false);
+const switching=computed(()=>screenSwitching.value||questionSwitching.value);
+const selectedLesson=computed(()=>allLessons.find(l=>l.key===lessonKey.value));
+const chosenLesson=computed(()=>allLessons.find(l=>l.key===chosenLessonKey.value));
+const lastStudyLesson=computed(()=>allLessons.find(l=>l.key===lastStudyKey.value));
+function nextRule(){ruleIndex.value++;rulePages.value[lessonKey.value]=ruleIndex.value;persist('qihang-grammar-rule-pages',rulePages.value);openRules.value=visibleRule.value.map(p=>p.id);}
+function toggleRule(id){openRules.value=[id];}
+watch(lessonKey,()=>{openRules.value=visibleRule.value.map(p=>p.id);});
+watch(screen,()=>questionSwitching.value=false);
+const visibleLessons=computed(()=>allLessons.filter(l=>unitId.value==='all'||l.unitId===unitId.value));
+const unitChoices=[{id:'all',zh:'全部单元',fr:'Toutes les unités'},...units.map(u=>({id:u.id,zh:'单元 '+u.id.slice(1),fr:'Unité '+u.id.slice(1)+' · '+u.title}))];
+const typeAllowed=q=>settings.value.questionType==='both'||q.type===settings.value.questionType;
+const filteredPool=computed(()=>pool.filter(q=>typeAllowed(q)&&(unitId.value==='all'||q.point.unitId===unitId.value)));
+const lessonPool=computed(()=>pool.filter(q=>typeAllowed(q)&&selectedLesson.value?.points.some(p=>p.id===q.pointId)));
+const mixedRound=computed(()=>decodeRound(mixedForUnit(cachedRounds.value,unitId.value),byId));
+const mixedPending=computed(()=>!!mixedRound.value&&!roundComplete(mixedRound.value));
+const mixedResumeLabel=computed(()=>mixedPending.value?(mixedRound.value.scopeLabel.replace('Inspire 1 · ','')+' · '+mixedRound.value.results.length+'/'+mixedRound.value.questions.length):'');
+const lessonRound=computed(()=>decodeRound(cachedRounds.value.lessons[lessonKey.value],byId));
+const lessonPending=computed(()=>!!lessonRound.value&&!roundComplete(lessonRound.value));
+const currentPending=computed(()=>questions.value.length>0&&results.value.length<questions.value.length);
+const canResume=computed(()=>currentPending.value||!!lastStudyLesson.value);
+const continueLabel=computed(()=>currentPending.value?scopeLabel.value+' · '+results.value.length+'/'+questions.value.length:lastStudyLesson.value?lessonName(lastStudyLesson.value):'—');
+const stats=computed(()=>({done:allPoints.filter(p=>isMastered(pointStat(p.id))).length}));
+function lessonName(l){return l.id==='Summary'?l.unitId+' · Résumé':l.id;}
+function lessonPct(l){return l.points.length?Math.round(l.points.filter(p=>isMastered(pointStat(p.id))).length/l.points.length*100):0;}
+function lessonMeta(l){if(l.kind==='technique')return '表达检查清单';if(l.kind==='summary')return (l.phrases?.length||0)+' 条实用句型';return l.points.length+' 个语法点 · 已掌握 '+l.points.filter(p=>isMastered(pointStat(p.id))).length;}
+function selectBook(id){if(id!=='inspire1')return;bookId.value=id;screen.value='home';}
+function selectUnit(id){if(!unitChoices.some(u=>u.id===id))return;unitId.value=id;if(id!=='all'&&chosenLesson.value?.unitId!==id)chosenLessonKey.value='';screen.value='lessons';}
+function selectLesson(l){chosenLessonKey.value=l.key;unitId.value=l.unitId;screen.value='home';}
+function startLearning(){
+ if(!chosenLesson.value){emit('notice','请选择课时 / Choisissez une leçon.');screen.value='units';return;}
+ openLearning(chosenLesson.value);
 }
-
-function pointStat(id) {
-  return progress.value[id] || { r: 0, w: 0 };
+function openLearning(l){saveRound();ruleIndex.value=Math.min(rulePages.value[l.key]||0,Math.max(0,l.points.length-1));lessonKey.value=l.key;lastStudyKey.value=l.key;openRules.value=visibleRule.value.map(p=>p.id);screen.value='lesson';}
+function phraseFields(p){return /\p{Script=Han}/u.test(p.fr)&&!(/\p{Script=Han}/u.test(p.zh))?{fr:p.zh,zh:p.fr.replace(/^\d+[.、]\s*/,'')}:p;}
+function currentRound(){return {kind:roundKind.value,lessonKey:roundLessonKey.value,scopeLabel:scopeLabel.value,questions:questions.value,index:index.value,pickedId:pickedId.value,answered:answered.value,results:results.value};}
+function applyRound(round){
+ roundKind.value=round.kind;roundLessonKey.value=round.lessonKey;scopeLabel.value=round.scopeLabel;questions.value=round.questions;index.value=round.index;pickedId.value=round.pickedId;answered.value=round.answered;results.value=round.results;
+ returnScreen.value=round.kind==='lesson'?'lesson':'home';if(round.kind==='lesson'&&allLessons.some(l=>l.key===round.lessonKey))lessonKey.value=round.lessonKey;
 }
-
-function pointMastered(id) {
-  const s = pointStat(id);
-  return s.r + s.w >= 2 && s.r / (s.r + s.w) >= 0.6;
+function begin(source,label,kind,sourceLessonKey=''){
+ if(!source.length){emit('notice','当前范围没有所选题型 / Aucune question de ce type.');return;}
+ saveRound();
+ const ordered=settings.value.shuffle?shuffle(source):[...source];
+ applyRound({kind,lessonKey:sourceLessonKey,scopeLabel:label,questions:ordered.slice(0,settings.value.roundSize).map(q=>({...q,options:settings.value.shuffle?shuffle(q.options):[...q.options]})),index:0,pickedId:'',answered:false,results:[]});
+ screen.value='quiz';saveRound();
 }
-
-function recordAnswer(id, correct) {
-  const s = pointStat(id);
-  progress.value = { ...progress.value, [id]: { r: s.r + (correct ? 1 : 0), w: s.w + (correct ? 0 : 1), at: Date.now() } };
-  saveProgress();
+function startMixed(){
+ saveRound();const saved=decodeRound(mixedForUnit(cachedRounds.value,unitId.value),byId);
+ if(saved&&!roundComplete(saved)){applyRound(saved);screen.value='quiz';return;}
+ begin(filteredPool.value,'Inspire 1 · '+(unitId.value==='all'?'全部单元':unitId.value),'mixed');
 }
-
-/* ---------- 题池 ---------- */
-const units = grammarData.units;
-
-const allLessons = computed(() => units.flatMap((u) => u.lessons.map((l) => ({ ...l, unitId: u.id, unitTitle: u.title }))));
-
-const allPoints = computed(() => allLessons.value.flatMap((l) => l.points.map((p) => ({ ...p, lessonId: l.id }))));
-
-function shuffle(list) {
-  const arr = [...list];
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+function startLessonPractice(){
+ saveRound();const saved=decodeRound(cachedRounds.value.lessons[lessonKey.value],byId);
+ if(saved&&!roundComplete(saved)){applyRound(saved);screen.value='quiz';return;}
+ begin(lessonPool.value,selectedLesson.value?.id||'Leçon','lesson',lessonKey.value);
 }
-
-function uniqueBy(list, keyFn) {
-  const seen = new Set();
-  return list.filter((item) => {
-    const key = keyFn(item);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+const current=computed(()=>questions.value[index.value]||null);
+const lastCorrect=computed(()=>!!current.value?.options.find(o=>o.id===pickedId.value)?.correct);
+function optionClass(o){if(!answered.value)return {selected:pickedId.value===o.id};return {correct:o.correct,wrong:!o.correct&&o.id===pickedId.value,dim:!o.correct&&o.id!==pickedId.value};}
+function submit(){
+ if(switching.value||answered.value||!current.value)return;const option=current.value.options.find(o=>o.id===pickedId.value);if(!option)return;
+ answered.value=true;recordAnswer(current.value.pointId,option.correct);results.value.push({question:current.value,pickedId:option.id,correct:option.correct});if(option.correct)playCorrect();
 }
-
-/** 由语法点的例句与易错项生成两类题目 */
-function questionsOf(points) {
-  const pool = [];
-  for (const point of points) {
-    const { lessonId } = point;
-    const wrongs = uniqueBy((point.mistakes || []).map((m) => m.wrong).filter(Boolean), (x) => x);
-    const base = {
-      pointId: point.id,
-      lessonId,
-      point,
-      explain: point.hook || (point.rules || [])[0] || '',
-    };
-
-    // 中译选句：中文题干，正确句 + 教材里的典型错句作干扰
-    for (const ex of point.examples || []) {
-      const [fr, zh] = ex;
-      if (!fr || !zh || wrongs.length === 0) continue;
-      const distractors = shuffle(wrongs.filter((w) => w !== fr)).slice(0, 2);
-      if (!distractors.length) continue;
-      const options = shuffle([fr, ...distractors]).map((text) => ({ text, correct: text === fr }));
-      pool.push({
-        ...base,
-        type: 'translate',
-        prompt: zh,
-        answer: fr,
-        options: options.map((o, i) => ({ ...o, id: `${point.id}-t${i}-${o.text.length}` })),
-        explain: base.explain || (point.mistakes[0] && point.mistakes[0].why) || '',
-      });
-    }
-
-    // 判断正误：教材易错里的错句（false）与正确改写（true）
-    for (const m of point.mistakes || []) {
-      if (m.wrong) {
-        pool.push({
-          ...base,
-          type: 'judge',
-          prompt: m.wrong,
-          answer: false,
-          options: [
-            { id: `${point.id}-j-${m.wrong.length}-0`, text: '正确 · Correct', correct: false },
-            { id: `${point.id}-j-${m.wrong.length}-1`, text: '错误 · Incorrect', correct: true },
-          ],
-          explain: [m.right ? `正确说法：${m.right}` : '', m.why].filter(Boolean).join('　') || base.explain,
-        });
-      }
-      if (m.right) {
-        pool.push({
-          ...base,
-          type: 'judge',
-          prompt: m.right,
-          answer: true,
-          options: [
-            { id: `${point.id}-jr-${m.right.length}-0`, text: '正确 · Correct', correct: true },
-            { id: `${point.id}-jr-${m.right.length}-1`, text: '错误 · Incorrect', correct: false },
-          ],
-          explain: m.why || base.explain,
-        });
-      }
-    }
-  }
-  return uniqueBy(pool, (q) => `${q.type}|${q.prompt}`);
+function next(){if(switching.value||!answered.value)return;if(index.value+1===questions.value.length){screen.value='result';return;}index.value++;pickedId.value='';answered.value=false;}
+function leaveQuiz(){screen.value=returnScreen.value==='lesson'&&selectedLesson.value?'lesson':'home';}
+function resume(){if(currentPending.value){if(roundKind.value==='lesson'&&allLessons.some(l=>l.key===roundLessonKey.value))lessonKey.value=roundLessonKey.value;screen.value='quiz';}else if(lastStudyLesson.value)openLearning(lastStudyLesson.value);}
+function retryWrong(){begin(wrongList.value.map(r=>r.question),'错题 · Erreurs','retry');}
+const correctCount=computed(()=>results.value.filter(r=>r.correct).length);
+const accuracy=computed(()=>results.value.length?Math.round(correctCount.value/results.value.length*100):0);
+const wrongList=computed(()=>results.value.filter(r=>!r.correct));
+const resultTitle=computed(()=>accuracy.value===100?'本轮全部答对':accuracy.value>=70?'继续巩固，稳步向前':'再看一遍规则，再练一次');
+function saveRound(){
+ const snapshot=encodeRound(currentRound());cachedRounds.value=rememberRound(cachedRounds.value,snapshot);
+ persist(ROUND_KEY,{schema:2,screen:screen.value,selection:{bookId:bookId.value,unitId:unitId.value,lessonKey:chosenLessonKey.value},lessonKey:lessonKey.value,lastStudyKey:lastStudyKey.value,current:snapshot,sessions:cachedRounds.value});
 }
-
-const poolByPoint = computed(() => {
-  const map = new Map();
-  for (const p of allPoints.value) map.set(p.id, questionsOf([p]));
-  return map;
-});
-
-/* ---------- 概览统计 ---------- */
-const stats = computed(() => {
-  const points = allPoints.value;
-  const total = points.length;
-  const done = points.filter((p) => pointMastered(p.id)).length;
-  let r = 0;
-  let w = 0;
-  for (const p of points) {
-    const s = pointStat(p.id);
-    r += s.r;
-    w += s.w;
-  }
-  return {
-    points: total,
-    questions: points.reduce((sum, p) => sum + (poolByPoint.value.get(p.id) || []).length, 0),
-    done,
-    accuracy: r + w ? Math.round((r / (r + w)) * 100) : 0,
-  };
-});
-
-const unitTabs = computed(() => [
-  { id: 'all', zh: '全部', fr: 'Tout' },
-  ...units.map((u) => ({ id: u.id, zh: u.id.replace('U', '第') + '单元', fr: u.title })),
-]);
-
-const unitId = ref('all');
-const visibleLessons = computed(() => (unitId.value === 'all' ? allLessons.value : allLessons.value.filter((l) => l.unitId === unitId.value)));
-
-function lessonPct(lesson) {
-  const pts = lesson.points || [];
-  if (!pts.length) return 0;
-  return Math.round((pts.filter((p) => pointMastered(p.id)).length / pts.length) * 100);
+function restoreRound(){
+ const saved=read(ROUND_KEY);if(!saved)return;
+ if(saved.schema===1){
+  const kind=saved.returnScreen==='lesson'?'lesson':/错题|薄弱/.test(saved.scopeLabel||'')?'retry':'mixed';
+  const legacy=decodeRound({...saved,kind},byId);
+  if(unitChoices.some(u=>u.id===saved.unitId))unitId.value=saved.unitId;
+  if(allLessons.some(l=>l.key===saved.lessonKey)){lessonKey.value=saved.lessonKey;chosenLessonKey.value=saved.lessonKey;lastStudyKey.value=saved.lessonKey;}
+  if(legacy){applyRound(legacy);cachedRounds.value=rememberRound(cachedRounds.value,encodeRound(legacy));}
+ }else if(saved.schema===2){
+  const s=saved.selection;if(unitChoices.some(u=>u.id===s?.unitId))unitId.value=s.unitId;
+  if(allLessons.some(l=>l.key===s?.lessonKey))chosenLessonKey.value=s.lessonKey;
+  if(allLessons.some(l=>l.key===saved.lessonKey))lessonKey.value=saved.lessonKey;
+  if(allLessons.some(l=>l.key===saved.lastStudyKey))lastStudyKey.value=saved.lastStudyKey;
+  const mixed=decodeRound(saved.sessions?.mixed,byId),lessons={};
+  for(const l of allLessons){const round=decodeRound(saved.sessions?.lessons?.[l.key],byId);if(round&&round.kind==='lesson'&&round.lessonKey===l.key)lessons[l.key]=encodeRound(round);}
+  cachedRounds.value={mixed:mixed?.kind==='mixed'?encodeRound(mixed):null,lessons,mixedByUnit:saved.sessions?.mixedByUnit||{}};
+  const current=decodeRound(saved.current,byId);if(current)applyRound(current);
+  ruleIndex.value=Math.min(rulePages.value[lessonKey.value]||0,Math.max(0,(selectedLesson.value?.points.length||1)-1));openRules.value=visibleRule.value.map(p=>p.id);
+ }
+ if(saved.screen==='quiz'&&questions.value.length)screen.value='quiz';
+ else if(saved.screen==='result'&&questions.value.length&&results.value.length===questions.value.length)screen.value='result';
+ else if(saved.screen==='lesson'&&selectedLesson.value)screen.value='lesson';
+ if(chosenLesson.value&&unitId.value!=='all'&&chosenLesson.value.unitId!==unitId.value)chosenLessonKey.value='';
 }
-
-function lessonMeta(lesson) {
-  if (lesson.kind === 'technique') return '技巧课 · 无新语法，复习本单元前几课';
-  if (lesson.kind === 'summary') return `单元小结 · ${(lesson.phrases || []).length} 个实用句型`;
-  const pts = lesson.points || [];
-  const mastered = pts.filter((p) => pointMastered(p.id)).length;
-  return `${pts.length} 个语法点 · 已掌握 ${mastered}`;
-}
-
-/* ---------- 答题状态 ---------- */
-const screen = ref('home');
-const questions = ref([]);
-const index = ref(0);
-const picked = ref(null);
-const answered = ref(false);
-const lastCorrect = ref(false);
-const results = ref([]);
-const scopePoints = ref([]);
-
-const current = computed(() => questions.value[index.value] || null);
-
-function begin(points, size) {
-  const pool = questionsOf(points);
-  if (!pool.length) {
-    emit('notice', '这部分暂无可用题目 / Aucune question disponible.');
-    return;
-  }
-  questions.value = shuffle(pool).slice(0, size || pool.length);
-  index.value = 0;
-  picked.value = null;
-  answered.value = false;
-  results.value = [];
-  scopePoints.value = points;
-  screen.value = 'quiz';
-}
-
-function startLesson(lesson) {
-  if (!lesson.points.length) {
-    emit('notice', lesson.kind === 'technique' ? `${lesson.id} 是技巧课，没有独立语法点；请先练本单元前几课。` : `${lesson.id} 是单元小结，没有独立语法点。`);
-    return;
-  }
-  begin(lesson.points.map((p) => ({ ...p, lessonId: lesson.id })), ROUND_SIZE);
-}
-
-function startMixed() {
-  begin(allPoints.value, ROUND_SIZE);
-}
-
-function startWrong() {
-  const pool = wrongPool.value;
-  if (!pool.length) return;
-  questions.value = shuffle(pool).slice(0, ROUND_SIZE);
-  index.value = 0;
-  picked.value = null;
-  answered.value = false;
-  results.value = [];
-  screen.value = 'quiz';
-}
-
-const wrongPool = computed(() => {
-  const list = [];
-  for (const p of allPoints.value) {
-    const s = pointStat(p.id);
-    if (s.w > 0 && !pointMastered(p.id)) list.push(...(poolByPoint.value.get(p.id) || []));
-  }
-  return list;
-});
-
-function choose(opt) {
-  if (answered.value) return;
-  picked.value = opt;
-}
-
-function optionClass(opt) {
-  if (!answered.value) return { selected: picked.value && picked.value.id === opt.id };
-  if (opt.correct) return { correct: true };
-  if (picked.value && picked.value.id === opt.id) return { wrong: true };
-  return { dim: true };
-}
-
-function submit() {
-  if (!picked.value) return;
-  answered.value = true;
-  lastCorrect.value = !!picked.value.correct;
-  recordAnswer(current.value.pointId, lastCorrect.value);
-  results.value = [...results.value, { ...current.value, pickedId: picked.value.id, correct: lastCorrect.value }];
-}
-
-function next() {
-  if (index.value + 1 < questions.value.length) {
-    index.value += 1;
-    picked.value = null;
-    answered.value = false;
-    return;
-  }
-  screen.value = 'result';
-}
-
-function quit() {
-  screen.value = 'home';
-  questions.value = [];
-}
-
-function backHome() {
-  screen.value = 'home';
-  questions.value = [];
-}
-
-const correctCount = computed(() => results.value.filter((r) => r.correct).length);
-const accuracy = computed(() => (results.value.length ? Math.round((correctCount.value / results.value.length) * 100) : 0));
-const wrongList = computed(() => results.value.filter((r) => !r.correct));
-const resultTitle = computed(() => (accuracy.value >= 90 ? '这一轮几乎全对' : accuracy.value >= 70 ? '基本掌握，个别点还需巩固' : '先把规则再看一遍'));
-const resultSub = computed(() => `本轮 ${results.value.length} 题，答对 ${correctCount.value} 题`);
-
-function retryWrong() {
-  const list = wrongList.value;
-  if (!list.length) return;
-  questions.value = shuffle(list);
-  index.value = 0;
-  picked.value = null;
-  answered.value = false;
-  results.value = [];
-  screen.value = 'quiz';
-}
+restoreRound();
+watch([screen,bookId,unitId,chosenLessonKey,lastStudyKey,lessonKey,questions,index,pickedId,answered,results],saveRound,{deep:true});
+function handleBack(){if(screen.value==='home')return false;if(screen.value==='quiz')leaveQuiz();else screen.value=screen.value==='lessons'?'units':'home';return true;}
+defineExpose({handleBack});
+function onKey(e){if(!props.active||switching.value||e.defaultPrevented||e.ctrlKey||e.metaKey||e.altKey||e.target?.closest?.('input,textarea,[contenteditable=true]')||screen.value!=='quiz')return;const n='abcd'.indexOf(e.key.toLowerCase());if(n>=0&&!answered.value&&current.value?.options[n]){e.preventDefault();pickedId.value=current.value.options[n].id;}else if(e.key==='Enter'&&!e.repeat&&!e.target?.closest?.('button,uni-button,[role=button]')){e.preventDefault();answered.value?next():submit();}}
+onMounted(()=>document.addEventListener('keydown',onKey));
+onBeforeUnmount(()=>{saveRound();document.removeEventListener('keydown',onKey);});
 </script>
 
 <style scoped>
-.grammar-mode{height:100%;min-height:0;display:flex;flex-direction:column;gap:14px;width:100%;max-width:1100px;margin:0 auto;padding:4px 21px 24px;overflow-y:auto}
-.grammar-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
-.grammar-intro{display:flex;flex-direction:column;gap:5px;min-width:0}
-.grammar-title{font-size:22px;font-weight:650;letter-spacing:-.4px;color:var(--ink)}
-.grammar-title-fr{font-family:Georgia,serif;font-style:italic;font-size:15px;font-weight:400;color:#8b96ae;margin-left:9px}
-.grammar-sub{font-size:12px;color:var(--muted)}
-.grammar-kpi{display:flex;gap:10px}
-.kpi{min-width:82px;padding:9px 13px;border-radius:14px;background:#f8faffb8;border:1px solid #e2e9f4;display:flex;flex-direction:column;gap:2px;align-items:center}
-.kpi strong{font-size:18px;color:#5d72a7;letter-spacing:-.3px}
-.unit-tabs{display:flex;gap:8px;flex-wrap:wrap}
-.unit-tab{padding:8px 13px;border-radius:12px;border:1px solid #dbe4f1;background:#ffffffb8;color:#8c9db8}
-.unit-tab.active{background:#e7eefb;border-color:#a8bbda;color:#5f7da7}
-.lesson-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:12px}
-.lesson-card{padding:14px 15px;display:flex;flex-direction:column;gap:6px;text-align:left;border-radius:19px}
-.lesson-card.empty{opacity:.72}
-.lesson-top{display:flex;align-items:center;gap:9px}
-.lesson-id{font-size:11px;font-weight:650;letter-spacing:.5px;color:#7e93bb;background:#eef3fb;border-radius:7px;padding:2px 7px}
-.lesson-progress{flex:1;height:4px;border-radius:4px;background:#e8eefa;overflow:hidden}
-.lesson-progress-bar{height:100%;background:#9db2d8;border-radius:4px}
-.lesson-top .icon{width:15px;height:15px;color:#b3bfd3}
-.lesson-title{font-size:15px;color:var(--ink);font-weight:600;line-height:1.35}
-.lesson-meta{font-size:11px;color:var(--muted)}
-.grammar-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
-.grammar-note{font-size:11px;color:#9aa5b8;line-height:1.6}
-.quiz-bar{display:flex;align-items:center;gap:12px}
-.quiz-progress{flex:1;height:5px;border-radius:5px;background:#e6ecf6;overflow:hidden}
-.quiz-progress-bar{height:100%;background:var(--accent);border-radius:5px;transition:width .3s}
-.quiz-count{font-size:12px;color:var(--muted)}
-.quiz-card{padding:20px;display:flex;flex-direction:column;gap:15px}
-.quiz-tag{display:flex;flex-direction:column;gap:2px}
-.tag-type{font-size:11px;color:#7e93bb;letter-spacing:.4px}
-.tag-src{font-size:11px;color:#a6b0c2}
-.quiz-prompt{display:flex;flex-direction:column;gap:7px;padding:14px 15px;border-radius:16px;background:#f7f9fef2;border:1px solid #e6edf8}
-.prompt-zh{font-size:23px;font-weight:600;letter-spacing:-.4px;line-height:1.4}
-.prompt-fr{font-size:21px;font-weight:600;line-height:1.45;color:#3c4f75}
-.prompt-hint{font-size:11px;color:#9aa5b8}
-.options{display:flex;flex-direction:column;gap:9px}
-.option{display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:15px;border:1px solid #e0e8f4;background:#ffffffcc;color:#4c5f83;font-size:15px;line-height:1.4}
-.option .option-key{width:22px;height:22px;border-radius:50%;background:#eef3fb;color:#8ba0c4;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.option .option-text{flex:1}
-.option.selected{border-color:#9db2d8;background:#eff4fdf2}
-.option.correct{border-color:#a9c9b8;background:#eff8f2;color:#3f6a55}
-.option.correct .option-key{background:#d8ecdf;color:#4c7a62}
-.option.wrong{border-color:#e2b7b2;background:#fdf1ef;color:#8c5147}
-.option.wrong .option-key{background:#f3dcd8;color:#92574d}
-.option.dim{opacity:.55}
-.feedback{padding:13px 15px;border-radius:16px;display:flex;flex-direction:column;gap:7px;font-size:13px;line-height:1.6}
-.feedback.ok{background:#f0f8f3;border:1px solid #d9ecdf;color:#42684f}
-.feedback.no{background:#fdf4f2;border:1px solid #f0dcd7;color:#8a5349}
-.feedback-head{display:flex;align-items:center;gap:8px}
-.feedback-head .icon{width:17px;height:17px}
-.feedback-answer{font-weight:600}
-.feedback-rule{color:#5c6b85}
-.feedback-hook{font-size:12px;color:#8b7a52;background:#fdf9ee;border-radius:11px;padding:8px 11px;line-height:1.55}
-.quiz-actions{display:flex;justify-content:flex-end;gap:10px}
-.result-card{padding:26px;display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center}
-.result-ring{width:132px;height:132px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.result-inner{width:104px;height:104px;border-radius:50%;background:#fbfcff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.result-inner strong{font-size:29px;color:#526a9b;letter-spacing:-1px}
-.result-inner text{font-size:11px;color:var(--muted)}
-.result-title{font-size:17px;font-weight:620;margin-top:5px}
-.result-sub{font-size:12px;color:var(--muted)}
-.wrong-list{width:100%;margin-top:9px;padding:13px 14px;border-radius:16px;background:#fbfcffb8;border:1px solid #eaeff8;display:flex;flex-direction:column;gap:8px;text-align:left}
-.wrong-title{font-size:11px;color:#9aa5b8;letter-spacing:.3px}
-.wrong-item{display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.5}
-.wrong-fr{color:#8a5349}
-.wrong-answer{color:#42684f}
-.result-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px}
-@media(max-width:720px){
-  .grammar-mode{padding:4px 15px 20px;gap:11px}
-  .grammar-title{font-size:19px}
-  .grammar-kpi{width:100%;justify-content:space-between}
-  .kpi{flex:1}
-  .lesson-grid{grid-template-columns:1fr}
-  .prompt-zh{font-size:20px}
-  .prompt-fr{font-size:18px}
-  .quiz-card{padding:15px;gap:12px}
-  .result-card{padding:19px}
-}
-@media(prefers-reduced-motion:reduce){.quiz-progress-bar{transition:none}}
+.grammar-home{flex:1;min-height:0;width:100%;max-width:650px;margin:0 auto;display:flex;flex-direction:column;gap:18px;overflow-y:auto;padding:1px 1px 7px}.grammar-home-progress{padding:22px;border-radius:21px}.grammar-home-progress>view:first-child{display:flex;align-items:center;justify-content:space-between;gap:15px}.grammar-home-progress strong{font-size:30px;font-weight:500;color:#6c85aa;white-space:nowrap}.grammar-home-progress small{font-size:14px;color:#9daec7;font-weight:400}.grammar-home-track{height:5px;border-radius:6px;background:#e3eaf6;overflow:hidden;margin-top:18px}.grammar-home-track>view{height:100%;border-radius:inherit;background:#9bb2d5;transition:width .24s}
+.grammar-selection{padding:2px 17px;border-radius:20px}.grammar-selection-row{display:flex;align-items:center;gap:13px;width:100%;min-height:67px;padding:10px 0;background:transparent;border:0;text-align:left}.grammar-selection-row+.grammar-selection-row{border-top:1px solid #e1e8f2}.grammar-selection-row>.bi{flex:1}.grammar-selection-row>.icon{width:18px;height:18px;color:#98accb}.grammar-selection-row>text{max-width:52%;font-size:14px;color:#6d86ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.grammar-home-actions{display:flex;flex-direction:column;gap:11px;margin-top:auto;padding:1px}.grammar-home-actions>.button{width:100%;min-height:53px}.grammar-mixed-count{font-size:11px;color:#92a5bf}.grammar-resume:disabled{opacity:.5}
+.grammar-unit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:13px}.grammar-unit-card{padding:22px 19px;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:93px;text-align:left}.grammar-unit-card:first-child{grid-column:1/-1;min-height:75px}.grammar-unit-card>.icon{width:18px;height:18px;color:#9bafcc}.grammar-unit-card.selected,.grammar-lesson-card.selected{border-color:#a6bcdb;background:#e9f0fc}.grammar-screen-lessons .grammar-lesson-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grammar-screen{min-height:0;flex:1;display:flex;flex-direction:column;gap:inherit}
+.grammar-rule-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0;background:transparent;border:0;text-align:left}.grammar-rule-toggle>view{min-width:0}.grammar-rule-toggle>.icon{transition:transform .22s cubic-bezier(.2,.7,.3,1)}.grammar-rule-toggle[aria-expanded=true]>.icon{transform:rotate(180deg)}
+.grammar-option-status{width:18px;height:20px;flex:0 0 18px;display:flex;align-items:center;justify-content:center}.grammar-option-status>.icon{width:18px;height:18px}.grammar-action-label{display:flex;align-items:center;justify-content:center;gap:12px}
+.grammar-option,.unit-tab{transition:background-color .18s,border-color .18s,color .18s,box-shadow .18s,opacity .18s}
+.grammar-screen-enter-active,.grammar-question-enter-active,.grammar-content-enter-active{transition:opacity .22s cubic-bezier(.2,.7,.3,1),transform .24s cubic-bezier(.2,.7,.3,1);pointer-events:none}.grammar-screen-leave-active,.grammar-question-leave-active,.grammar-content-leave-active{transition:opacity .12s ease-out,transform .12s ease-out;pointer-events:none}.grammar-screen-enter-from,.grammar-question-enter-from,.grammar-content-enter-from{opacity:0;transform:translateY(6px)}.grammar-screen-leave-to,.grammar-question-leave-to,.grammar-content-leave-to{opacity:0;transform:translateY(-3px)}
+.grammar-fold-enter-active,.grammar-fold-leave-active{transition:height .24s cubic-bezier(.2,.7,.3,1),opacity .18s ease}
+.grammar-label-enter-active,.grammar-label-leave-active{transition:opacity .12s ease}.grammar-label-enter-from,.grammar-label-leave-to{opacity:0}
+.grammar-mark-enter-active,.grammar-mark-leave-active{transition:opacity .16s,transform .2s cubic-bezier(.2,.7,.3,1)}.grammar-mark-enter-from,.grammar-mark-leave-to{opacity:0;transform:scale(.8)}
+.grammar-mode{height:100%;min-height:0;display:flex;flex-direction:column;gap:17px;width:100%;max-width:1050px;margin:0 auto;padding:8px 25px 24px;overflow:hidden}
+.grammar-head,.grammar-page-bar{display:flex;align-items:center;gap:16px;flex-shrink:0}.grammar-head{justify-content:space-between}.grammar-head .eyebrow{margin-bottom:6px}.grammar-head h1{font-size:28px;letter-spacing:-.6px}.grammar-head h1 span{display:inline;font-size:20px;margin-left:13px}.grammar-settings{border:1px solid #dce5f1;background:#ffffffae;width:43px;height:43px;border-radius:15px}.grammar-kpis{display:flex;gap:12px;flex-shrink:0}.grammar-kpis>view{display:flex;align-items:center;gap:17px;flex:1;padding:16px 20px;border-radius:19px}.grammar-kpis strong{font-size:28px;color:#637da7;font-weight:500;white-space:nowrap}.grammar-kpis small{font-size:13px;color:#99abc6;font-weight:400}.grammar-resume{display:flex;align-items:center;gap:12px;padding:12px 17px;min-height:58px;flex-shrink:0;color:#7690b7;border-radius:17px}.grammar-resume .bi{flex:1}.grammar-resume>text{font-size:12px}
+.unit-tabs{display:flex;gap:8px;flex-shrink:0;overflow-x:auto;padding-bottom:3px}.unit-tab{flex:1;min-width:68px;padding:9px 13px;border-radius:13px;border:1px solid #dbe4f1;background:#ffffffb8;color:#8c9db8;white-space:nowrap;text-align:center}.unit-tab.active{background:#e7eefb;border-color:#a8bbda;color:#5f7da7}.unit-tab>.bi{align-items:center}
+.grammar-scroll{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:1px 1px 8px}.grammar-lesson-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-content:start}.grammar-actions{display:flex;gap:10px;flex-shrink:0;padding:1px}.grammar-actions>.button{flex:1;min-height:51px}.grammar-page-bar>view:not(.quiz-progress){min-width:0}.grammar-page-bar .eyebrow{margin-bottom:3px;letter-spacing:1px}.grammar-page-bar h2{font-size:19px;color:#6e85a8}.grammar-detail{display:flex;flex-direction:column;gap:13px}.grammar-rule-card{border-radius:19px;padding:17px 19px}.grammar-point-title{font-size:14px;line-height:1.65;color:#546c90}.grammar-rule-body{display:flex;flex-direction:column;gap:13px;padding-top:16px}.grammar-rule-text{font-size:13px;line-height:1.9;color:#7687a4}.grammar-example{display:flex;flex-direction:column;gap:5px;padding:13px 15px;background:#edf2fa9c;border-radius:13px;font-size:12px;line-height:1.8;color:#899ab4}.grammar-example>text:first-child{font:17px/1.7 Georgia,serif;color:#607b9f}.grammar-hook{font-size:12px;color:#8f815f;background:#f9f5e9;border-radius:12px;padding:11px 14px;line-height:1.8}.grammar-reference{padding:20px;display:flex;flex-direction:column;gap:14px}.grammar-check-item{display:flex;gap:12px;color:#7c8faa;font-size:13px;line-height:1.8}.grammar-check-item>.icon{width:17px;height:17px;margin-top:4px;color:#8eaaab}
+.quiz-progress{flex:1;height:5px;background:#e4eaf5;border-radius:5px;overflow:hidden}.quiz-progress>view{height:100%;background:#99aed4;transition:width .25s}.quiz-count{font-size:12px;color:#8b9cb6}.quiz-card{padding:24px;border-radius:23px}.quiz-tag{display:flex;justify-content:space-between;gap:15px;align-items:center;color:#9aabc3;font-size:11px}.quiz-tag>text{max-width:65%;text-align:right;line-height:1.6}.quiz-prompt{display:flex;flex-direction:column;gap:13px;margin:24px 0}.prompt-zh{font-size:25px;line-height:1.6;color:#506788;font-weight:550}.prompt-fr{font:27px/1.6 Georgia,serif;color:#506788}.grammar-options{display:flex;flex-direction:column;gap:10px}.grammar-option{display:flex;align-items:center;gap:13px;min-height:62px;padding:14px 16px;border-radius:15px;border:1px solid #d9e3f1;background:linear-gradient(145deg,#fff,#f5f8fd);color:#607b9e;text-align:left}.grammar-option:disabled{opacity:1}.option-key{width:25px;height:25px;background:#edf2fa;color:#9aafcc;border-radius:9px;display:grid;place-items:center;font-size:10px;flex-shrink:0}.option-text{flex:1;font-size:16px;line-height:1.6;overflow-wrap:anywhere}.grammar-option>.icon{width:18px;height:18px}.grammar-option.selected{background:#e9f0fc;border-color:#9fb6db}.grammar-option.correct{background:#edf6f1;border-color:#accabb;color:#5b856f}.grammar-option.wrong{background:#fbefef;border-color:#dfb8bc;color:#ab747d}.grammar-option.dim{opacity:.6}
+.grammar-feedback-slot{min-height:170px;padding-top:18px}.grammar-feedback{padding:16px 17px;border:1px solid #d9e8e0;border-radius:17px;background:#f1f7f3;display:flex;flex-direction:column;gap:12px;line-height:1.8;color:#6b8b7c}.grammar-feedback.no{background:#faf3f2;border-color:#ead6d8;color:#ab7c83}.feedback-head{display:flex;align-items:center;gap:9px}.feedback-head>.icon{width:17px;height:17px}.feedback-answer{display:flex;flex-direction:column;gap:5px}.feedback-answer>text{font:19px/1.7 Georgia,serif;color:#627f9c}.feedback-rule{font-size:12px;line-height:1.9;color:#7b8ca6}.grammar-quiz-dock{display:flex;justify-content:flex-end;flex-shrink:0;padding:1px}.grammar-quiz-dock>.button{min-width:190px;height:52px}
+.grammar-result-card{display:flex;align-items:center;flex-direction:column;gap:15px;text-align:center;padding:32px 20px}.result-ring{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;margin-bottom:7px}.result-inner{width:108px;height:108px;border-radius:50%;background:#f9fbff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}.result-inner strong{font-size:29px;color:#6c84ac;font-weight:500}.result-inner>text{font-size:12px;color:#9aaac2}.grammar-result-errors{margin-top:16px;padding:21px}.grammar-error-item{display:flex;flex-direction:column;gap:6px;border-top:1px solid #e1e8f1;padding-top:17px;margin-top:17px;font-size:14px;line-height:1.8;color:#708baa}.error-prompt{color:#a17e87;margin-bottom:5px}
+
+@media(max-width:720px){.grammar-mode{padding:7px 16px max(17px,env(safe-area-inset-bottom));gap:12px}.grammar-head h1{font-size:22px}.grammar-head h1 span{font-size:17px;margin-left:10px}.grammar-head .eyebrow{font-size:9px;margin-bottom:3px}.grammar-kpis>view{padding:12px 13px;gap:10px;border-radius:16px}.grammar-kpis strong{font-size:24px}.grammar-kpis small{font-size:10px}.unit-tab{padding:7px 9px;min-width:61px}.grammar-lesson-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.quiz-card{padding:18px 16px}.quiz-tag{align-items:flex-start;gap:10px}.quiz-tag>text{font-size:10px}.quiz-prompt{margin:20px 0;gap:11px}.prompt-zh{font-size:21px}.prompt-fr{font-size:23px}.grammar-option{min-height:58px;padding:12px 13px;gap:10px}.option-text{font-size:15px}.grammar-feedback-slot{min-height:165px}.grammar-feedback{padding:13px}.grammar-quiz-dock>.button{width:100%}.grammar-actions{gap:8px}.grammar-actions>.button{padding:10px 11px}.grammar-rule-card{padding:15px}.grammar-point-title{font-size:13px}.grammar-page-bar h2{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.quiz-card{animation:none}.quiz-progress>view{transition:none}}
+@media(prefers-reduced-motion:reduce){.grammar-screen-enter-active,.grammar-screen-leave-active,.grammar-question-enter-active,.grammar-question-leave-active,.grammar-content-enter-active,.grammar-content-leave-active,.grammar-fold-enter-active,.grammar-fold-leave-active,.grammar-label-enter-active,.grammar-label-leave-active,.grammar-mark-enter-active,.grammar-mark-leave-active,.grammar-rule-toggle>.icon,.grammar-option,.unit-tab{transition:none}.grammar-screen-enter-from,.grammar-screen-leave-to,.grammar-question-enter-from,.grammar-question-leave-to,.grammar-content-enter-from,.grammar-content-leave-to,.grammar-mark-enter-from,.grammar-mark-leave-to{transform:none}}
+@media(max-width:720px){.grammar-home{gap:14px}.grammar-home-progress{padding:19px}.grammar-selection{padding:2px 15px}.grammar-selection-row{min-height:62px;gap:11px}.grammar-home-actions{gap:10px}.grammar-unit-card{padding:18px 15px;min-height:90px}.grammar-unit-card:first-child{min-height:68px}}
+@media(prefers-reduced-motion:reduce){.grammar-home-track>view{transition:none}}
+.grammar-lesson-grid>.grammar-lesson-card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto 4px;position:relative;border-radius:20px;text-align:left;align-content:start;align-items:start;row-gap:11px;width:100%;min-width:0;height:auto;min-height:158px;margin:0;padding:17px;white-space:normal;line-height:1.6;overflow:hidden}.grammar-lesson-heading{display:grid;grid-template-columns:minmax(0,1fr) 18px;align-items:start;gap:7px;min-width:0;width:100%}.grammar-lesson-heading>.icon{width:17px;height:17px;color:#9aafcd;margin-top:2px}.grammar-lesson-key{display:block;justify-self:start;max-width:100%;padding:3px 7px;font-size:10px;line-height:1.65;letter-spacing:.2px;color:#93a7c5;background:#edf2fa;border-radius:8px;white-space:normal;overflow-wrap:anywhere}.grammar-lesson-name{display:block;min-width:0;max-width:100%;margin:0;padding:0;font-size:14px;font-weight:500;line-height:1.65;white-space:normal;word-break:normal;overflow-wrap:anywhere;color:#607b9f}.grammar-lesson-meta{min-width:0;width:100%;gap:5px}.grammar-lesson-meta :deep(.bi-zh),.grammar-lesson-meta :deep(.bi-fr){display:block;min-width:0;margin:0;line-height:1.65;white-space:normal;word-break:normal;overflow-wrap:anywhere}.grammar-lesson-meta :deep(.bi-zh){font-size:11px}.grammar-lesson-meta :deep(.bi-fr){font-size:10px}.grammar-lesson-meter{height:4px;width:100%;border-radius:5px;background:#e4eaf5;overflow:hidden;align-self:end}.grammar-lesson-meter>view{height:100%;border-radius:inherit;background:#9db3d7;transition:width .24s}
+@media(max-width:720px){.grammar-lesson-grid>.grammar-lesson-card{border-radius:17px;padding:13px 10px;row-gap:10px;min-height:151px}.grammar-lesson-name{font-size:12px;line-height:1.7}.grammar-lesson-key{padding:2px 5px;font-size:9px}.grammar-lesson-meta :deep(.bi-zh){font-size:10px;line-height:1.7}.grammar-lesson-meta :deep(.bi-fr){font-size:9px;line-height:1.7}}
+@media(prefers-reduced-motion:reduce){.grammar-lesson-meter>view{transition:none}}
+.grammar-point-count{flex:none;white-space:nowrap;font-size:11px;color:#98abc5}.grammar-mode :deep(uni-button){box-sizing:border-box;height:auto;line-height:1.6;white-space:normal}.grammar-mode :deep(uni-button::after){border:0}.grammar-rule-toggle>view{display:flex;flex-direction:column;gap:7px}.grammar-rule-card{overflow:visible}.grammar-unit-card .bi,.grammar-lesson-card>text{min-width:0;overflow-wrap:anywhere}
 </style>

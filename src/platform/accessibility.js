@@ -1,9 +1,11 @@
 import {playTap} from './feedback-sounds.js';
+import {keepWindowsRuntimeAlive} from './windows-runtime.js';
 export function accessibleButtons() {
+  const stopRuntimeHeartbeat = keepWindowsRuntimeAlive();
   // uni-app injects its component defaults after App.vue's CSS. Reset only the
   // low-specificity button defaults after mount; authored class styles still win.
   const style = document.createElement('style');
-  style.textContent = 'uni-button{margin:0;padding:0;border:0;border-radius:0;background:none;color:inherit;line-height:1.4;font:inherit;text-align:left;letter-spacing:normal}uni-button::after{border:0}';
+  style.textContent = 'uni-button{margin:0;padding:0;border:1px solid transparent;border-radius:14px;background:linear-gradient(150deg,#ffffff70,#ffffff15);color:inherit;line-height:1.4;font:inherit;text-align:left;letter-spacing:normal}uni-button::after{border:0}';
   document.head.appendChild(style);
   let layoutHeight=window.innerHeight,layoutWidth=window.innerWidth,keyboardOpen=false,focusTimer,anchorX=window.scrollX,anchorY=window.scrollY;
   const editing=()=>document.activeElement?.matches?.('input,textarea,[contenteditable=true]');
@@ -29,7 +31,7 @@ export function accessibleButtons() {
       // card state, text cursor and ongoing input intact.
       for(const animation of document.getAnimations?.()||[]){
         const target=animation.effect?.target,timing=animation.effect?.getTiming();
-        if(timing?.iterations!==Infinity&&/(?:page-fade|panel-switch|lesson-entrance|recognition-sheet|definition-sheet|word-switch)-.*active/.test(target?.className||''))try{animation.finish();}catch{}
+        if(timing?.iterations!==Infinity&&/(?:page-fade|panel-switch|lesson-entrance|recognition-sheet|definition-sheet|word-switch|grammar-screen|grammar-question|grammar-content|grammar-fold|grammar-label|grammar-mark|navigation-fade)-.*active/.test(target?.className||''))try{animation.finish();}catch{}
       }
       requestAnimationFrame(viewport);
     });
@@ -54,5 +56,5 @@ export function accessibleButtons() {
     if (!bound.has(el)) { bound.add(el); el.addEventListener('keydown', e => { if (e.target === el && ['Enter',' '].includes(e.key)) { e.preventDefault(); if (el.getAttribute('disabled') !== 'true') el.click(); } }); }
   });
   update(); const observer = new MutationObserver(records=>{for(const record of records){if(record.type==='attributes')update(record.target);else for(const node of record.addedNodes)if(node.nodeType===1)update(node);}}); observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});
-  return () => { document.removeEventListener('visibilitychange',resumeFrame);window.removeEventListener('pageshow',resumeFrame);window.removeEventListener('qihang-resume',resumeFrame);clearTimeout(focusTimer);document.documentElement.classList.remove('keyboard-stable');window.removeEventListener('scroll',keepPosition);window.visualViewport?.removeEventListener('scroll',keepPosition);document.removeEventListener('focusin',focusIn);document.removeEventListener('focusout',focusOut);observer.disconnect(); style.remove();window.removeEventListener('resize',viewport);window.visualViewport?.removeEventListener('resize',viewport);document.removeEventListener('click',pulse,true);document.removeEventListener('input',inputSound,true);document.removeEventListener('keydown',enterSound,true);for(const timer of pulses)clearTimeout(timer); };
+  return () => { stopRuntimeHeartbeat();document.removeEventListener('visibilitychange',resumeFrame);window.removeEventListener('pageshow',resumeFrame);window.removeEventListener('qihang-resume',resumeFrame);clearTimeout(focusTimer);document.documentElement.classList.remove('keyboard-stable');window.removeEventListener('scroll',keepPosition);window.visualViewport?.removeEventListener('scroll',keepPosition);document.removeEventListener('focusin',focusIn);document.removeEventListener('focusout',focusOut);observer.disconnect(); style.remove();window.removeEventListener('resize',viewport);window.visualViewport?.removeEventListener('resize',viewport);document.removeEventListener('click',pulse,true);document.removeEventListener('input',inputSound,true);document.removeEventListener('keydown',enterSound,true);for(const timer of pulses)clearTimeout(timer); };
 }

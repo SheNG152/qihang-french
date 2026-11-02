@@ -42,6 +42,11 @@ export function removeDemoLessons(data) {
   return true;
 }
 export function migrateSessions(data){
+  for(const r of Object.values(data.progress||{})){
+    let restored=false;
+    for(const f of Object.values(r.forms||{}))if(f.known&&f.reviewIndex>=5){f.known=false;f.longReview=true;f.due ||= addDays(r.lastPracticed||f.learnedAt||day(),30);restored=true;}
+    if(restored&&r.notebook==='known')r.notebook='review';
+  }
   data.activeSessions||={};data.directProgress||={};data.errorHistory||={};
   const totals={};for(const error of Object.values(data.errors)){const key=error.lesson+':'+error.wordId;totals[key]=(totals[key]||0)+(error.count||0);}
   for(const [key,count] of Object.entries(totals)){if(!data.errorHistory[key])data.errorHistory[key]={count,reviewCount:0,cycleReviews:0};}
@@ -219,9 +224,9 @@ function completeForm(data, p, w, f, session, job, today) {
     else {
       const next = (r.reviewIndex ?? 0) + 1;
       r.reviewIndex = Math.min(next,schedule.length);
-      r.known = next >= schedule.length;
+      r.known = false; r.longReview = next >= schedule.length || addDays(r.learnedAt||today,30)<=today;
       // Missing a date postpones the remaining sequence. Never skip a review.
-      r.due = r.known ? null : addDays(today,schedule[next]-schedule[next-1]);
+      r.due = addDays(today,r.longReview?30:schedule[next]-schedule[next-1]);
     }
     progress.notebook = testedForms(w).every(x => progress.forms[x.id]?.known) ? 'known' : 'review';
     if(!wasKnown&&progress.notebook==='known')rememberKnown(session,w);
@@ -284,7 +289,7 @@ export function makeOptions(data, p, word, form, kind, random = Math.random) {
     for (const { w } of shuffled) {
       const f = testedForms(w)[0] || w.forms[0], label = kind === 'recognize' ? w.meanings.join('；') : displayForm(w,f);
       if (seen.has(normalize(label)) || w.id === word.id) continue;
-      seen.add(normalize(label)); candidates.push({ id: w.id, label });
+      seen.add(normalize(label)); candidates.push({ id: w.id, label, french: w.forms.map(f=>displayForm(w,f)).join(" / ") });
       if (candidates.length === 3) break;
     }
     if (candidates.length === 3) break;
