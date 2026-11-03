@@ -346,5 +346,26 @@
       "彻底的",
       "激进的"
     ]
+  },
+  "roman": {
+    "pos": "n.",
+    "gender": "m",
+    "primaryMeaning": "小说",
+    "meanings": [
+      "小说",
+      "罗曼语的",
+      "罗马式的"
+    ]
+  },
+  "combien": {
+    "pos": "adv.",
+    "gender": null,
+    "primaryMeaning": "多久",
+    "meanings": [
+      "多久",
+      "多少",
+      "多么",
+      "adv.interr. 多少［用于疑问句中］adv.exclam. 非常，多么n.m.inv. 〈俗〉［前加冠词，表示日期、名次、频率等］"
+    ]
   }
 }

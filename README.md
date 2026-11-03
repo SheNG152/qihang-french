@@ -4,21 +4,21 @@
 
 ## 下载测试版
 
-[打开测试版下载页](https://github.com/zyh307/qihang-french/releases/tag/v2.2.3)
+[打开测试版下载页](https://github.com/zyh307/qihang-french/releases/tag/v2.2.4)
 
 | 设备 | 下载文件 | 打开方式 |
 |---|---|---|
-| Windows | [Windows ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.3/QihangFrench-Windows-v2.2.3.zip) | 完整解压，双击“启动启航法语.bat” |
-| 安卓 | [APK](https://github.com/zyh307/qihang-french/releases/download/v2.2.3/QihangFrench-Android-v2.2.3.apk) | 下载后安装 |
+| Windows | [Windows 完整包](https://github.com/zyh307/qihang-french/releases/download/v2.2.4/QihangFrench-Windows-v2.2.4.zip) | 完整解压，双击“启动启航法语.bat” |
+| 安卓 | [APK](https://github.com/zyh307/qihang-french/releases/download/v2.2.4/QihangFrench-Android-v2.2.4.apk) | 下载后安装 |
 | 口语练习，两端通用 | [ggml-model-q5_0.bin](https://github.com/zyh307/qihang-french/releases/download/v2.1.1-beta.1/ggml-model-q5_0.bin) | 设置 → 口语 → 导入本地模型 |
 
 词库包含 18,655 个词条，支持逗号导入。课内录音、课外单词和例句录音均已内置，安装后可离线播放，无需另下语音包。
 
-只用词汇或语法功能，不需要下载识别模型。识别模型约 1.08 GB，口语转写在当前设备运行；考官回复需要联网。
+Windows 完整包已含法语识别模型；安卓口语首次使用需导入约 1.08 GB 的模型。只用词汇或语法无需导入模型。口语转写在当前设备运行，考官回复需要联网。
 
 ## 口语开始使用
 
-1. 导入下载页提供的原识别模型，等待校验完成。
+1. Windows 等待随附模型校验完成；安卓从下载页取得识别模型后，在口语设置中导入。
 2. 允许麦克风，点击“绑定小智”。
 3. 在自己的小智账号创建法语考官，粘贴应用提供的考官配置，选择模型和法语音色，使用绑定码添加设备。
 4. 返回应用选择练习。说完自动转写并发送，无需确认或修改文字。

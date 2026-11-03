@@ -19,6 +19,7 @@ if(names.length!==metadata.audio.files||names.some(name=>!(/^[a-f0-9]{64}\.mp3$/
 async function fileHash(file){const digest=createHash('sha256');for await(const chunk of createReadStream(file))digest.update(chunk);return digest.digest('hex');}
 const missing=[];
 for(const name of names){try{if(await fileHash(path.join(directory,name))+'.mp3'!==name)missing.push(name);}catch(error){if(error.code!=='ENOENT')throw error;missing.push(name);}}
+for(let i=missing.length-1;i>=0;i--){const name=missing[i],update=path.join(root,'src/static/lexicon/audio-updates',name);try{if(await fileHash(update)+'.mp3'===name){await fs.copyFile(update,path.join(directory,name));missing.splice(i,1);}}catch(error){if(error.code!=='ENOENT')throw error;}}
 if(missing.length){
  const cache=path.join(root,'.lexicon-work/public-audio-v1.zip');
  const archiveSize=317546497,archiveHash='86c70b42fdece8808447181dceded0b6ed8e0a53e6d4518b0576488b7520f951';

@@ -135,3 +135,10 @@
 .is-oral.no-home-bar .oral-content,.is-grammar.no-home-bar .grammar-content{height:var(--app-height,100dvh);padding-top:max(9px,env(safe-area-inset-top))}
 
 .page-notebook .notebook-tabs{gap:4px}.page-notebook .notebook-tabs .bi-zh{font-size:10px}.page-notebook .notebook-tabs .bi-fr{font-size:7px}.lesson-word-row>.remove-imported{flex:none;width:32px;height:36px;color:#b48f97}
+
+/* Rounded focus rings are drawn outside word entries, never over their text. */
+.app-frame :is(.notebook-entry-main,.lesson-word-main,.quick-word-choice,.conj-match-card){border-radius:16px;box-sizing:border-box}
+.app-frame :is(.notebook-entry-main,.lesson-word-main,.quick-word-choice,.conj-match-card):focus-visible{outline:none;box-shadow:0 0 0 3px #a4b2e3}
+.app-frame :is(.quick-word-choice,.conj-match-card).selected{border-radius:16px}
+.app-frame :is(.notebook-entry-main,.lesson-word-main,.quick-word-choice,.conj-match-card)::before,.app-frame :is(.notebook-entry-main,.lesson-word-main,.quick-word-choice,.conj-match-card)::after{content:none;display:none}
+.conj-match-card>text{position:relative;display:block;padding:2px;line-height:1.5}

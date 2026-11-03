@@ -22,7 +22,7 @@
     "translatedExamples": 5399,
     "authoredExamples": 760
   },
-  "sha256": "b9e96ca9e2c1f5769a59aa0b9b89d574f586db6ab82d907bc03e2e2257250e4e",
+  "sha256": "2f62e2c51a9b198658438851c9ea9be4e7a4a9e87a9c69bcb76506aea087c7a1",
   "inputs": {
     "zh-simp.jsonl": "42082dd36a33515102325e3e0f709d85997348ee8b2c20f66a5482533c30d478",
     "zh-trad.jsonl": "53cac0a16dcc9ac0eb0150aaa3125ce30158973f291e17781bf091b0c1ae85af",
@@ -40,10 +40,10 @@
   },
   "audio": {
     "voice": "fr-FR-DeniseNeural",
-    "clips": 35813,
-    "files": 1287,
-    "bytes": 373298652,
-    "indexSHA256": "bb2a9c03d11f5f10f714f59bfd10d5e4da71f07d16d42b64d5cebdfef13cdbaf"
+    "clips": 35814,
+    "files": 1288,
+    "bytes": 373304648,
+    "indexSHA256": "76eff4b6ed36e59dcb59bac8c78e7da520afc948c59a2e483002ec85b571f172"
   },
   "supplement": {
     "lexiqueRepository": "https://github.com/chrplr/openlexicon",
@@ -53,6 +53,10 @@
     "added": 4102,
     "lexiqueSHA256": "e181d132b3b0d3d87efc98d376968441b517353933011cebea5366321a6024e6",
     "ecdictSHA256": "d1ecbdf9ee2b920afb6f430ca6b6bb9f559588cf0dff86e04bd255f9390843cc",
-    "reviewedPrimarySenses": 49
+    "reviewedPrimarySenses": 51
+  },
+  "contextualPrimaryMeanings": {
+    "matched": 1939,
+    "method": "Existing Chinese example matches a distinct dictionary sense; user overrides take priority."
   }
 }

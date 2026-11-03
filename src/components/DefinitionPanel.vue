@@ -2,7 +2,7 @@
   <view :class="['definition-screen',{'is-celebrating':celebrating}]">
     <view class="definition-title"><Icon name="book" /><Bi zh="释义" fr="Fiche du mot" small /><view v-if="showTools||allowRemove" class="definition-tools"><button v-if="allowRemove" hover-class="none" class="text-button" :disabled="busy" @click="$emit('remove')"><Icon name="trash"/><Bi zh="移除" fr="Retirer" small/></button><button v-if="showTools" hover-class="none" class="text-button" :disabled="busy||celebrating||practiceDisabled" @click="$emit('practice')"><Icon name="repeat" /><Bi zh="专练" fr="Pratiquer" small /></button><button v-if="showTools" hover-class="none" class="text-button" :disabled="busy||celebrating" @click="$emit('move')"><Icon name="notebook" /><Bi zh="词本" fr="Carnet" small /></button></view></view>
     <view class="definition-scroll">
-      <WordCard :word="word" :hide-favorite="!!word.conjugation" :favorite="favorite" :playing="playing" definition :show-source="(word.origin?.bookId||pkg.book.id)==='inspire1'" :source-label="`${pkg.book.title} · ${pkg.lesson.id}`" @favorite="$emit('favorite',word)" @audio="$emit('audio',$event)" />
+      <WordCard :word="word" :allow-meaning-choice="!word.conjugation" :busy="busy" @primary-meaning="$emit('primary-meaning',$event)" :hide-favorite="!!word.conjugation" :favorite="favorite" :playing="playing" definition :show-source="(word.origin?.bookId||pkg.book.id)==='inspire1'" :source-label="`${pkg.book.title} · ${pkg.lesson.id}`" @favorite="$emit('favorite',word)" @audio="$emit('audio',$event)" />
       <button v-if="canConjugate" class="button secondary conjugation-open" hover-class="none" @click="conjugationOpen=true"><Icon name="grammar"/><Bi zh="查看变位" fr="Voir la conjugaison" small/><Icon name="arrow"/></button>
       <slot />
     </view>
@@ -24,7 +24,7 @@ import {isIrregularVerb} from '../conjugation/catalog.js';
 import {playKnown} from '../platform/feedback-sounds.js';
 import Bi from './Bi.vue';import Icon from './Icon.vue';import WordCard from './WordCard.vue';
 const props=defineProps({pkg:Object,word:Object,favorite:Boolean,playing:String,busy:Boolean,known:Boolean,allowKnown:{type:Boolean,default:true},showContinue:{type:Boolean,default:true},showTools:Boolean,allowRemove:Boolean,practiceDisabled:Boolean});
-const emit=defineEmits(['favorite','audio','known','continue','practice','move','remove']);
+const emit=defineEmits(['favorite','audio','known','continue','practice','move','remove','primary-meaning']);
 const conjugationOpen=ref(false),canConjugate=computed(()=>isIrregularVerb(props.word)||!!props.word?.conjugation);
 const celebrating=ref(false);let celebrationTimer,knownWord,knownPkg,knownSent=false;
 const colors=['#7da9d0','#a4c8b0','#d1afe0','#edc288','#f1b6c7','#99bddc'];

@@ -1,3 +1,4 @@
+import {primaryMeaningOptions} from './meanings.js';
 import {day,wordKey,packageKey,getProgress,normalize,advance,reviewPackage,lessonStats,resetLessonProgress,wordContext} from './learning.js';
 import {displayForm,splitNounArticle} from './word-display.js';
 export const spokenKey=text=>'tts:'+encodeURIComponent(text);
@@ -63,7 +64,7 @@ export function addImportedEntries(data,entries,at=Date.now(),addToImported=true
    const text=pos==='n.'&&entry.plural?'des '+entry.word:entry.word,spoken=pos==='n.'&&!splitNounArticle(text).prefix?(gender==='f'?'une ':'un ')+text:text;
    const example=entry.example?.fr?{...entry.example,audioKey:spokenKey(entry.example.fr)}:undefined;
    const form={id:id+'-base',text,tested:true,gender,audio:null,audioKey:spokenKey(spoken),ipa:entry.ipa||'',source:'Wiktionary · '+entry.word+' · CC BY-SA 4.0'+(example?.source?' / '+example.source:'')};if(example)form.example=example;if(entry.literal||pos!=='n.'&&splitNounArticle(text).prefix)form.literal=true;
-   w={id,lexiconId:entry.id,lexiconWord:entry.word,provenance:{dictionary:entry.sourceUrl||'https://zh.wiktionary.org/',license:'CC BY-SA 4.0',sentence:entry.example?.url||entry.sourceUrl||'',sentenceSource:entry.example?.source||'',authored:!!entry.example?.authored},order:p.words.length+1,pos,sourcePos:entry.pos||pos,meanings:entry.meanings,forms:[form]};p.words.push(w);p.lesson.version++;newIds.push(id);wordIndex.set(exact(entry.word).toLocaleLowerCase('fr'),{p,w});
+   w={id,lexiconId:entry.id,lexiconWord:entry.word,provenance:{dictionary:entry.sourceUrl||'https://zh.wiktionary.org/',license:'CC BY-SA 4.0',sentence:entry.example?.url||entry.sourceUrl||'',sentenceSource:entry.example?.source||'',authored:!!entry.example?.authored},order:p.words.length+1,pos,sourcePos:entry.pos||pos,meanings:entry.meanings,primaryMeaning:entry.primaryMeaning,forms:[form]};p.words.push(w);p.lesson.version++;newIds.push(id);wordIndex.set(exact(entry.word).toLocaleLowerCase('fr'),{p,w});
   }
   for(const f of w.forms){
    const same=exact(w.lexiconWord||bare(displayForm(w,f))).toLocaleLowerCase('fr')===exact(entry.existing?bare(entry.word):entry.word).toLocaleLowerCase('fr');
@@ -89,7 +90,7 @@ export function removeImportedEntry(data,p,w){
 
 export function activeImportedSession(data,lessonKey=null){return Object.values(data.sessions).find(s=>s.importedPractice&&(!lessonKey||s.importedLessonKey===lessonKey)&&s.phase!=='done'&&(s.jobs?.length||s.group?.some(id=>!s.doneWords?.includes(id))));}
 
-export function dictionaryEntry(row){const gender=row.gender||null,pos=row.pos==='n.'&&!gender?'loc.':row.pos;let text=pos==='n.'&&row.plural?'des '+row.word:row.word;const spoken=pos==='n.'&&!splitNounArticle(text).prefix?(gender==='f'?'une ':'un ')+text:text;return {id:row.id,lexiconId:row.id,lexiconWord:row.word,order:1,pos,sourcePos:row.pos,meanings:row.meanings,forms:[{id:row.id+'-base',text,gender,tested:true,literal:!!row.literal||pos!=='n.'&&!!splitNounArticle(text).prefix,ipa:row.ipa,audio:null,audioKey:spokenKey(spoken),example:row.example?{...row.example,audioKey:spokenKey(row.example.fr)}:undefined}]};}
+export function dictionaryEntry(row){const gender=row.gender||null,pos=row.pos==='n.'&&!gender?'loc.':row.pos;let text=pos==='n.'&&row.plural?'des '+row.word:row.word;const spoken=pos==='n.'&&!splitNounArticle(text).prefix?(gender==='f'?'une ':'un ')+text:text;return {id:row.id,lexiconId:row.id,lexiconWord:row.word,order:1,pos,sourcePos:row.pos,meanings:row.meanings,primaryMeaning:row.primaryMeaning,forms:[{id:row.id+'-base',text,gender,tested:true,literal:!!row.literal||pos!=='n.'&&!!splitNounArticle(text).prefix,ipa:row.ipa,audio:null,audioKey:spokenKey(spoken),example:row.example?{...row.example,audioKey:spokenKey(row.example.fr)}:undefined}]};}
 export function dictionaryNotebookEntries(rows,data){
  const existing=new Map(),seen=new Set(),result=[];for(const p of data.library)for(const w of p.words){if(w.conjugation)continue;for(const f of w.forms){const name=exact(w.lexiconWord||(w.pos==='n.'?bare(displayForm(w,f)):displayForm(w,f))).toLocaleLowerCase('fr');if(!existing.has(name))existing.set(name,{p,w});}}
  const p={dictionary:true,book:{id:'dictionary',title:'词库 · Dictionnaire'},lesson:{id:'all',title:'词库',order:1,version:1}};
@@ -110,4 +111,20 @@ export function addToImportedBook(data,entry,at=Date.now()){
  }
  ensureImportedLessons(data);
  return {...entry,p,w};
+}
+
+export function importedLessonIds(data,resolved){
+ const numbers=new Set();
+ for(const {lesson,word} of resolved||[]){
+  const key=lesson+':'+word,sequence=data.importedWordOrder?.[key];
+  if(data.importedWords?.[key]&&Number.isSafeInteger(sequence)&&sequence>0)numbers.add(Math.floor((sequence-1)/IMPORTED_LESSON_SIZE)+1);
+ }
+ return [...numbers].sort((a,b)=>a-b).map(n=>'L'+String(n).padStart(2,'0'));
+}
+
+export function setWordPrimaryMeaning(data,entry,meaning){
+ const resolved=resolveDictionaryEntry(data,entry),source=wordContext(data,resolved.p,resolved.w);
+ if(!primaryMeaningOptions(source.w).includes(meaning))throw Error('请选择已有释义 / Choisissez un sens existant.');
+ source.w.primaryMeaning=meaning;source.w.primaryMeaningChosen=true;
+ return {...entry,...source};
 }

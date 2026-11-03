@@ -49,7 +49,7 @@ export function removeDemoLessons(data) {
 export function migrateSessions(data){
   for(const r of Object.values(data.progress||{})){
     let restored=false;
-    for(const f of Object.values(r.forms||{}))if(f.known&&f.reviewIndex>=5){f.known=false;f.longReview=true;f.due ||= addDays(r.lastPracticed||f.learnedAt||day(),30);restored=true;}
+    for(const f of Object.values(r.forms||{}))if(f.known&&(f.scheduleVersion||0)<2&&f.reviewIndex>=5){f.known=false;f.longReview=true;f.due ||= addDays(r.lastPracticed||f.learnedAt||day(),30);restored=true;}
     if(restored&&r.notebook==='known')r.notebook='review';
   }
   migrateReviewPlans(data);
