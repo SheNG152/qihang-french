@@ -22,7 +22,7 @@ public final class WindowsApp implements Host {
  public void importModel(ModelStore store){new Thread(()->{try{FileDialog dialog=new FileDialog((Frame)null,"导入法语识别模型 / Importer le modèle",FileDialog.LOAD);dialog.setFile("*.bin");dialog.setVisible(true);if(dialog.getFile()!=null){File chosen=new File(dialog.getDirectory(),dialog.getFile());if(chosen.length()!=store.status().optLong("total"))throw new IOException("请选择 ggml-model-q5_0.bin（约1.08GB）。个人版ctranslate2文件夹和3GB的model.bin不适用于此原生版本 / Choisissez le modèle Q5 de 1,08 Go.");store.importFrom(new FileInputStream(chosen));}dialog.dispose();}catch(Exception e){javax.swing.JOptionPane.showMessageDialog(null,J.safe(e));}},"qihang-model-picker").start();}
  private void start()throws Exception{
   try{server=HttpServer.create(new InetSocketAddress(InetAddress.getByName("127.0.0.1"),PORT),24);}catch(BindException e){try{HttpURLConnection c=(HttpURLConnection)new URL("http://127.0.0.1:"+PORT+"/__qihang_health").openConnection();c.setReadTimeout(1500);JSONObject h=new JSONObject(new String(J.read(c.getInputStream(),4096),java.nio.charset.StandardCharsets.UTF_8));if(h.optBoolean("bundledAudio")&&h.optBoolean("nativeOral")&&"stable".equals(h.optString("channel"))&&VERSION.equals(h.optString("version"))&&Examiner.PROTOCOL_REVISION.equals(h.optString("oralProtocol"))){Desktop.getDesktop().browse(new URI("http://127.0.0.1:"+PORT+"/"));return;}}catch(Exception ignored){}throw new IOException("请先关闭已打开的旧版本，再重新打开 / Fermez l’ancienne version de test puis réessayez.");}
-  File data=new File(System.getProperty("qihang.data",new File(System.getenv("LOCALAPPDATA"),"QihangFrench").getPath()));
+  File data=dataDirectory();
   reminders=new ReviewReminders(home,data);
   JSONObject manifest=J.json(new File(home,"口语运行/model-manifest.json"));manifest.put("bundledModelPath",new File(home,"口语运行/models/"+manifest.getString("filename")).getAbsolutePath());
   core=new OralCore(data,manifest,J.json(new File(home,"口语运行/evaluation-schema.json")),this);
@@ -30,6 +30,19 @@ public final class WindowsApp implements Host {
   ScheduledExecutorService life=Executors.newSingleThreadScheduledExecutor();life.scheduleAtFixedRate(()->{if(System.currentTimeMillis()-seen>180000){core.close();server.stop(0);System.exit(0);}},30,30,TimeUnit.SECONDS);
   life.scheduleAtFixedRate(()->reminders.check(false),5,15,TimeUnit.SECONDS);
   Runtime.getRuntime().addShutdownHook(new Thread(()->{if(core!=null)core.close();if(server!=null)server.stop(0);}));
+ }
+ private File dataDirectory()throws Exception{
+  String explicit=System.getProperty("qihang.data","");
+  if(!explicit.isEmpty())return new File(explicit).getCanonicalFile();
+  // Optional local-only location survives an in-place update. It is deliberately
+  // outside the release packer's allowlist and never carries somebody else's data.
+  File location=new File(home,".qihang-data.json");
+  if(location.isFile()){
+   String value=J.json(location).optString("directory");
+   if(value.trim().isEmpty())throw new IOException("本机数据位置配置为空，原记录未删除 / Emplacement des données manquant.");
+   File directory=new File(value);return (directory.isAbsolute()?directory:new File(home,value)).getCanonicalFile();
+  }
+  return new File(System.getenv("LOCALAPPDATA"),"QihangFrench").getCanonicalFile();
  }
  private void request(HttpExchange x)throws IOException{
   try{String authority=x.getRequestHeaders().getFirst("Host"),origin=x.getRequestHeaders().getFirst("Origin"),site=x.getRequestHeaders().getFirst("Sec-Fetch-Site");if(!("127.0.0.1:"+PORT).equals(authority)||origin!=null&&!origin.equals("http://127.0.0.1:"+PORT)||"cross-site".equals(site)){reply(x,403,"text/plain",new byte[0]);return;}
@@ -41,5 +54,5 @@ public final class WindowsApp implements Host {
   }catch(Exception e){reply(x,500,"application/json",J.bytes(J.o("ok",false,"error",J.safe(e)).toString()));}finally{x.close();}
  }
  private void reply(HttpExchange x,int status,String type,byte[] body)throws IOException{x.getResponseHeaders().set("Content-Type",type+(type.startsWith("text/")||type.contains("json")||type.contains("javascript")?"; charset=utf-8":""));x.getResponseHeaders().set("Cache-Control","no-store");x.getResponseHeaders().set("X-Content-Type-Options","nosniff");x.getResponseHeaders().set("X-Qihang-App","cap-sur-le-francais");if("HEAD".equals(x.getRequestMethod())){x.getResponseHeaders().set("Content-Length",String.valueOf(body.length));x.sendResponseHeaders(status,-1);}else{x.sendResponseHeaders(status,body.length);x.getResponseBody().write(body);}}
- public static void main(String[] args){try{File home=new File(args.length>0?args[0]:".");if(Boolean.getBoolean("qihang.reminderOnly")){new ReviewReminders(home,new File(System.getenv("LOCALAPPDATA"),"QihangFrench")).check(true);System.exit(0);return;}new WindowsApp(home).start();}catch(Throwable e){javax.swing.JOptionPane.showMessageDialog(null,J.safe(e),"启航法语",javax.swing.JOptionPane.INFORMATION_MESSAGE);System.exit(1);}}
+ public static void main(String[] args){try{File home=new File(args.length>0?args[0]:".");if(Boolean.getBoolean("qihang.reminderOnly")){new ReviewReminders(home,new WindowsApp(home).dataDirectory()).check(true);System.exit(0);return;}new WindowsApp(home).start();}catch(Throwable e){javax.swing.JOptionPane.showMessageDialog(null,J.safe(e),"启航法语",javax.swing.JOptionPane.INFORMATION_MESSAGE);System.exit(1);}}
 }

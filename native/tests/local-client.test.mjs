@@ -8,11 +8,11 @@ const source=await fs.readFile(new URL('../../src/oral/local-client.js',import.m
 const bank=JSON.parse(await fs.readFile(new URL('../../src/oral/bank-full.json',import.meta.url),'utf8'));
 async function fixture(jobs,options={}){
  const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[];
- let cursor=0,recording=0,recognizedAt=0;
+ let cursor=0,recording=0,recognizedAt=0,failedSaves=options.failedSaves||0;
  const call=async(method,args={})=>{
   if(method==='status')return{model:{ready:true},recognizer:{ready:options.prepared!==false},provider:{status:'connected',hasTask:false}};
   if(method==='events')return{cursor,events:nativeEvents.filter(e=>e.seq>args.after)};
-  if(method==='session.save'){sessions.set(args.session.id,structuredClone(args.session));return{};}
+  if(method==='session.save'){if(failedSaves-->0)throw Error('isolated storage failure');sessions.set(args.session.id,structuredClone(args.session));return{};}
   if(method==='session.get')return structuredClone(sessions.get(args.id));
   if(method==='record.begin')return{audio:'test-recording-'+(++recording)};
   if(method==='record.end')return{audio:'test-recording-'+recording,row:'row-'+recording,duration:2};
@@ -72,5 +72,14 @@ let passed=0;
  const t=await fixture([],{prepared:false,skipStart:true});
  try{await t.command('start','error');assert.equal(t.sessions.size,0,'Preparation must not create a premature exam session');passed++;}
  finally{t.channel.close();}
+}
+{
+ const t=await fixture([],{failedSaves:1,skipStart:true});
+ try{
+  await t.command('start','error');assert.equal(t.channel.session,null,'Failed save must not leave a phantom active session');
+  assert.equal(t.sessions.size,0);assert.equal(t.sent.length,0,'Unsaved practice must not contact the examiner');
+  await t.command('start');await t.until(()=>!t.channel.inFlight);
+  assert.equal(t.sessions.size,1);assert.equal(t.sent.length,1,'Retry should open exactly one practice');passed++;
+ }finally{t.channel.close();}
 }
 console.log(`Local client: ${passed} groups passed; isolated native bridge, no personal data.`);
