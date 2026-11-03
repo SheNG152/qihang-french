@@ -45,3 +45,6 @@ android/signing/
 
 # Generated recordings are restored and verified by prepare-bundled-audio.mjs.
 /src/static/lexicon/audio/*.mp3
+
+# Private per-install storage selection; never share it or personal data
+/.qihang-data.json
