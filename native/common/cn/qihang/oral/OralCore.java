@@ -61,7 +61,7 @@ public final class OralCore {
  static int recognitionThreads(int processors,boolean desktop){return SpeechSettings.threads(processors,desktop);}
  private int recognitionThreads(){return recognitionThreads(Runtime.getRuntime().availableProcessors(),System.getProperty("os.name","").startsWith("Windows"));}
  private String modelStamp(){return model.model.length()+":"+model.model.lastModified();}
- private JSONObject speechStatus(){boolean ready=!preparingSpeech&&preparationError.isEmpty()&&preparedModel.equals(modelStamp())&&model.status().optBoolean("ready");return J.o("ready",ready,"state",preparingSpeech?"preparing":!preparationError.isEmpty()?"failed":ready?"ready":"waiting","elapsedMs",preparingSpeech?(System.nanoTime()-preparationStarted)/1000000:0,"preparationMs",preparationElapsedMs,"message",preparationError,"backend",preparedTimings!=null&&preparedTimings.length>6&&preparedTimings[6]==1?"gpu":"cpu");}
+ private JSONObject speechStatus(){boolean ready=!preparingSpeech&&preparationError.isEmpty()&&preparedModel.equals(modelStamp())&&model.status().optBoolean("ready");return J.o("ready",ready,"state",preparingSpeech?"preparing":!preparationError.isEmpty()?"failed":ready?"ready":"waiting","elapsedMs",preparingSpeech?(System.nanoTime()-preparationStarted)/1000000:0,"preparationMs",preparationElapsedMs,"cpuLibrary",NativeSpeech.CPU_LIBRARY,"message",preparationError,"backend",preparedTimings!=null&&preparedTimings.length>6&&preparedTimings[6]==1?"gpu":"cpu");}
  private synchronized void ensureSpeechPrepared(){
   if(preparingSpeech||!preparationError.isEmpty()||!model.status().optBoolean("ready")||preparedModel.equals(modelStamp())||!activeRecognition.isEmpty())return;
   if(host.availableMemory()<model.minimumMemory()){preparationError="可用内存不足，请关闭其他应用后重试 / Mémoire insuffisante.";return;}
@@ -108,7 +108,7 @@ public final class OralCore {
     if(generation!=recognitionGeneration)return;
     if(text.trim().isEmpty())throw new IOException("未识别出文字，请回听或重新录音 / Aucun texte reconnu.");
     long[] timing=NativeSpeech.timings();
-    jobs.replace(job,running,J.o("state","done","text",text.trim(),"model",selectedModel.modelId(),"elapsedMs",(System.nanoTime()-recognitionStarted)/1000000,"modelLoadMs",timing[0],"inferenceMs",timing[1],"encoderMs",timing[2],"decoderMs",timing[3],"threads",timing[5],"backend",timing[6]==1?"gpu":"cpu"));
+    jobs.replace(job,running,J.o("state","done","text",text.trim(),"model",selectedModel.modelId(),"elapsedMs",(System.nanoTime()-recognitionStarted)/1000000,"nativeLibrary",NativeSpeech.CPU_LIBRARY,"modelLoadMs",timing[0],"inferenceMs",timing[1],"encoderMs",timing[2],"decoderMs",timing[3],"threads",timing[5],"backend",timing[6]==1?"gpu":"cpu"));
    }catch(Throwable e){jobs.replace(job,running,J.o("state",generation!=recognitionGeneration?"cancelled":"failed","error",e instanceof OutOfMemoryError?"识别内存不足，请关闭其他应用后重试 / Mémoire insuffisante.":J.safe(e)));}
    finally{deadline.cancel(false);synchronized(this){selectedModel.done();if(job.equals(activeRecognition)){activeRecognition="";recordingState="idle";}}}
   });

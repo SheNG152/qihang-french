@@ -1,6 +1,7 @@
 package cn.qihang.oral;
 /** Protocol tests only; no model or audio decoder is loaded. */
 public final class NativeSpeech {
+ public static final String CPU_LIBRARY="isolated-test";
  public static void release(){}
  public static void prepare(){}
  public static void cancel(){}

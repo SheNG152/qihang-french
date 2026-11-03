@@ -1,6 +1,10 @@
 package cn.qihang.oral;
 public final class NativeSpeech {
- static {System.loadLibrary("qihang_speech");}
+ public static final String CPU_LIBRARY=NativeLibraries.load(System.getProperty("java.runtime.name","").contains("Android")||System.getProperty("java.vm.name","").contains("Dalvik"),new NativeLibraries.Loader(){
+  public void load(String name){System.loadLibrary(name);}
+  public int features(){return cpuFeatures();}
+ });
+ private static native int cpuFeatures();
  public static native String transcribe(String model,float[] samples,int threads);
  /** Load model before recording; true means a GPU warm-up is needed. */
  public static native boolean preload(String model);
