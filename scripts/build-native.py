@@ -60,7 +60,7 @@ def compile_one(item):
     if result.returncode:raise RuntimeError(str(source)+'\n'+(result.stdout+result.stderr).decode('utf-8','replace')[-5000:])
     stamp.write_text(signature);return obj
 print('Compiling',target,len(sources),'sources',flush=True)
-with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:objects=list(pool.map(compile_one,enumerate(sources)))
+with concurrent.futures.ThreadPoolExecutor(max_workers=max(1,min(6,int(os.environ.get('QIHANG_NATIVE_JOBS','6'))))) as pool:objects=list(pool.map(compile_one,enumerate(sources)))
 library.parent.mkdir(parents=True,exist_ok=True)
 link=[str(cxx),*([f'--target=aarch64-none-linux-android26','--sysroot='+str(llvm/'sysroot'),'-static-libstdc++','-Wl,-z,max-page-size=16384','-Wl,--no-undefined','-llog','-latomic','-lm'] if target=='android' else ['-static-libgcc','-static-libstdc++']),'-shared','-o',str(library),*[str(o) for o in objects]]
 if target!='android':
