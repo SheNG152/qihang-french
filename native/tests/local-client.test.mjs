@@ -7,9 +7,13 @@ import {performance} from 'node:perf_hooks';
 const source=await fs.readFile(new URL('../../src/oral/local-client.js',import.meta.url),'utf8');
 const bank=JSON.parse(await fs.readFile(new URL('../../src/oral/bank-full.json',import.meta.url),'utf8'));
 async function fixture(jobs,options={}){
- const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[];
+ const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[],calls=[],heldEvents=[];
+ let clock=Date.now();const advance=seconds=>{clock+=seconds*1000;};
+ class TestDate extends Date {static now(){return clock;}}
+ function release(){for(const event of heldEvents.splice(0))nativeEvents.push({...event,seq:++cursor});}
  let cursor=0,recording=0,recognizedAt=0,failedSaves=options.failedSaves||0;
  const call=async(method,args={})=>{
+  calls.push(method);
   if(method==='status')return{model:{ready:true},recognizer:{ready:options.prepared!==false},provider:{status:'connected',hasTask:false}};
   if(method==='events')return{cursor,events:nativeEvents.filter(e=>e.seq>args.after)};
   if(method==='session.save'){if(failedSaves-->0)throw Error('isolated storage failure');sessions.set(args.session.id,structuredClone(args.session));return{};}
@@ -20,13 +24,14 @@ async function fixture(jobs,options={}){
   if(method==='job'){polls.push(performance.now()-recognizedAt);return structuredClone(jobs.length>1?jobs.shift():jobs[0]);}
   if(method==='send'){
    sent.push(structuredClone(args));
-   for(const event of [{type:'task_read',turn:args.task.turn_id},{type:'sentence',text:'Bonjour !'},{type:'turn_end',hasAudio:false}])nativeEvents.push({...event,seq:++cursor});
+   heldEvents.push({type:'task_read',turn:args.task.turn_id},{type:'sentence',text:'Bonjour !'},{type:'turn_end',hasAudio:false});
+   if(!options.holdReplies)release();
    return{submitted:true};
   }
   return{};
  };
  const window={};window.parent={postMessage(){}};
- const context=vm.createContext({window,parent:window.parent,document:{hidden:false,addEventListener(){}},location:{origin:'http://test.local',href:'http://test.local/static/oral/index.html'},fetch:async()=>({json:async()=>bank}),URL,Blob,setTimeout,clearTimeout,performance,crypto:webcrypto,structuredClone,btoa,atob,console});
+ const context=vm.createContext({window,parent:window.parent,document:{hidden:false,addEventListener(){}},location:{origin:'http://test.local',href:'http://test.local/static/oral/index.html'},fetch:async()=>({json:async()=>bank}),URL,Blob,Date:TestDate,setTimeout,clearTimeout,performance,crypto:webcrypto,structuredClone,btoa,atob,console});
  const module=new vm.SourceTextModule(source,{context,identifier:'local-client.js'});
  await module.link(()=>new vm.SyntheticModule(['oralCall'],function(){this.setExport('oralCall',call);},{context}));
  await module.evaluate();
@@ -34,7 +39,7 @@ async function fixture(jobs,options={}){
  async function until(condition){const end=performance.now()+5000;while(!condition()){assert.ok(performance.now()<end,'test condition timed out');await new Promise(r=>setTimeout(r,5));}}
  async function command(action,expected='ack',values={}){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro',...values}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,expected,reply.message);}
  await until(()=>channel.readyState===1);if(!options.skipStart){await command('start','ack',options.startValues||{});await until(()=>!channel.inFlight);}
- return{channel,messages,polls,sent,sessions,until,command,client:window.QihangOralClient};
+ return{channel,messages,polls,sent,sessions,calls,advance,release,discardReply:()=>heldEvents.splice(0),until,command,client:window.QihangOralClient};
 }
 
 let passed=0;
@@ -128,5 +133,62 @@ let passed=0;
   await t.command('resume');await t.until(()=>!t.channel.inFlight);assert.equal(t.sent.at(-1).task.intro_plan.topic,'home');assert.equal(t.sent.at(-1).task.intro_plan.order_version,1);
   const bootstrap=await(await t.client.fetch('/api/bootstrap')).json();assert.equal(bootstrap.bank.intro_questions,44);passed++;
  }finally{t.channel.close();}
+}
+// Cross the reference time while waiting for an examiner question. It remains answerable.
+{
+ const t=await fixture([{state:'done',text:'Je travaille ici.'}],{holdReplies:true,skipStart:true});
+ try{
+  await t.command('start');t.release();await t.until(()=>!t.channel.inFlight);
+  for(let n=2;n<=4;n++){await t.command('record_start');await t.command('record_stop');await t.until(()=>t.sent.length===n);t.release();await t.until(()=>!t.channel.inFlight);}
+  t.advance(89);await t.command('record_start');await t.command('record_stop');await t.until(()=>t.sent.length===5);
+  assert.equal(t.sent.at(-1).task.progress.closing,false);t.advance(2);t.release();await t.until(()=>!t.channel.inFlight);
+  assert.equal(t.channel.session.progress.completed,false,'A question returned after 90s must still be answerable');
+  assert.equal(t.channel.session.progress.closing,false);await t.command('prepare_record');passed++;
+ }finally{t.channel.close();}
+}
+// Exceed the reference during recording and recognition, finish every planned answer,
+// and only mark completion after the final examiner response arrives.
+{
+ const jobs=[{state:'running'},{state:'done',text:'Je travaille ici.'}];
+ const t=await fixture(jobs,{holdReplies:true,skipStart:true});
+ try{
+  await t.command('start');t.release();await t.until(()=>!t.channel.inFlight);
+  await t.command('record_start');t.advance(100);assert.ok(t.channel.recording,'Timer must not stop capture');
+  await t.command('record_stop');await t.until(()=>t.polls.length===1);t.advance(100);
+  assert.ok(t.channel.recognizingRow);assert.equal(t.channel.session.progress.completed,false);
+  for(let count=1;count<=6;count++){
+   if(count>1){await t.command('record_start');await t.command('record_stop');}
+   await t.until(()=>t.sent.length===count+1);
+   assert.equal(t.sent.at(-1).task.progress.closing,count===6,'Overtime must not shorten the question plan');
+   assert.equal(t.channel.session.progress.completed,false,'Wait for the closing response');
+   t.advance(30);t.release();await t.until(()=>!t.channel.inFlight);
+  }
+  assert.equal(t.channel.session.progress.completed,true);assert.equal(t.channel.session.progress.answers,6);
+  assert.equal(t.messages.filter(m=>m.type==='clear_audio').length,0,'Timer must not clear examiner audio');
+  assert.equal(t.calls.filter(m=>m==='cancel'||m==='recognize.cancel').length,0,'Timer must not cancel work');
+  assert.equal([...t.sessions.values()][0].stage_completion.intro.reason,'本次引导问答已完成');passed++;
+ }finally{t.channel.close();}
+}
+// A failed closing reply must remain retryable, including after the reference time.
+{
+ const t=await fixture([{state:'done',text:'Je travaille ici.'}],{holdReplies:true,skipStart:true});
+ try{
+  await t.command('start');t.release();await t.until(()=>!t.channel.inFlight);t.advance(200);
+  for(let n=2;n<=7;n++){await t.command('record_start');await t.command('record_stop');await t.until(()=>t.sent.length===n);if(n<7){t.release();await t.until(()=>!t.channel.inFlight);}}
+  await t.channel.cancelled();t.discardReply();assert.equal(t.channel.session.progress.completed,false);
+  await t.command('resume');assert.equal(t.sent.at(-1).task.progress.closing,true);
+  t.release();await t.until(()=>!t.channel.inFlight);assert.equal(t.channel.session.progress.completed,true);passed++;
+ }finally{t.channel.close();}
+}
+// Render the actual timer function with isolated DOM nodes: 00:00 remains guidance.
+{
+ const app=await fs.readFile(new URL('../../oral-assistant/web/app.js',import.meta.url),'utf8');
+ const render=app.slice(app.indexOf('function renderProgress(){'),app.indexOf('\nfunction transcript('));
+ const nodes=new Map(),get=id=>{if(!nodes.has(id))nodes.set(id,{classList:{toggle(){}},textContent:''});return nodes.get(id);};
+ const s={phase:'active',stages:['intro'],stage_index:0,stage_started:100,progress:{answers:4,target_seconds:90,completed:false}};
+ const context=vm.createContext({S:{session:s},$:get,Date:{now:()=>200000}});vm.runInContext(render+';renderProgress();',context);
+ assert.equal(get('remainingTime').textContent,'00:00');assert.equal(get('targetTime').textContent,'参考时长已到');
+ assert.match(get('stageMessage').textContent,/继续完成本轮问答/);assert.equal(s.progress.completed,false);
+ s.progress.completed=true;vm.runInContext('renderProgress()',context);assert.equal(get('remainingTime').textContent,'✓');passed++;
 }
 console.log(`Local client: ${passed} groups passed; isolated native bridge, no personal data.`);
