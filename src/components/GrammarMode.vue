@@ -8,25 +8,25 @@
     <view class="glass grammar-home-progress"><view><Bi zh="学习进度" fr="Votre progression" /><strong>{{ stats.done }}<small> / {{ allPoints.length }}</small></strong></view><view class="grammar-home-track"><view :style="{width:(stats.done/allPoints.length*100)+'%'}" /></view></view>
     <button hover-class="none" class="grammar-resume glass" :disabled="!canResume" @click="resume"><Icon name="clock" /><Bi zh="继续" fr="Reprendre" small /><text>{{ continueLabel }}</text><Icon name="arrow" /></button>
     <view class="glass grammar-selection">
-     <button hover-class="none" class="grammar-selection-row" @click="screen='books'"><Icon name="book" /><Bi zh="教材" fr="Manuel" small /><text>Inspire 1</text><Icon name="arrow" /></button>
-     <button hover-class="none" class="grammar-selection-row" @click="screen='units'"><Icon name="grammar" /><Bi zh="课时" fr="Leçon" small /><text>{{ chosenLesson?lessonName(chosenLesson):'选择课时' }}</text><Icon name="arrow" /></button>
+     <button hover-class="none" class="grammar-selection-row" @click="enterScreen('books')"><Icon name="book" /><Bi zh="教材" fr="Manuel" small /><text>Inspire 1</text><Icon name="arrow" /></button>
+     <button hover-class="none" class="grammar-selection-row" @click="enterScreen('units')"><Icon name="grammar" /><Bi zh="课时" fr="Leçon" small /><text>{{ chosenLesson?lessonName(chosenLesson):'选择课时' }}</text><Icon name="arrow" /></button>
     </view>
     <view class="grammar-home-actions"><button hover-class="none" class="button primary" @click="startLearning"><Icon name="cards" /><Bi zh="开始学习" fr="Apprendre" /></button><button hover-class="none" class="button secondary" :disabled="!mixedPending&&!filteredPool.length" @click="startMixed"><Icon name="list" /><Bi zh="综合练习" fr="Pratique mixte" small /><text v-if="mixedPending" class="grammar-mixed-count">{{ mixedResumeLabel }}</text></button></view>
    </view>
   </template>
 
   <template v-else-if="screen==='books'">
-   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择教材" fr="Choisir un manuel" /></view>
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="returnToEntry" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择教材" fr="Choisir un manuel" /></view>
    <view class="grammar-scroll"><BookPicker :selected="bookId" :lessons="allLessons.length" @select="selectBook" /></view>
   </template>
 
   <template v-else-if="screen==='units'">
-   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择单元" fr="Choisir une unité" /></view>
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="returnToEntry" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择单元" fr="Choisir une unité" /></view>
    <view class="grammar-scroll grammar-unit-grid"><button v-for="unit in unitChoices" :key="unit.id" hover-class="none" :class="['glass','grammar-unit-card',{selected:unitId===unit.id}]" @click="selectUnit(unit.id)"><Bi :zh="unit.zh" :fr="unit.fr" /><Icon :name="unitId===unit.id?'check':'arrow'" /></button></view>
   </template>
 
   <template v-else-if="screen==='lessons'">
-   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='units'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择课时" fr="Choisir une leçon" /></view>
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="returnToEntry" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="选择课时" fr="Choisir une leçon" /></view>
    <view class="grammar-scroll grammar-lesson-grid">
     <button v-for="lesson in visibleLessons" :key="lesson.key" hover-class="none" :class="['glass','grammar-lesson-card',{selected:chosenLessonKey===lesson.key}]" @click="selectLesson(lesson)">
      <view class="grammar-lesson-heading"><text class="grammar-lesson-key">{{ lesson.id==='Summary'?lesson.unitId+' · Résumé':lesson.id }}</text><Icon :name="chosenLessonKey===lesson.key?'check':lesson.points.length?'grammar':'list'" /></view>
@@ -38,7 +38,7 @@
   </template>
 
   <template v-else-if="screen==='overview'&&selectedLesson">
-   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><view><text class="eyebrow">{{ selectedLesson.unitId.replace('U','UNITÉ ') }} · {{ lessonName(selectedLesson) }}</text><h2>{{ selectedLesson.subtitle||selectedLesson.title }}</h2></view></view>
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="returnToEntry" aria-label="返回 / Retour"><Icon name="back" /></button><view><text class="eyebrow">{{ selectedLesson.unitId.replace('U','UNITÉ ') }} · {{ lessonName(selectedLesson) }}</text><h2>{{ selectedLesson.subtitle||selectedLesson.title }}</h2></view></view>
    <view class="grammar-scroll grammar-overview">
     <Bi zh="本课概览" fr="Vue d’ensemble" small />
     <button v-for="(point,i) in selectedLesson.points" :key="point.id" hover-class="none" class="glass grammar-overview-point" @click="openRule(i)"><text class="grammar-overview-number">{{ String(i+1).padStart(2,'0') }}</text><view><text class="grammar-point-title">{{ point.title }}</text><text class="grammar-overview-fr" lang="fr">{{ point.raw }}</text></view><Icon :name="isMastered(pointStat(point.id))?'check':'arrow'" /></button>
@@ -48,7 +48,7 @@
   </template>
 
   <template v-else-if="screen==='lesson'&&selectedLesson">
-   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='overview'" aria-label="返回 / Retour"><Icon name="back" /></button><view><text class="eyebrow">{{ selectedLesson.unitId.replace('U','UNITÉ ') }} · {{ selectedLesson.id==='Summary'?'Résumé':selectedLesson.id }}</text><h2>{{ selectedLesson.subtitle||selectedLesson.title }}</h2></view></view>
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="returnToEntry" aria-label="返回 / Retour"><Icon name="back" /></button><view><text class="eyebrow">{{ selectedLesson.unitId.replace('U','UNITÉ ') }} · {{ selectedLesson.id==='Summary'?'Résumé':selectedLesson.id }}</text><h2>{{ selectedLesson.subtitle||selectedLesson.title }}</h2></view></view>
    <view class="grammar-scroll grammar-detail">
     <view v-for="point in visibleRule" :key="point.id" class="glass grammar-rule-card">
      <view class="grammar-rule-toggle"><view><text class="grammar-point-title">{{ point.title }}</text><text class="muted" lang="fr">{{ point.raw }}</text></view><text class="grammar-point-count">{{ ruleIndex+1 }} / {{ selectedLesson.points.length }}</text></view>
@@ -57,7 +57,7 @@
     <section v-if="selectedLesson.checklist?.length&&ruleIndex>=selectedLesson.points.length-1" class="glass grammar-reference"><Bi zh="表达检查清单" fr="Avant de parler" /><view v-for="(item,i) in selectedLesson.checklist" :key="i" class="grammar-check-item"><Icon name="check" /><text>{{ item }}</text></view></section>
     <section v-if="selectedLesson.phrases?.length&&ruleIndex>=selectedLesson.points.length-1" class="glass grammar-reference"><Bi zh="实用句型" fr="Expressions utiles" /><view v-for="(phrase,i) in selectedLesson.phrases" :key="i" class="grammar-example"><text lang="fr">{{ phraseFields(phrase).fr }}</text><text>{{ phraseFields(phrase).zh }}</text></view></section>
    </view>
-   <view class="grammar-actions"><button v-if="ruleIndex<selectedLesson.points.length-1" class="button primary" @click="nextRule"><Bi zh="下一个语法点" fr="Point suivant" small/><Icon name="arrow"/></button><button v-else-if="selectedLesson.points.length" hover-class="none" class="button primary" :disabled="!lessonPool.length&&!lessonPending" @click="startLessonPractice"><Bi :zh="lessonPending?'继续课时练习':'开始练习'" :fr="lessonPending?'Reprendre':'Pratiquer'" small /><Icon name="arrow" /></button><button v-else hover-class="none" class="button secondary" @click="screen='overview'"><Bi zh="返回概览" fr="Vue d’ensemble" small /><Icon name="back" /></button></view>
+   <view class="grammar-actions"><button v-if="ruleIndex<selectedLesson.points.length-1" class="button primary" @click="nextRule"><Bi zh="下一个语法点" fr="Point suivant" small/><Icon name="arrow"/></button><button v-else-if="selectedLesson.points.length" hover-class="none" class="button primary" :disabled="!lessonPool.length&&!lessonPending" @click="startLessonPractice"><Bi :zh="lessonPending?'继续课时练习':'开始练习'" :fr="lessonPending?'Reprendre':'Pratiquer'" small /><Icon name="arrow" /></button><button v-else hover-class="none" class="button secondary" @click="returnToEntry"><Bi zh="返回概览" fr="Vue d’ensemble" small /><Icon name="back" /></button></view>
   </template>
 
   <template v-else-if="screen==='quiz'&&current">
@@ -76,12 +76,12 @@
   </template>
 
   <template v-else-if="screen==='result'">
-   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="screen='home'" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="本轮完成" fr="Série terminée" /></view>
+   <view class="grammar-page-bar"><button hover-class="none" class="icon-button back-control" @click="returnToEntry" aria-label="返回 / Retour"><Icon name="back" /></button><Bi zh="本轮完成" fr="Série terminée" /></view>
    <view class="grammar-scroll grammar-result-scroll">
     <view class="glass grammar-result-card"><view class="result-ring" :style="{background:'conic-gradient(var(--accent) '+accuracy+'%, #e6ecf6 0)'}"><view class="result-inner"><strong>{{ accuracy }}%</strong><text>{{ correctCount }} / {{ results.length }}</text></view></view><Bi :zh="resultTitle" fr="Chaque exercice compte." /><Bi :zh="'答对 '+correctCount+' 题，共 '+results.length+' 题'" :fr="correctCount+' bonnes réponses sur '+results.length" small /></view>
     <view v-if="wrongList.length" class="glass grammar-result-errors"><Bi :zh="'需要复习 · '+wrongList.length+' 题'" fr="À revoir" /><view v-for="item in wrongList" :key="item.question.id" class="grammar-error-item"><text class="error-prompt">{{ item.question.prompt }}</text><Bi zh="正确表达" fr="Bonne formulation" small /><text lang="fr">{{ item.question.answerText }}</text><text class="muted">{{ item.question.explain }}</text></view></view>
    </view>
-   <view class="grammar-actions"><button v-if="wrongList.length" hover-class="none" class="button primary" @click="retryWrong"><Icon name="repeat" /><Bi zh="重练错题" fr="Refaire les erreurs" small /></button><button hover-class="none" class="button secondary" @click="screen='home'"><Bi zh="返回课次" fr="Toutes les leçons" small /></button></view>
+   <view class="grammar-actions"><button v-if="wrongList.length" hover-class="none" class="button primary" @click="retryWrong"><Icon name="repeat" /><Bi zh="重练错题" fr="Refaire les erreurs" small /></button><button hover-class="none" class="button secondary" @click="returnToEntry"><Bi zh="返回" fr="Retour" small /></button></view>
   </template>
    </view>
   </Transition>
@@ -112,7 +112,7 @@ function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));
 const pointStat=id=>progress.value[id]||{r:0,w:0};
 function recordAnswer(pointId,correct){const s=pointStat(pointId);progress.value={...progress.value,[pointId]:{r:s.r+(correct?1:0),w:s.w+(correct?0:1),at:Date.now()}};persist(STORE_KEY,progress.value);}
 const bookId=ref('inspire1'),unitId=ref('all'),chosenLessonKey=ref(''),lastStudyKey=ref('');
-const screen=ref('home'),lessonKey=ref(''),scopeLabel=ref(''),returnScreen=ref('home');
+const screen=ref('home'),lessonKey=ref(''),scopeLabel=ref(''),navigation=ref([]);
 const roundKind=ref('lesson'),roundLessonKey=ref(''),cachedRounds=ref({mixed:null,lessons:{}});
 const questions=ref([]),index=ref(0),pickedId=ref(''),answered=ref(false),results=ref([]);
 const rulePages=ref(read('qihang-grammar-rule-pages')||{});const ruleIndex=ref(0);const visibleRule=computed(()=>selectedLesson.value?.points.slice(ruleIndex.value,ruleIndex.value+1)||[]);
@@ -121,7 +121,7 @@ const switching=computed(()=>screenSwitching.value||questionSwitching.value);
 const selectedLesson=computed(()=>allLessons.find(l=>l.key===lessonKey.value));
 const chosenLesson=computed(()=>allLessons.find(l=>l.key===chosenLessonKey.value));
 const lastStudyLesson=computed(()=>allLessons.find(l=>l.key===lastStudyKey.value));
-function nextRule(){ruleIndex.value++;rulePages.value[lessonKey.value]=ruleIndex.value;persist('qihang-grammar-rule-pages',rulePages.value);openRules.value=visibleRule.value.map(p=>p.id);}
+function nextRule(){rememberEntry();ruleIndex.value++;rulePages.value[lessonKey.value]=ruleIndex.value;persist('qihang-grammar-rule-pages',rulePages.value);openRules.value=visibleRule.value.map(p=>p.id);}
 function toggleRule(id){openRules.value=[id];}
 watch(lessonKey,()=>{openRules.value=visibleRule.value.map(p=>p.id);});
 watch(screen,value=>{questionSwitching.value=false;emit('home',value==='home');},{immediate:true});
@@ -142,36 +142,56 @@ const stats=computed(()=>({done:allPoints.filter(p=>isMastered(pointStat(p.id)))
 function lessonName(l){return l.id==='Summary'?l.unitId+' · Résumé':l.id;}
 function lessonPct(l){return l.points.length?Math.round(l.points.filter(p=>isMastered(pointStat(p.id))).length/l.points.length*100):0;}
 function lessonMeta(l){if(l.kind==='technique')return '表达检查清单';if(l.kind==='summary')return (l.phrases?.length||0)+' 条实用句型';return l.points.length+' 个语法点 · 已掌握 '+l.points.filter(p=>isMastered(pointStat(p.id))).length;}
-function selectBook(id){if(id!=='inspire1')return;bookId.value=id;screen.value='home';}
-function selectUnit(id){if(!unitChoices.some(u=>u.id===id))return;unitId.value=id;if(id!=='all'&&chosenLesson.value?.unitId!==id)chosenLessonKey.value='';screen.value='lessons';}
-function selectLesson(l){chosenLessonKey.value=l.key;unitId.value=l.unitId;screen.value='home';}
+function selectBook(id){if(id!=='inspire1')return;bookId.value=id;returnHome();}
+function selectUnit(id){if(!unitChoices.some(u=>u.id===id))return;unitId.value=id;if(id!=='all'&&chosenLesson.value?.unitId!==id)chosenLessonKey.value='';enterScreen('lessons');}
+function selectLesson(l){chosenLessonKey.value=l.key;unitId.value=l.unitId;returnHome();}
 function startLearning(){
- if(!chosenLesson.value){emit('notice','请选择课时 / Choisissez une leçon.');screen.value='units';return;}
+ if(!chosenLesson.value){emit('notice','请选择课时 / Choisissez une leçon.');enterScreen('units');return;}
  openLearning(chosenLesson.value);
 }
-function openLearning(l){saveRound();ruleIndex.value=Math.min(rulePages.value[l.key]||0,Math.max(0,l.points.length-1));lessonKey.value=l.key;lastStudyKey.value=l.key;openRules.value=visibleRule.value.map(p=>p.id);screen.value='overview';}
-function openRule(index){if(!selectedLesson.value)return;ruleIndex.value=Math.max(0,Math.min(index,selectedLesson.value.points.length-1));rulePages.value[lessonKey.value]=ruleIndex.value;persist('qihang-grammar-rule-pages',rulePages.value);openRules.value=visibleRule.value.map(p=>p.id);screen.value='lesson';}
+function openLearning(l){saveRound();enterScreen('overview');ruleIndex.value=Math.min(rulePages.value[l.key]||0,Math.max(0,l.points.length-1));lessonKey.value=l.key;lastStudyKey.value=l.key;openRules.value=visibleRule.value.map(p=>p.id);}
+function openRule(index){if(!selectedLesson.value)return;enterScreen('lesson');ruleIndex.value=Math.max(0,Math.min(index,selectedLesson.value.points.length-1));rulePages.value[lessonKey.value]=ruleIndex.value;persist('qihang-grammar-rule-pages',rulePages.value);openRules.value=visibleRule.value.map(p=>p.id);}
 function phraseFields(p){return /\p{Script=Han}/u.test(p.fr)&&!(/\p{Script=Han}/u.test(p.zh))?{fr:p.zh,zh:p.fr.replace(/^\d+[.、]\s*/,'')}:p;}
 function currentRound(){return {kind:roundKind.value,lessonKey:roundLessonKey.value,scopeLabel:scopeLabel.value,questions:questions.value,index:index.value,pickedId:pickedId.value,answered:answered.value,results:results.value};}
+// Navigation belongs to the entry point, independently of the saved exercise kind.
+function rememberEntry(){
+ navigation.value=[...navigation.value,{screen:screen.value,lessonKey:lessonKey.value,ruleIndex:ruleIndex.value,...(['quiz','result'].includes(screen.value)?{round:encodeRound(currentRound())}:{})}].slice(-32);
+}
+function enterScreen(next){if(screen.value===next)return;rememberEntry();screen.value=next;}
+function returnHome(){navigation.value=[];screen.value='home';}
+function returnToEntry(){
+ if(screen.value==='home')return false;
+ saveRound();
+ const entry=navigation.value.at(-1);navigation.value=navigation.value.slice(0,-1);
+ const fallback=screen.value==='lesson'?'overview':screen.value==='lessons'?'units':'home';
+ if(entry){
+  const round=entry.round&&decodeRound(entry.round,byId);if(round)applyRound(round);
+  if(allLessons.some(l=>l.key===entry.lessonKey))lessonKey.value=entry.lessonKey;
+  ruleIndex.value=Math.min(entry.ruleIndex||0,Math.max(0,(selectedLesson.value?.points.length||1)-1));
+  openRules.value=visibleRule.value.map(p=>p.id);screen.value=entry.screen;
+ }else screen.value=fallback;
+ saveRound();return true;
+}
 function applyRound(round){
  roundKind.value=round.kind;roundLessonKey.value=round.lessonKey;scopeLabel.value=round.scopeLabel;questions.value=round.questions;index.value=round.index;pickedId.value=round.pickedId;answered.value=round.answered;results.value=round.results;
- returnScreen.value=round.kind==='lesson'?'lesson':'home';if(round.kind==='lesson'&&allLessons.some(l=>l.key===round.lessonKey))lessonKey.value=round.lessonKey;
+ if(round.kind==='lesson'&&allLessons.some(l=>l.key===round.lessonKey))lessonKey.value=round.lessonKey;
 }
 function begin(source,label,kind,sourceLessonKey=''){
  if(!source.length){emit('notice','当前范围没有所选题型 / Aucune question de ce type.');return;}
  saveRound();
+ enterScreen('quiz');
  const ordered=settings.value.shuffle?shuffle(source):[...source];
  applyRound({kind,lessonKey:sourceLessonKey,scopeLabel:label,questions:ordered.slice(0,settings.value.roundSize).map(q=>({...q,options:settings.value.shuffle?shuffle(q.options):[...q.options]})),index:0,pickedId:'',answered:false,results:[]});
- screen.value='quiz';saveRound();
+ saveRound();
 }
 function startMixed(){
  saveRound();const saved=decodeRound(mixedForUnit(cachedRounds.value,unitId.value),byId);
- if(saved&&!roundComplete(saved)){applyRound(saved);screen.value='quiz';return;}
+ if(saved&&!roundComplete(saved)){enterScreen('quiz');applyRound(saved);return;}
  begin(filteredPool.value,'Inspire 1 · '+(unitId.value==='all'?'全部单元':unitId.value),'mixed');
 }
 function startLessonPractice(){
  saveRound();const saved=decodeRound(cachedRounds.value.lessons[lessonKey.value],byId);
- if(saved&&!roundComplete(saved)){applyRound(saved);screen.value='quiz';return;}
+ if(saved&&!roundComplete(saved)){enterScreen('quiz');applyRound(saved);return;}
  begin(lessonPool.value,selectedLesson.value?.id||'Leçon','lesson',lessonKey.value);
 }
 const current=computed(()=>questions.value[index.value]||null);
@@ -182,8 +202,8 @@ function submit(){
  answered.value=true;recordAnswer(current.value.pointId,option.correct);results.value.push({question:current.value,pickedId:option.id,correct:option.correct});if(option.correct)playCorrect();
 }
 function next(){if(switching.value||!answered.value)return;if(index.value+1===questions.value.length){screen.value='result';return;}index.value++;pickedId.value='';answered.value=false;}
-function leaveQuiz(){screen.value=returnScreen.value==='lesson'&&selectedLesson.value?'lesson':'home';}
-function resume(){if(currentPending.value){if(roundKind.value==='lesson'&&allLessons.some(l=>l.key===roundLessonKey.value))lessonKey.value=roundLessonKey.value;screen.value='quiz';}else if(lastStudyLesson.value)openLearning(lastStudyLesson.value);}
+function leaveQuiz(){returnToEntry();}
+function resume(){if(currentPending.value){enterScreen('quiz');if(roundKind.value==='lesson'&&allLessons.some(l=>l.key===roundLessonKey.value))lessonKey.value=roundLessonKey.value;}else if(lastStudyLesson.value)openLearning(lastStudyLesson.value);}
 function retryWrong(){begin(wrongList.value.map(r=>r.question),'错题 · Erreurs','retry');}
 const correctCount=computed(()=>results.value.filter(r=>r.correct).length);
 const accuracy=computed(()=>results.value.length?Math.round(correctCount.value/results.value.length*100):0);
@@ -191,7 +211,7 @@ const wrongList=computed(()=>results.value.filter(r=>!r.correct));
 const resultTitle=computed(()=>accuracy.value===100?'本轮全部答对':accuracy.value>=70?'继续巩固，稳步向前':'再看一遍规则，再练一次');
 function saveRound(){
  const snapshot=encodeRound(currentRound());cachedRounds.value=rememberRound(cachedRounds.value,snapshot);
- persist(ROUND_KEY,{schema:2,screen:screen.value,selection:{bookId:bookId.value,unitId:unitId.value,lessonKey:chosenLessonKey.value},lessonKey:lessonKey.value,lastStudyKey:lastStudyKey.value,current:snapshot,sessions:cachedRounds.value});
+ persist(ROUND_KEY,{schema:2,screen:screen.value,navigation:navigation.value,selection:{bookId:bookId.value,unitId:unitId.value,lessonKey:chosenLessonKey.value},lessonKey:lessonKey.value,lastStudyKey:lastStudyKey.value,current:snapshot,sessions:cachedRounds.value});
 }
 function restoreRound(){
  const saved=read(ROUND_KEY);if(!saved)return;
@@ -215,11 +235,18 @@ function restoreRound(){
  if(saved.screen==='quiz'&&questions.value.length)screen.value='quiz';
  else if(saved.screen==='result'&&questions.value.length&&results.value.length===questions.value.length)screen.value='result';
  else if(['lesson','overview'].includes(saved.screen)&&selectedLesson.value)screen.value=saved.screen;
+ const routes=Array.isArray(saved.navigation)?saved.navigation:[];
+ navigation.value=routes.slice(-32).filter(entry=>{
+  if(!entry||!['home','books','units','lessons','overview','lesson','quiz','result'].includes(entry.screen)||!Number.isInteger(entry.ruleIndex)||entry.ruleIndex<0)return false;
+  if(['overview','lesson'].includes(entry.screen)&&!allLessons.some(l=>l.key===entry.lessonKey))return false;
+  if(['quiz','result'].includes(entry.screen)){const round=decodeRound(entry.round,byId);return !!round&&(entry.screen!=='result'||roundComplete(round));}
+  return true;
+ });
  if(chosenLesson.value&&unitId.value!=='all'&&chosenLesson.value.unitId!==unitId.value)chosenLessonKey.value='';
 }
 restoreRound();
-watch([screen,bookId,unitId,chosenLessonKey,lastStudyKey,lessonKey,questions,index,pickedId,answered,results],saveRound,{deep:true});
-function handleBack(){if(screen.value==='home')return false;if(screen.value==='quiz')leaveQuiz();else screen.value=screen.value==='lessons'?'units':screen.value==='lesson'?'overview':'home';return true;}
+watch([screen,navigation,bookId,unitId,chosenLessonKey,lastStudyKey,lessonKey,questions,index,pickedId,answered,results],saveRound,{deep:true});
+function handleBack(){return returnToEntry();}
 defineExpose({handleBack});
 function onKey(e){if(!props.active||switching.value||e.defaultPrevented||e.ctrlKey||e.metaKey||e.altKey||e.target?.closest?.('input,textarea,[contenteditable=true]')||screen.value!=='quiz')return;const n='abcd'.indexOf(e.key.toLowerCase());if(n>=0&&!answered.value&&current.value?.options[n]){e.preventDefault();pickedId.value=current.value.options[n].id;}else if(e.key==='Enter'&&!e.repeat&&!e.target?.closest?.('button,uni-button,[role=button]')){e.preventDefault();answered.value?next():submit();}}
 onMounted(()=>document.addEventListener('keydown',onKey));

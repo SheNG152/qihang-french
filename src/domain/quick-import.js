@@ -1,4 +1,4 @@
-import {day,wordKey,packageKey,getProgress,normalize,advance,reviewPackage,lessonStats,resetLessonProgress} from './learning.js';
+import {day,wordKey,packageKey,getProgress,normalize,advance,reviewPackage,lessonStats,resetLessonProgress,wordContext} from './learning.js';
 import {displayForm,splitNounArticle} from './word-display.js';
 export const spokenKey=text=>'tts:'+encodeURIComponent(text);
 export const splitWords=text=>[...new Set(String(text).normalize('NFC').split(/[,，\n;；]+/).map(v=>v.trim().replace(/\s+/g,' ')).filter(Boolean))];
@@ -97,3 +97,17 @@ export function dictionaryNotebookEntries(rows,data){
  for(const course of data.library)for(const w of course.words){const key=wordKey(course,w);if(!w.conjugation&&!seen.has(key)){result.push({p:course,w});seen.add(key);}}return result;
 }
 export function resolveDictionaryEntry(data,entry){if(!entry.p.dictionary)return entry;const result=addImportedEntries(data,[entry.dictionaryRow],Date.now(),false).resolved[0],p=data.library.find(p=>packageKey(p)===result.lesson);return {p,w:p.words.find(w=>w.id===result.word)};}
+
+// Import membership reuses the original word and its progress key.
+export function addToImportedBook(data,entry,at=Date.now()){
+ const resolved=resolveDictionaryEntry(data,entry),source=wordContext(data,resolved.p,resolved.w),{p,w}=source;
+ if(w.conjugation)throw Error('请加入动词原形 / Ajoutez l’infinitif.');
+ ensureImportedLessons(data);data.importedWords||={};
+ const key=wordKey(p,w);
+ if(!data.importedWords[key]){
+  data.importedWords[key]={at,date:day(new Date(at))};
+  if(!data.importedWordOrder[key])data.importedWordOrder[key]=++data.importedWordSerial;
+ }
+ ensureImportedLessons(data);
+ return {...entry,p,w};
+}
