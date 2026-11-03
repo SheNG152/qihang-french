@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.qihang.francais" android:versionCode="20112" android:versionName="2.1.1-beta.1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.qihang.francais" android:versionCode="20201" android:versionName="2.2.0">
   <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-  <application android:label="启航法语" android:icon="@drawable/ic_launcher" android:roundIcon="@drawable/ic_launcher" android:theme="@style/AppTheme" android:hardwareAccelerated="true" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true" android:enableOnBackInvokedCallback="false">
+    <application android:label="启航法语" android:icon="@drawable/ic_launcher" android:roundIcon="@drawable/ic_launcher" android:theme="@style/AppTheme" android:hardwareAccelerated="true" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true" android:enableOnBackInvokedCallback="false">
     <provider android:name="cn.qihang.francais.ShareImageProvider" android:authorities="cn.qihang.francais.share" android:exported="false" android:grantUriPermissions="true" />
     <receiver android:name="cn.qihang.francais.ReminderReceiver" android:exported="false">
       <intent-filter>
@@ -14,6 +15,7 @@
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
         <action android:name="android.intent.action.TIME_SET" />
         <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+        <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
       </intent-filter>
     </receiver>
     <activity android:name="cn.qihang.francais.MainActivity" android:exported="true" android:launchMode="singleTop" android:windowSoftInputMode="adjustNothing" android:configChanges="orientation|screenSize|keyboardHidden|uiMode">

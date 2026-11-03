@@ -98,7 +98,7 @@ import {encodeRound,decodeRound,roundComplete,rememberRound,mixedForUnit} from '
 import {playCorrect} from '../platform/feedback-sounds.js';
 import {foldTransition} from '../grammar/motion.js';
 const props=defineProps({settings:{type:Object,default:()=>({...defaultGrammarSettings})},active:{type:Boolean,default:true}});
-const emit=defineEmits(['notice','settings']);
+const emit=defineEmits(['notice','settings','home']);
 const settings=computed(()=>normalizeGrammarSettings(props.settings));
 const STORE_KEY='qihang-grammar-progress-v1',ROUND_KEY='qihang-grammar-round-v1';
 const units=grammarData.units;
@@ -124,7 +124,7 @@ const lastStudyLesson=computed(()=>allLessons.find(l=>l.key===lastStudyKey.value
 function nextRule(){ruleIndex.value++;rulePages.value[lessonKey.value]=ruleIndex.value;persist('qihang-grammar-rule-pages',rulePages.value);openRules.value=visibleRule.value.map(p=>p.id);}
 function toggleRule(id){openRules.value=[id];}
 watch(lessonKey,()=>{openRules.value=visibleRule.value.map(p=>p.id);});
-watch(screen,()=>questionSwitching.value=false);
+watch(screen,value=>{questionSwitching.value=false;emit('home',value==='home');},{immediate:true});
 const visibleLessons=computed(()=>allLessons.filter(l=>unitId.value==='all'||l.unitId===unitId.value));
 const unitChoices=[{id:'all',zh:'全部单元',fr:'Toutes les unités'},...units.map(u=>({id:u.id,zh:'单元 '+u.id.slice(1),fr:'Unité '+u.id.slice(1)+' · '+u.title}))];
 const typeAllowed=q=>settings.value.questionType==='both'||q.type===settings.value.questionType;

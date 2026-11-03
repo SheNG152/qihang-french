@@ -2,6 +2,7 @@
 <script setup>
 defineProps({ name: String });
 const paths = {
+ trash:'M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7',
  copy:'M8 8h12v13H8V8ZM16 8V3H3v13h5',
  pause:'M8 5v14M16 5v14',
  microphone:'M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0V5Zm-3 6v1a6 6 0 0 0 12 0v-1M12 18v4M8 22h8',

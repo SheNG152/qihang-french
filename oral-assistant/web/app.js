@@ -11,6 +11,7 @@ const hintTexts = {intro:'可以从姓名、居住地、学习和爱好说起。
 function node(tag, text, cls) { const e = document.createElement(tag); if(text !== undefined) e.textContent = text; if(cls) e.className = cls; return e; }
 function notice(message) { $('notice').textContent = message; $('notice').hidden = !message; $('notice').setAttribute('role','alert');$('notice').setAttribute('aria-live','polite'); }
 function show(view) {
+  if(window.parent!==window)window.parent.postMessage({type:'qihang-oral-view',home:view==='home'},location.origin);
   clearTimeout(S.evaluationTimer);
   for (const id of ['home','practice','history','review']) $(id).hidden = id !== view;
   $('navPractice').classList.toggle('active', view === 'home' || view === 'practice');

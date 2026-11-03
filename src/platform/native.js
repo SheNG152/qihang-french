@@ -1,3 +1,5 @@
+import {conjugationPackages} from '../conjugation/catalog.js';
+import {nextReviewDate} from '../domain/review-plan.js';
 import {day,addDays,wordKey,errorPracticeState} from '../domain/learning.js';
 import {REMINDER_INTERVAL_DAYS} from '../domain/reminders.js';
 export const nativeHost=()=>typeof window!=='undefined'?window.QihangNative:null;
@@ -13,14 +15,8 @@ export function nativeExport(name,bytes,mime,share=false){
   });
 }
 export function syncNativeReview(data){
-  const native=nativeHost();if(!native)return;
-  const dates=data.library.flatMap(p=>p.words.flatMap(w=>{
-    const progress=data.progress[`${p.book.id}:${p.lesson.id}:${w.id}`];
-    if(progress?.notebook!=='review')return [];
-    const due=w.forms.filter(f=>f.tested).map(f=>progress.forms[f.id]?.due).filter(Boolean).sort()[0];
-    return due?[due]:[];
-  }));
-  const today=day(),errorDates=data.library.flatMap(p=>p.words.flatMap(w=>{const state=errorPracticeState(data,p,w,today);return state.active?[state.doneToday?addDays(today,1):today]:[];}));
-  const quiet=kind=>{const badge=data.reminders?.badges?.[kind];return badge?.ackDate&&!badge.pending?addDays(badge.ackDate,REMINDER_INTERVAL_DAYS[kind]):'';};
-  native.syncReviewSchedule(JSON.stringify({enabled:!!data.settings.notifications,dates,errorDates,time:data.settings.reminderTime||'08:00',reviewIntervalDays:1,errorIntervalDays:2,reviewQuietUntil:quiet('review'),errorQuietUntil:quiet('errors')}));
+ const native=nativeHost();
+ const dates=[...data.library,...conjugationPackages(data)].flatMap(p=>p.words.flatMap(w=>{const r=data.progress[wordKey(p,w)];if(r?.notebook!=='review')return [];const due=w.forms.filter(f=>f.tested).map(f=>nextReviewDate(r.forms[f.id],data.settings)).filter(Boolean).sort()[0];return due?[due]:[];}));
+ const state={enabled:data.settings.reviewReminders!==false,dates,time:data.settings.reminderTime||'08:00'};
+ if(native?.syncReviewSchedule)native.syncReviewSchedule(JSON.stringify(state));else if(typeof window!=='undefined'&&window.location.hostname==='127.0.0.1')return fetch('/review-reminders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)}).then(async response=>{if(!response.ok)return;const result=await response.json();window.qihangWindowsReminders=result.nativeReminders===true;window.qihangBackgroundReminderReady=result.scheduled===true;}).catch(()=>{});
 }

@@ -35,14 +35,16 @@ const nonempty = v => typeof v === 'string' && v.trim().length > 0;
 const positive = v => Number.isInteger(v) && v > 0;
 export function validateLesson(p) {
   if (!p || p.schemaVersion !== 1) fail('格式版本必须为 1 / Version de format : 1.');
-  if (p.book?.id !== 'inspire1' || !nonempty(p.book?.title)) fail('首版只开放 Inspire 1 / Seul Inspire 1 est disponible.');
+  if (!['inspire1','personal'].includes(p.book?.id) || !nonempty(p.book?.title)) fail('首版只开放 Inspire 1 / Seul Inspire 1 est disponible.');
   if (p.book.level !== undefined) fail('请移除旧等级字段 book.level / Retirez le champ book.level.');
   if (!/^L(0[1-9]|[1-9]\d)$/.test(p.lesson?.id) || !nonempty(p.lesson.title) || !positive(p.lesson.order) || !positive(p.lesson.version)) fail('课次编号、名称、排序或版本错误 / Informations de leçon invalides.');
-  if (!Array.isArray(p.words) || !p.words.length || p.words.length > 5000) fail('词库需要 1–5000 个词条 / Entre 1 et 5 000 entrées.');
+  if (!Array.isArray(p.words) || !p.words.length || p.words.length > (p.book?.id==='personal'?30000:5000)) fail('词库需要 1–5000 个词条 / Entre 1 et 5 000 entrées.');
   const ids = new Set(), forms = new Set(), orders = new Set(), audioNumbers=new Set();
   for (const [i, w] of p.words.entries()) {
     const at = `words[${i}]`;
     if (!/^w\d{6}$/.test(w.id) || ids.has(w.id)) fail(`${at}.id：词条编号无效或重复 / ID invalide ou dupliqué.`);
+    if(w.conjugation){const c=w.conjugation;if(typeof c.lemma!=='string'||!c.lemma.trim()||!['现在时','复合过去时','未完成过去时'].includes(c.tense)||!['je','tu','il','nous','vous','ils'].includes(c.person)||!/^w\d{6}$/.test(c.baseWordId)||!p.words.some(base=>base.id===c.baseWordId&&!base.conjugation)||typeof c.form!=='string'||!c.form.trim())fail('变位词条无效 / Conjugaison invalide.');}
+    if(w.studyDisabled!==undefined&&typeof w.studyDisabled!=='boolean')fail('练习选项无效 / Option invalide.');
     ids.add(w.id);
     if (!positive(w.order) || orders.has(w.order)) fail(`${at}.order：课内顺序需唯一正整数 / Ordre positif et unique.`); orders.add(w.order);
     if (!POS.includes(w.pos) || !Array.isArray(w.meanings) || !w.meanings.length || !w.meanings.every(nonempty)) fail(`${at}：请检查词性和中文释义 / Vérifiez la catégorie et le sens.`);

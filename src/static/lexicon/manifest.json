@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "sources": {
+    "extractor": "https://github.com/tatuylonen/wiktextract",
+    "extractorCommit": "19f9a3006a405fb7bfb40193dca41c7117a009a5",
+    "wiktionaryDump": "2026-11-01",
+    "wordfreq": "3.1.1",
+    "frequencyCutoff": 2.6,
+    "ipaDictionaryCommit": "972cd67dd5f96bc5660e28070cde26e3928abcd7",
+    "frenchEditionDump": "2026-10-01",
+    "tatoebaExport": "2026-10-31",
+    "editionDumps": {
+      "zh": "2026-11-01",
+      "en": "2026-10-01",
+      "fr": "2026-10-01"
+    }
+  },
+  "stats": {
+    "words": 18655,
+    "ipa": 18655,
+    "examples": 18655,
+    "translatedExamples": 5399,
+    "authoredExamples": 760
+  },
+  "sha256": "b9e96ca9e2c1f5769a59aa0b9b89d574f586db6ab82d907bc03e2e2257250e4e",
+  "inputs": {
+    "zh-simp.jsonl": "42082dd36a33515102325e3e0f709d85997348ee8b2c20f66a5482533c30d478",
+    "zh-trad.jsonl": "53cac0a16dcc9ac0eb0150aaa3125ce30158973f291e17781bf091b0c1ae85af",
+    "en-fr.jsonl": "9053b1845fb3e045fa1fbe3f749122fa43e21b49bfa741cadd50255ae6ca0126",
+    "fra_sentences_detailed.tsv.bz2": "b7505263052e796a052ef32fc907d22056e07fffed153988d141a728bee77126",
+    "fra-cmn_links.tsv.bz2": "ea173177e8321da28e4478a6c2f1fd3572a40738f940a09d1aede4afb793c9fd",
+    "cmn_sentences.tsv.bz2": "d603c1b9c67fb7a5a68c56fe6df5c935025ca1f36a1f9a912c33ed6dbed91743",
+    "fr_FR-ipa.txt": "4b4133e294dd3f49f98fcb02bbce1da3f1ed481d7c768e8b4ed93936464dc4cf",
+    "fr-fr.jsonl.gz": "a7ad9e7e8d8104f20b47d34076953e5032932dd68e5fead00b118ffcb8b8f99a"
+  },
+  "curation": {
+    "authored-examples.json": "e996e018895b8744aa74d1be47a08bea4620c017b79bd089a9a30ea059db5902",
+    "supplemental-ipa.json": "75b37893d52784a92c828c4eb28956b65bf1b45c5b2ab766a52abe8e53e49851",
+    "excluded-words.json": "f6c4db0a17192e86d0fb4504ad7c3da04d8e621d0eddc88cdba8d9d4d4adebff"
+  },
+  "audio": {
+    "voice": "fr-FR-DeniseNeural",
+    "clips": 35813,
+    "files": 1287,
+    "bytes": 373298652,
+    "indexSHA256": "bb2a9c03d11f5f10f714f59bfd10d5e4da71f07d16d42b64d5cebdfef13cdbaf"
+  },
+  "supplement": {
+    "lexiqueRepository": "https://github.com/chrplr/openlexicon",
+    "lexiqueCommit": "9009f488f664536940965453c127f43cf18b84a4",
+    "ecdictRepository": "https://github.com/skywind3000/ECDICT",
+    "ecdictCommit": "39cfb9672c0906b63569e0453c2e6abfb9ab182a",
+    "added": 4102,
+    "lexiqueSHA256": "e181d132b3b0d3d87efc98d376968441b517353933011cebea5366321a6024e6",
+    "ecdictSHA256": "d1ecbdf9ee2b920afb6f430ca6b6bb9f559588cf0dff86e04bd255f9390843cc",
+    "reviewedPrimarySenses": 49
+  }
+}

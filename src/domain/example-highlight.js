@@ -17,18 +17,21 @@ function verbForms(verb){
   if(verb.endsWith('ger'))forms.push(stem+'eons');
   if(verb.endsWith('ir'))forms.push(...['is','it','issons','issez','issent','i','ie'].map(end=>stem+end));
   if(verb.endsWith('re'))forms.push(...['s','','ons','ez','ent','u','ue'].map(end=>stem+end));
+  const future={aller:'ir',faire:'fer',être:'ser',avoir:'aur',venir:'viendr',tenir:'tiendr',pouvoir:'pourr',vouloir:'voudr',devoir:'devr',savoir:'saur',voir:'verr',courir:'courr',envoyer:'enverr'}[verb]||(verb.endsWith('re')?verb.slice(0,-1):verb);
+  forms.push(...['ai','as','a','ons','ez','ont','ais','ait','ions','iez','aient'].map(end=>future+end));
   return forms;
 }
 function phrases(word){
   const result=new Set();
   for(const form of word.forms){
+    if(typeof form.example?.highlight==='string'&&form.example.highlight.length<=190)result.add(form.example.highlight);
     result.add(spellingParts(word,form).text.trim().replace(/[.!?…,:;\s]+$/u,''));
     const text=spellingParts(word,form).answer.trim().replace(/[.!?…,:;\s]+$/u,'');if(!text)continue;
     result.add(text);result.add(text+'s');result.add(text+'x');
-    if(word.pos==='adj.'){
-      const feminine={blanc:'blanche',long:'longue',beau:'belle',nouveau:'nouvelle',vieux:'vieille',doux:'douce',faux:'fausse'}[text]
-        ||(/eux$/.test(text)?text.slice(0,-3)+'euse':/f$/.test(text)?text.slice(0,-1)+'ve':/er$/.test(text)?text.slice(0,-2)+'ère':/e$/.test(text)?text:text+'e');
-      result.add(feminine);result.add(feminine+'s');
+    if(word.pos==='adj.'||word.pos==='n.'){
+      const feminine={blanc:'blanche',long:'longue',beau:'belle',nouveau:'nouvelle',vieux:'vieille',doux:'douce',faux:'fausse',fou:'folle',mou:'molle',roux:'rousse',sec:'sèche',grec:'grecque',complet:'complète',discret:'discrète',concret:'concrète',secret:'secrète',inquiet:'inquiète'}[text]
+        ||(/el$/.test(text)?text+'le':/eil$/.test(text)?text+'le':/en$/.test(text)?text+'ne':/on$/.test(text)?text+'ne':/et$/.test(text)?text+'te':/eux$/.test(text)?text.slice(0,-3)+'euse':/f$/.test(text)?text.slice(0,-1)+'ve':/er$/.test(text)?text.slice(0,-2)+'ère':/e$/.test(text)?text:text+'e');
+      result.add(feminine);result.add(feminine+'s');if(/teur$/.test(text)){for(const ending of ['trice','teuse']){const variant=text.slice(0,-4)+ending;result.add(variant);result.add(variant+'s');}}
     }
     const pieces=text.split(' '),first=pieces[0];
     if(pieces.length>1){result.add(first+'s '+pieces.slice(1).join(' '));result.add(first+'x '+pieces.slice(1).join(' '));}
@@ -50,7 +53,8 @@ const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/['’]/g,"['’
 export function highlightExample(text,word){
   const source=String(text||'');if(!word||!source)return [{text:source,hit:false}];
   const candidates=phrases(word);if(!candidates.length)return [{text:source,hit:false}];
-  const pattern=new RegExp(`(^|[^\\p{L}\\p{N}])(${candidates.map(escape).join('|')})(?=$|[^\\p{L}\\p{N}])`,'giu');
+  const alternatives=candidates.map(s=>escape(s)+(/['’]$/.test(s)?'(?=\\p{L})':'(?=$|[^\\p{L}\\p{N}])'));
+  const pattern=new RegExp(`(^|[^\\p{L}\\p{N}])(${alternatives.join('|')})`,'giu');
   const parts=[];let cursor=0;
   for(const match of source.matchAll(pattern)){
     const start=match.index+match[1].length,end=start+match[2].length;

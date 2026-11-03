@@ -12,7 +12,10 @@ export function splitNounArticle(text) {
 }
 export function spellingParts(word, form) {
   if (!form) return { prefix: '', answer: '', text: '' };
+  if(form.literal)return {prefix:'',answer:form.text,text:form.text};
   const parsed=splitNounArticle(form.text);
+  // An article can itself be a vocabulary word, without a following noun.
+  if(parsed.prefix&&!parsed.answer)return {prefix:'',answer:form.text,text:form.text};
   const transport=/^(?:en|à)\s+(?:pied|vélo|bicyclette|moto|scooter|cheval|trottinette|voiture|bus|autobus|car|train|tram|tramway|métro|avion|bateau|taxi|camion|ferry)(?:\b|$)/iu.test(form.text);
   const obvious=/^(?:un|une|des|du|le|la|les|de la|de l['’]|l['’])$/i.test(parsed.prefix);
   // Locutions such as au bout stay intact; a visible determiner is independent

@@ -16,7 +16,7 @@ await fs.rm(path.join(output,'server.ps1'),{force:true});
 const previousWeb=await fs.lstat(web).catch(error=>{if(error.code!=='ENOENT')throw error;return null;});
 if(path.dirname(web)!==output||previousWeb?.isSymbolicLink())throw new Error('网页资源路径无效');
 await fs.rm(web,{recursive:true,force:true});
-await fs.cp(path.join(app,'dist/build/h5'),web,{recursive:true});
+await fs.cp(path.join(app,'dist/build/h5'),web,{recursive:true,filter:source=>!/[\\/]static[\\/]lexicon[\\/]audio[\\/][a-f0-9]{64}\.mp3$/.test(source)});
 const start=await fs.readFile(path.join(app,'launcher/start.bat'),'utf8');
 await fs.writeFile(path.join(output,startName),start.replace(/\r?\n/g,'\r\n'),'utf8');
 await fs.copyFile(path.join(app,'SOURCES.md'),path.join(output,'SOURCES.md'));

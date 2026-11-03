@@ -40,3 +40,8 @@ android/signing/
 /native/windows/runtime/
 /android/jniLibs/
 /交付/
+
+/.lexicon-work/
+
+# Optional voice assets are distributed through GitHub Release.
+/src/static/lexicon/audio/*.mp3

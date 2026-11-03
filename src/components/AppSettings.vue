@@ -25,12 +25,18 @@
      </section>
      <section v-else-if="vocabularySection==='review'" class="glass settings-card">
       <button v-for="item in reviewModes" :key="item.id" hover-class="none" :class="['review-setting',{selected:data.settings.reviewMode===item.id}]" @click="setting('reviewMode',item.id)"><view class="radio"><view v-if="data.settings.reviewMode===item.id" /></view><Bi :zh="item.zh" :fr="item.fr" /></button>
-      <button hover-class="none" class="toggle-row" :disabled="!notificationAvailable()" @click="$emit('notifications')"><Bi zh="复习提醒" fr="Rappels de révision" small /><view :class="['toggle',{on:data.settings.notifications&&notificationPermission==='granted'}]" /></button>
-      <view v-if="data.settings.notifications" class="setting-row"><Bi zh="提醒时间" fr="Heure du rappel" small /><picker mode="time" :value="data.settings.reminderTime||'08:00'" @change="$emit('reminderTime',$event)"><button hover-class="none" class="time-choice"><Icon name="clock" /><text>{{ data.settings.reminderTime||'08:00' }}</text><Icon name="chevron-down" /></button></picker></view>
-      <view class="setting-row"><Bi zh="复习每天 · 错题每两天" fr="Révision quotidienne · erreurs tous les 2 jours" small /></view>
-      <button v-if="nativeHost()" hover-class="none" class="setting-action" @click="openNotificationSettings"><Icon name="settings" /><Bi zh="系统通知设置" fr="Notifications du système" small /><Icon name="arrow" /></button>
-      <Bi v-if="notificationPermission==='denied'" zh="请允许应用通知" fr="Autorisez les notifications" small />
+      <button hover-class="none" class="toggle-row" @click="$emit('notifications',data.settings.reviewReminders===false)"><Bi zh="复习提醒" fr="Rappels de révision" small/><view :class="['toggle',{on:data.settings.reviewReminders!==false}]"/></button>
+      <button hover-class="none" class="toggle-row" @click="setting('errorReminders',data.settings.errorReminders===false)"><Bi zh="错题提醒（仅软件内）" fr="Erreurs : dans l’application" small/><view :class="['toggle',{on:data.settings.errorReminders!==false}]"/></button>
+      <button hover-class="none" class="toggle-row" @click="setting('reviewErrorRetry',data.settings.reviewErrorRetry===false)"><Bi zh="复习答错，次日加练" fr="Erreur en révision : reprise le lendemain" small/><view :class="['toggle',{on:data.settings.reviewErrorRetry!==false}]"/></button>
+      <view v-if="data.settings.reviewReminders!==false" class="setting-row"><Bi zh="提醒时间" fr="Heure du rappel" small/><picker mode="time" :value="data.settings.reminderTime||'08:00'" @change="$emit('reminderTime',$event)"><button hover-class="none" class="time-choice"><Icon name="clock"/><text>{{ data.settings.reminderTime||'08:00' }}</text><Icon name="chevron-down"/></button></picker></view>
+      <Bi zh="第2、4、7、15、30天复习；之后每30天一次。加练独立计算。" fr="Jours 2, 4, 7, 15 et 30 ; puis tous les 30 jours. Reprises indépendantes." small/>
+      <button v-if="data.settings.reviewReminders!==false&&notificationPermission!=='granted'" class="setting-action" hover-class="none" @click="$emit('notifications',true)"><Icon name="clock"/><Bi zh="允许系统通知" fr="Autoriser les notifications" small/><Icon name="arrow"/></button>
+      <button v-if="data.settings.reviewReminders!==false&&alarmPermission==='denied'" class="setting-action" hover-class="none" @click="openExactAlarmSettings"><Icon name="clock"/><Bi zh="允许准时提醒" fr="Autoriser les rappels à l’heure" small/><Icon name="arrow"/></button>
+      <button v-if="nativeHost()" hover-class="none" class="setting-action" @click="openNotificationSettings"><Icon name="settings"/><Bi zh="系统通知设置" fr="Notifications du système" small/><Icon name="arrow"/></button>
+      <Bi v-if="data.settings.reviewReminders!==false&&backgroundReminderFailed" zh="后台提醒未开启，请重新开启复习提醒。" fr="Réactivez les rappels en arrière-plan." small/>
+
      </section>
+     <section v-else-if="vocabularySection==='audio'" class="glass settings-card"><ExtraAudioSettings/></section>
      <section v-else-if="vocabularySection==='data'" class="glass settings-card">
       <button hover-class="none" class="setting-action" @click="$emit('import')"><Icon name="plus" /><Bi zh="导入课次" fr="Importer" /><Icon name="arrow" /></button>
       <button hover-class="none" class="setting-action" :disabled="busy" @click="$emit('backup')"><Icon name="download" /><Bi zh="词汇备份（含录音）" fr="Sauvegarder le vocabulaire" /><Icon name="arrow" /></button>
@@ -54,14 +60,16 @@
  </view>
 </template>
 <script setup>
-import {ref} from 'vue';
+import ExtraAudioSettings from './ExtraAudioSettings.vue';
+import {ref,onMounted,onUnmounted} from 'vue';
 import Bi from './Bi.vue';import Icon from './Icon.vue';import StudyGuide from './StudyGuide.vue';import OralSetup from './OralSetup.vue';
-import appManifest from '../manifest.json';import {nativeHost} from '../platform/native.js';import {notificationAvailable,openNotificationSettings} from '../platform/notifications.js';
+import appManifest from '../manifest.json';import {nativeHost} from '../platform/native.js';import {notificationAvailable,openNotificationSettings,exactAlarmPermission,openExactAlarmSettings} from '../platform/notifications.js';
 const props=defineProps({data:Object,dataReady:Boolean,busy:Boolean,notificationPermission:String,grammarSettings:Object,initialScope:{type:String,default:'general'}});
 const emit=defineEmits(['close','setting','grammarSetting','goal','notifications','reminderTime','import','backup','restore','share','notice','mode']);
+const alarmPermission=ref(exactAlarmPermission()),backgroundReminderFailed=ref(window.qihangBackgroundReminderReady===false);const refreshPermissions=()=>{alarmPermission.value=exactAlarmPermission();backgroundReminderFailed.value=window.qihangBackgroundReminderReady===false;};onMounted(()=>document.addEventListener('visibilitychange',refreshPermissions));onUnmounted(()=>document.removeEventListener('visibilitychange',refreshPermissions));
 const scope=ref(props.initialScope),vocabularySection=ref('study');
 const scopes=[{id:'general',icon:'settings',zh:'通用',fr:'Général'},{id:'vocabulary',icon:'book',zh:'词汇',fr:'Vocabulaire'},{id:'grammar',icon:'grammar',zh:'语法',fr:'Grammaire'},{id:'oral',icon:'microphone',zh:'口语',fr:'Expression orale'}];
-const vocabularyTabs=[{id:'study',icon:'book',zh:'学习',fr:'Étude'},{id:'review',icon:'repeat',zh:'复习',fr:'Révision'},{id:'data',icon:'upload',zh:'资料',fr:'Données'},{id:'guide',icon:'info',zh:'帮助',fr:'Aide'}];
+const vocabularyTabs=[{id:'study',icon:'book',zh:'学习',fr:'Étude'},{id:'review',icon:'repeat',zh:'复习',fr:'Révision'},{id:'audio',icon:'sound',zh:'语音',fr:'Audio'},{id:'data',icon:'upload',zh:'资料',fr:'Données'},{id:'guide',icon:'info',zh:'帮助',fr:'Aide'}];
 const articles=[{id:'choice',zh:'选择冠词',fr:'Choisir'},{id:'typed',zh:'自行填写',fr:'Écrire'}];
 const motions=[{id:'slide',zh:'滑动',fr:'Glisser'},{id:'page',zh:'翻页',fr:'Tourner'},{id:'none',zh:'关闭',fr:'Aucune'}];
 const reviewModes=[{id:'both',zh:'认义＋填空',fr:'Sens + écrit'},{id:'spelling',zh:'只做填空',fr:'Écrit seul'}];

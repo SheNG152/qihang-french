@@ -1,0 +1,141 @@
+// Persisted, platform-independent matching session. All scoring stays in the controller.
+const clone = x => JSON.parse(JSON.stringify(x));
+export const wordKey = e => `${e.verbe}|${e.temps}`;
+const taskKey = e => `${wordKey(e)}|${e.personne}`;
+const uid = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+export function mix(items) { const a = [...items]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+export function smallGroups(items) {
+  const groups = []; let at = 0;
+  while (at < items.length) { const size = Math.min(3, items.length - at); groups.push(items.slice(at, at + size)); at += size; }
+  return groups;
+}
+const require = (ok, text) => { if (!ok) throw new Error(text); };
+export class MatchSession {
+  constructor(state, env) {
+    this.s = state; this.env = env;
+    if (state.game_version < 2) {
+      state.match_rounds = Math.max(state.phase === 'match' ? state.cycle : 0, state.mode === 'review' || state.entries?.every(e => e.reviewed) ? 1 : 2);
+      state.game_version = 2;
+      if (state.question) state.question.match_rounds = state.match_rounds;
+    }
+  }
+  static create(entries, options, env) {
+    const verbs=[...new Set(entries.map(e=>e.verbe))];
+    const groups=smallGroups(verbs).map(group=>({entries:clone(entries.filter(e=>group.includes(e.verbe)))}));
+    const s = { game: true, game_version: 1, mode: options.mode || 'learn', direct: Boolean(options.direct), source: options.source || 'learn', level: options.level || '', temps: options.tense || entries[0]?.temps || '现在时', settings: clone(options.settings || {}), groups, cursor: -1, done: 0, completed_words: [], question: null };
+    s.game_version = 2;
+    s.match_rounds = s.mode === 'review' || entries.every(e => e.reviewed) ? 1 : 2;
+    return new MatchSession(s, env);
+  }
+  activate() {
+    const s = this.s;
+    if (++s.cursor >= s.groups.length) return false;
+    s.entries = clone(s.groups[s.cursor].entries); s.batch_done = 0; s.decisions = {};
+    s.match_rounds = s.mode === 'review' || s.entries.every(e => e.reviewed) ? 1 : 2;
+    s.judges = s.entries.map(wordKey);
+    s.phase = 'judge'; s.cycle = 0; s.pending = []; s.board = null;
+    s.match_retry = {}; s.fill_retry = {}; s.repeating = false;
+    return true;
+  }
+  tasks() { return this.s.entries.filter(e => this.s.decisions[wordKey(e)] !== 1).flatMap(e => e.personnes.map(personne => ({ verbe: e.verbe, temps: e.temps, personne, key: taskKey({ ...e, personne }) }))); }
+  remaining() {
+    const s = this.s, rounds = s.match_rounds + 1;
+    const future = s.groups.slice(s.cursor + 1).reduce((n, g) => n + g.entries.length, 0);
+    if (s.cursor >= s.groups.length) return 0;
+    if (s.phase === 'judge') return future + s.judges.length + this.tasks().filter(t => s.decisions[wordKey(t)] != null || s.direct || s.mode === 'review').length * rounds;
+    return future + s.pending.length + (s.phase === 'match' ? this.tasks().length * (s.match_rounds - s.cycle + 1) + (s.repeating ? 0 : Object.keys(s.match_retry || {}).length) : Object.keys(s.fill_retry || {}).length);
+  }
+  question() {
+    const s = this.s;
+    while (true) {
+      if (s.cursor < 0 && !this.activate() || s.cursor >= s.groups.length) return { completed: true, mode: s.mode, game: true };
+      if (s.phase === 'judge' && !s.judges.length) { s.phase = 'match'; s.cycle = 1; s.pending = mix(this.tasks()); }
+      if (s.phase !== 'judge' && !s.pending.length) {
+        if (s.phase === 'match' && s.cycle < s.match_rounds) { s.cycle++; s.pending = mix(this.tasks()); s.board = null; s.repeating = false; }
+        else if (s.phase === 'match' && !s.repeating && Object.keys(s.match_retry || {}).length) { s.pending = mix(Object.values(s.match_retry)); s.match_retry = {}; s.repeating = true; s.board = null; }
+        else if (s.phase === 'match') { s.phase = 'fill'; s.pending = mix(this.tasks()); s.board = null; }
+        else { if (!this.activate()) return { completed: true, mode: s.mode, game: true }; continue; }
+        if (!s.pending.length) continue;
+      }
+      let entry;
+      if (s.phase === 'judge') entry = s.entries.find(e => wordKey(e) === s.judges[0]);
+      else entry = s.pending[0];
+      if (s.phase === 'match') {
+        if (!s.board || s.board.matched_left.length === s.board.cards.length) {
+          const cards = s.pending.slice(0, 6).map(e => { const forms = this.env.forms(e.verbe, e.temps); return { ...e, form: forms[e.personne], accepts: Object.keys(forms).filter(p => forms[p] === forms[e.personne]) }; });
+          s.board = { id: uid(), cards, left: mix(cards.map(e => e.key)), right: mix(cards.map(e => e.key)), left_persons: Object.fromEntries(cards.map(e => [e.key, e.personne])), matched_left: [], matched_right: [] };
+        }
+      }
+      const q = { id: uid(), game: true, mode: s.mode, direct: s.direct, source: s.source, round: s.phase, level: s.level, verbe: entry.verbe, temps: entry.temps, personne: entry.personne, batch_index: s.cursor + 1, batch_count: s.groups.length, batch_verbs: s.entries.map(e => e.verbe), batch_entries: s.entries.map(e => ({ verbe: e.verbe, temps: e.temps })), done: s.done, total: s.done + this.remaining(), group_done: s.batch_done, match_rounds: s.match_rounds, game_round: s.cycle };
+      q.is_reinforcement = s.phase === 'match' && Boolean(s.repeating);
+      q.preview_only = s.direct || s.mode === 'review';
+      if (s.phase === 'judge') q.conjugations = this.env.forms(entry.verbe, entry.temps);
+      if (s.phase === 'match') q.board = clone(s.board);
+      if (s.phase === 'fill') q.hint = this.env.hint?.(entry.verbe, this.env.forms(entry.verbe, entry.temps)[entry.personne]) || '';
+      s.question = q; return q;
+    }
+  }
+  answer(body) {
+    const s = this.s, q = s.question;
+    require(q && body.id === q.id, '题目已更新，请重新打开练习继续。');
+    if (s.phase === 'judge') {
+      require([1, 2, 3].includes(body.choice), '请选择掌握程度。');
+      const id = s.judges.shift(), entry = s.entries.find(e => wordKey(e) === id);
+      s.decisions[id] = body.choice; s.done++; s.batch_done++;
+      if (body.choice === 1) this.env.known(entry);
+      return { correct: true, judged: true, next: this.question() };
+    }
+    let entry, correct, expected;
+    if (s.phase === 'match') {
+      const b = s.board;
+      const left = b.cards.find(e => e.key === body.person_key);
+      const form = b.cards.find(e => e.key === body.form_key);
+      require(left && form && !b.matched_left.includes(left.key) && !b.matched_right.includes(form.key), '请选择两张尚未消除的卡片。');
+      b.left_persons ||= Object.fromEntries(b.cards.map(e => [e.key, e.personne]));
+      const person = b.left_persons[left.key], forms = this.env.forms(form.verbe, form.temps);
+      expected = forms[person] || form.form;
+      correct = forms[person] === form.form;
+      entry = correct || !forms[person] ? form : { ...form, personne: person, key: taskKey({ ...form, personne: person }) };
+      if (correct) {
+        b.matched_left.push(left.key); b.matched_right.push(form.key);
+        if (person !== form.personne) {
+          const slot = b.left.find(id => !b.matched_left.includes(id) && b.left_persons[id] === form.personne);
+          if (slot) b.left_persons[slot] = person;
+        }
+      } else if (!s.repeating) { s.match_retry ||= {}; s.match_retry[entry.key] = clone(entry); }
+    } else {
+      entry = s.pending[0]; expected = this.env.forms(entry.verbe, entry.temps)[entry.personne];
+      require(String(body.answer || '').trim(), '请先输入答案。');
+      correct = this.env.check(String(body.answer).trim(), expected, s.settings.fuzzy !== false);
+      if (!correct) { s.fill_retry ||= {}; s.fill_retry[entry.key] = 1; }
+    }
+    this.env.record(correct, entry);
+    if (correct) {
+      s.pending = s.pending.filter(e => e.key !== entry.key); s.done++; s.batch_done++;
+      if (s.phase === 'fill' && s.fill_retry?.[entry.key]) { delete s.fill_retry[entry.key]; s.pending.push(entry); if (s.pending.length > 1 && s.pending[0].key === entry.key) [s.pending[0], s.pending[1]] = [s.pending[1], s.pending[0]]; }
+      if (s.phase === 'fill' && !s.pending.some(e => wordKey(e) === wordKey(entry)) && !s.completed_words.includes(wordKey(entry))) {
+        this.env.complete(entry, s); if (!s.completed_words.includes(wordKey(entry))) s.completed_words.push(wordKey(entry));
+      }
+    }
+    return { correct, expected, matched: s.phase === 'match', next: this.question() };
+  }
+  restart(excluded = new Set()) {
+    const s = this.s; s.done = Math.max(0, s.done - s.batch_done);
+    s.groups[s.cursor].entries = s.entries.filter(e => !excluded.has(wordKey(e)));
+    s.cursor--; this.activate(); return this.question();
+  }
+  remove(selected, returned = []) {
+    const s = this.s;
+    const affected = s.entries?.some(e => selected.has(wordKey(e)));
+    for (const g of s.groups) g.entries = g.entries.filter(e => !selected.has(wordKey(e)));
+    s.entries = (s.entries || []).filter(e => !selected.has(wordKey(e)));
+    s.judges = (s.judges || []).filter(id => !selected.has(id));
+    s.pending = (s.pending || []).filter(e => !selected.has(wordKey(e)));
+    for (const [key, entry] of Object.entries(s.match_retry || {})) if (selected.has(wordKey(entry))) delete s.match_retry[key];
+    for (const key of Object.keys(s.fill_retry || {})) if (selected.has(key.split('|').slice(0, 2).join('|'))) delete s.fill_retry[key];
+    if (affected) s.board = null;
+    if (returned.length) s.groups.splice(s.cursor + 1, 0, ...smallGroups(returned).map(entries => ({ entries })));
+    if (affected) s.question = null;
+    else if (s.question) { s.question.total = s.done + this.remaining(); s.question.batch_count = s.groups.length; }
+  }
+}

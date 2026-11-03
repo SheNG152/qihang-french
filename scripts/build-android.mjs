@@ -65,7 +65,7 @@ const contents=unzipSync(fs.readFileSync(path.join(build,'resources.apk')));
 // Write web assets with UTF-8 ZIP names: Windows aapt2 cannot open Chinese filenames.
 const web=path.join(root,'dist/build/h5');
 function addAssets(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);if(entry.isSymbolicLink())throw new Error('网页资源不能包含外部链接');if(entry.isDirectory())addAssets(file);else{
- const relative=path.relative(web,file).replaceAll('\\','/');if(refreshRepairWeb&&relative.startsWith('static/'))continue;
+ const relative=path.relative(web,file).replaceAll('\\','/');if(/^static\/lexicon\/audio\/[a-f0-9]{64}\.mp3$/.test(relative))continue;if(refreshRepairWeb&&relative.startsWith('static/'))continue;
  let bytes=fs.readFileSync(file);
  if(refreshRepairWeb&&/\.(?:js|html|json|css)$/.test(relative)){
   const text=bytes.toString('utf8').replaceAll(sourceManifest.name,appName).replaceAll('versionName:"'+sourceManifest.versionName+'"','versionName:"'+version+'"').replaceAll('"versionName":"'+sourceManifest.versionName+'"','"versionName":"'+version+'"').replaceAll('versionCode:"'+sourceManifest.versionCode+'"','versionCode:"'+versionCode+'"').replaceAll('"versionCode":"'+sourceManifest.versionCode+'"','"versionCode":"'+versionCode+'"');
@@ -76,7 +76,7 @@ function addAssets(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:tru
 if(repairAssets){for(const [name,bytes] of Object.entries(repairAssets))if(name.startsWith('assets/')||name.startsWith('lib/'))contents[name]=bytes;}
 else{
 addAssets(web);
-for(const name of ['model-manifest.json','evaluation-schema.json'])contents['assets/native/'+name]=fs.readFileSync(path.join(root,'native',name));
+for(const name of ['model-manifest.json','evaluation-schema.json','extra-audio-manifest.json'])contents['assets/native/'+name]=fs.readFileSync(path.join(root,'native',name));
 const nativeLibrary=path.join(root,'android/jniLibs/arm64-v8a/libqihang_speech.so');
 if(!fs.existsSync(nativeLibrary))throw new Error('缺少本机语音识别库，请先运行 build:native');
 contents['lib/arm64-v8a/libqihang_speech.so']=fs.readFileSync(nativeLibrary);

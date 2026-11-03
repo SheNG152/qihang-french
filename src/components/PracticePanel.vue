@@ -1,11 +1,11 @@
 <template>
   <view class="practice-panel" @click="closeArticle">
     <Transition :name="definitionVisible?'definition-sheet':motion==='none'?'no-motion':question?.kind==='recognize'?'recognition-sheet':motion==='page'?'word-switch-page':'word-switch-slide'" mode="out-in">
-      <DefinitionPanel v-if="definitionVisible" key="definition" ref="definitionCard" :pkg="sourcePkg||pkg" :word="word" :favorite="favorite" :playing="playing" :busy="busy" :allow-known="session.mode!=='errors'" @favorite="$emit('favorite',word)" @audio="$emit('audio',$event)" @known="forwardKnown" @continue="continueDefinition"></DefinitionPanel>
+      <DefinitionPanel v-if="definitionVisible" key="definition" ref="definitionCard" :pkg="sourcePkg||pkg" :word="word" :favorite="favorite" :playing="playing" :busy="busy" :allow-known="session.mode!=='errors'" :allow-remove="false" @remove="removeImported" @favorite="$emit('favorite',word)" @audio="$emit('audio',$event)" @known="forwardKnown" @continue="continueDefinition"></DefinitionPanel>
       <view v-else-if="question" :key="question.kind==='spell'?'spell:'+question.wordId+':'+question.formId:'question:'+question.id" class="exercise-screen" :class="{'is-recognition':question.kind==='recognize'}">
         <view class="exercise-body">
           <view class="exercise-head"><Bi :zh="question.kind==='recognize'?'选择中文':'写出法语'" :fr="question.kind==='recognize'?'Choisir le sens':'Écrire le mot'" small /><view v-if="question.kind==='recognize'" class="recognition-audio-controls"><button v-if="sentenceRecording" hover-class="none" class="round-audio sentence-audio" @click="$emit('audio',sentenceRecording)" aria-label="播放例句 / Écouter la phrase"><Icon name="phrase" /></button></view></view>
-          <view class="exercise-prompt"><text :lang="question.kind==='recognize'?'fr':'zh'">{{ question.kind==='recognize'?displayForm(word,form):word.meanings.join('；') }}</text><text class="question-detail">{{ questionDetail }}<template v-if="form?.questionHint"> · {{ form.questionHint }}</template></text></view>
+          <view class="exercise-prompt"><text :lang="question.kind==='recognize'?'fr':'zh'">{{ question.kind==='recognize'?displayForm(word,form):primaryMeaning(word) }}</text><text class="question-detail">{{ questionDetail }}<template v-if="form?.questionHint"> · {{ form.questionHint }}</template></text></view>
           <view v-if="question.kind==='recognize'&&example?.fr" class="exercise-context"><ExampleSentence :text="example.fr" :word="word" /></view>
           <view v-if="question.options" class="exercise-options">
             <button v-for="(option,index) in question.options" :key="option.id" hover-class="none" :class="['exercise-option',{correct:session.feedback?.correct&&option.id===word.id,incorrect:question.rejectedIds?.includes(option.id)}]" :disabled="busy||submitted||!!session.feedback||question.rejectedIds?.includes(option.id)" @click="submit(option.id)"><text class="option-letter">{{ String.fromCharCode(65+index) }}</text><text>{{ option.label }}<text v-if="question.rejectedIds?.includes(option.id)" class="wrong-option-word">{{ option.french||optionWord(option.id) }}</text></text><Icon v-if="question.rejectedIds?.includes(option.id)||(session.feedback?.correct&&option.id===word.id)" :name="option.id===word.id?'check':'close'" /></button>
@@ -33,6 +33,7 @@
 </template>
 <script setup>
 import {computed,ref,watch,nextTick,onUnmounted} from 'vue';
+import {primaryMeaning} from '../domain/meanings.js';
 import ExampleSentence from './ExampleSentence.vue';
 import FrenchKeyboard from './FrenchKeyboard.vue';
 import AnswerInput from './AnswerInput.vue';
@@ -40,8 +41,8 @@ import {nativeHost} from '../platform/native.js';
 import {playCorrect,playTap} from '../platform/feedback-sounds.js';
 import Bi from './Bi.vue';import Icon from './Icon.vue';import DefinitionPanel from './DefinitionPanel.vue';import SpellingFeedback from './SpellingFeedback.vue';
 import {displayForm,spellingParts,spellingTask,sharedExample,splitNounArticle,exampleAudio} from '../domain/word-display.js';
-const props=defineProps({pkg:Object,sourcePkg:Object,session:Object,word:Object,form:Object,favorite:Boolean,playing:String,busy:Boolean,motion:String,articleMode:String});
-const emit=defineEmits(['answer','next','hint','retry-hint','known','favorite','audio','audio-stop']);
+const props=defineProps({pkg:Object,sourcePkg:Object,session:Object,word:Object,form:Object,favorite:Boolean,playing:String,busy:Boolean,allowRemove:Boolean,motion:String,articleMode:String});
+const emit=defineEmits(['answer','next','hint','retry-hint','known','favorite','audio','audio-stop','remove']);
 const useTouchKeyboard=!!nativeHost()||/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const answerInput=ref(null),keyboardOpen=ref(false),draft=ref('');
 const input=ref(''),focusInput=ref(false),articleSelection=ref(''),articleOpen=ref(false),submitted=ref(false),choiceReady=ref(false),definitionOpen=ref(false),returnedToQuestion=ref(false),definitionCard=ref(null);let choiceTimer,retryFocus=false;
@@ -94,8 +95,10 @@ function submit(value){
 function showHint(){closeKeyboard();closeArticle();returnedToQuestion.value=false;if(props.session.feedback)definitionOpen.value=true;else emit('hint');}
 function retrySpelling(){if(!props.busy&&props.session.feedback&&!props.session.feedback.correct){input.value='';draft.value='';articleSelection.value='';focusInput.value=false;retryFocus=true;closeArticle();emit('next');}}
 function continueDefinition(){if(props.session.question?.hinted)emit('retry-hint');else emit('next');}
+function removeImported(){if(props.busy)return;clearTimeout(choiceTimer);closeKeyboard();closeArticle();emit('remove',props.word);}
 function forwardKnown(word,done,pkg){emit('known',word,done,pkg);}
 function backToQuestion(){
+  if(definitionCard.value?.closeConjugation?.())return true;
   if(keyboardOpen.value){closeKeyboard();return true;}
   if(articleOpen.value){closeArticle();return true;}
   if(!definitionVisible.value)return false;

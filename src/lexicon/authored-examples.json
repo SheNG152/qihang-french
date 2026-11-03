@@ -1,0 +1,4580 @@
+{
+  "qu'est-ce que c'est": {
+    "fr": "Qu'est-ce que c'est, ce petit objet sur la table ?",
+    "zh": "桌上这个小东西是什么？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vous-autres": {
+    "fr": "Et vous-autres, vous venez avec nous ?",
+    "zh": "那你们呢，要和我们一起去吗？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est-à-dire": {
+    "fr": "Nous partons demain, c'est-à-dire lundi.",
+    "zh": "我们明天出发，也就是星期一。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nous-autres": {
+    "fr": "Nous-autres, nous préférons marcher.",
+    "zh": "我们这些人更喜欢走路。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est la vie": {
+    "fr": "Le voyage est annulé, mais c'est la vie.",
+    "zh": "旅行取消了，不过生活就是这样。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "n'avoir que faire": {
+    "fr": "Il affirme n'avoir que faire de ces critiques.",
+    "zh": "他声称根本不在乎这些批评。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "au compte de": {
+    "fr": "Ces achats seront portés au compte de l'entreprise.",
+    "zh": "这些采购费用将记在公司账上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "s'en aller": {
+    "fr": "Il est temps de s'en aller avant la nuit.",
+    "zh": "该在天黑前离开了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "voir du pays": {
+    "fr": "Elle voyage à vélo pour voir du pays.",
+    "zh": "她骑自行车旅行，游历各地。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "d'autre part": {
+    "fr": "Ce logement est petit ; d'autre part, il est bien situé.",
+    "zh": "这套房子很小，但另一方面，位置很好。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre au jour": {
+    "fr": "Cette enquête pourrait mettre au jour une fraude.",
+    "zh": "这项调查可能揭露一起欺诈案。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avant-centre": {
+    "fr": "L'avant-centre a marqué le dernier but du match.",
+    "zh": "中锋打进了本场比赛的最后一球。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avant-projet": {
+    "fr": "L'architecte nous présente un avant-projet de la maison.",
+    "zh": "建筑师向我们展示房屋的初步设计。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ligne de vie": {
+    "fr": "Sur le toit, il attache son harnais à la ligne de vie.",
+    "zh": "在屋顶上，他把安全带连接到防坠救生索。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se faire la belle": {
+    "fr": "Le prisonnier a tenté de se faire la belle pendant la nuit.",
+    "zh": "这名囚犯试图在夜间逃跑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre en question": {
+    "fr": "Ces résultats nous obligent à mettre en question notre méthode.",
+    "zh": "这些结果迫使我们质疑自己的方法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "homme de main": {
+    "fr": "Le chef du réseau a envoyé un homme de main.",
+    "zh": "这个团伙的头目派出了一名打手。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "compte à vue": {
+    "fr": "Son salaire est versé sur un compte à vue.",
+    "zh": "他的工资存入一个活期账户。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "première base": {
+    "fr": "Le joueur court vers la première base.",
+    "zh": "这名球员向一垒跑去。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ancien français": {
+    "fr": "Ce cours présente quelques textes en ancien français.",
+    "zh": "这门课介绍几篇古法语文本。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre en terre": {
+    "fr": "Nous allons mettre en terre les jeunes plants.",
+    "zh": "我们要把幼苗种到地里。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir intérêt": {
+    "fr": "Tu vas avoir intérêt à garder ce reçu.",
+    "zh": "你最好保留这张收据。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "après-après-demain": {
+    "fr": "Nous nous reverrons après-après-demain.",
+    "zh": "我们大后天会再见面。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "grand blanc": {
+    "fr": "Dans cette étude historique, un grand blanc désigne un riche planteur colonial.",
+    "zh": "在这项历史研究中，该词指富有的殖民地种植园主。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "belle-de-nuit": {
+    "fr": "La belle-de-nuit ouvre ses fleurs en fin de journée.",
+    "zh": "紫茉莉在傍晚绽放。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vieux français": {
+    "fr": "Ce manuscrit contient plusieurs mots de vieux français.",
+    "zh": "这份手稿含有几个古法语词。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir sur les bras": {
+    "fr": "Il craint d'avoir sur les bras un travail trop lourd.",
+    "zh": "他担心自己会摊上过重的工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est combien": {
+    "fr": "Ce carnet, c'est combien ?",
+    "zh": "这个笔记本多少钱？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "deuxième base": {
+    "fr": "La balle arrive près de la deuxième base.",
+    "zh": "球落在二垒附近。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prendre sa source": {
+    "fr": "Cette rivière semble prendre sa source dans la montagne.",
+    "zh": "这条河似乎发源于山中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "armée de l'air": {
+    "fr": "Sa sœur travaille dans l'armée de l'air.",
+    "zh": "他的姐姐在空军工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "âge d'or": {
+    "fr": "Le musée présente l'âge d'or du cinéma français.",
+    "zh": "博物馆展示了法国电影的黄金时代。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir bonne presse": {
+    "fr": "Cette nouvelle association semble avoir bonne presse.",
+    "zh": "这个新协会似乎获得了媒体的好评。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "attendre famille": {
+    "fr": "L'expression ancienne « attendre famille » signifie attendre un enfant.",
+    "zh": "这个旧表达的意思是怀有身孕。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir le cœur sur la main": {
+    "fr": "Elle est toujours prête à aider : on dit qu'elle a le cœur sur la main.",
+    "zh": "她总是乐于助人，大家说她非常慷慨。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "a le cœur sur la main"
+  },
+  "répondre au nom de": {
+    "fr": "Ce petit chien semble répondre au nom de Milo.",
+    "zh": "这只小狗似乎叫米洛。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir du cul": {
+    "fr": "Il dit avoir du cul d'avoir retrouvé ses clés si vite.",
+    "zh": "他说这么快找回钥匙，真是走运。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sortir la tête de l'eau": {
+    "fr": "Ce nouveau contrat va nous aider à sortir la tête de l'eau.",
+    "zh": "这份新合同将帮助我们走出困境。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "troisième base": {
+    "fr": "Le coureur s'arrête à la troisième base.",
+    "zh": "跑垒员在三垒停下来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trouver sa voie": {
+    "fr": "Elle essaie encore de trouver sa voie professionnelle.",
+    "zh": "她仍在努力寻找适合自己的职业道路。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "partir sans demander son reste": {
+    "fr": "En voyant l'orage arriver, il préfère partir sans demander son reste.",
+    "zh": "看到暴风雨要来了，他决定赶紧离开。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "anglais américain": {
+    "fr": "Elle écoute des podcasts en anglais américain.",
+    "zh": "她听美国英语播客。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir le bras long": {
+    "fr": "Il faut avoir le bras long pour obtenir si vite ce rendez-vous.",
+    "zh": "能这么快约到这个人，得很有关系才行。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir des gaz": {
+    "fr": "On peut avoir des gaz après avoir mangé des haricots.",
+    "zh": "吃过豆类之后可能会胀气。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bande-vidéo": {
+    "fr": "Nous avons retrouvé une ancienne bande-vidéo de famille.",
+    "zh": "我们找到了一盘旧的家庭录像带。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "connaître de vue": {
+    "fr": "Je crois connaître de vue votre collègue.",
+    "zh": "我觉得我见过您的同事。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "taux d'emploi": {
+    "fr": "Le taux d'emploi a augmenté dans cette région.",
+    "zh": "这个地区的就业率提高了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être du pareil au même": {
+    "fr": "Changer seulement le titre risque d'être du pareil au même.",
+    "zh": "只改标题，可能还是换汤不换药。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas avoir son pareil": {
+    "fr": "Paul semble ne pas avoir son pareil pour raconter des histoires.",
+    "zh": "保罗讲故事似乎无人能比。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "manger ses mots": {
+    "fr": "Il parle trop vite et finit par manger ses mots.",
+    "zh": "他说得太快，最后变得含混不清。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir mal aux cheveux": {
+    "fr": "Après cette soirée, il risque d'avoir mal aux cheveux.",
+    "zh": "昨晚喝了酒之后，他可能会宿醉头痛。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "joueur de premier but": {
+    "fr": "Le joueur de premier but attrape la balle.",
+    "zh": "一垒手接住了球。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "premier secrétaire": {
+    "fr": "Le parti vient d'élire son premier secrétaire.",
+    "zh": "该党刚刚选出了第一书记。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "regarder de travers": {
+    "fr": "Il ne faut pas regarder de travers les nouveaux élèves.",
+    "zh": "不要用不友善的目光看新同学。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "en avoir plein le cul": {
+    "fr": "Il avoue en avoir plein le cul de ces retards.",
+    "zh": "他承认自己早就受够了这些延误。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre à sac": {
+    "fr": "Les soldats menaçaient de mettre à sac la ville.",
+    "zh": "士兵们威胁要洗劫这座城市。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prendre naissance": {
+    "fr": "Le conflit semble prendre naissance dans un malentendu.",
+    "zh": "这场冲突似乎源于一个误会。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire étape": {
+    "fr": "Nous allons faire étape à Lyon avant de continuer.",
+    "zh": "我们要先在里昂停留，再继续赶路。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "liste de suivi": {
+    "fr": "J'ai ajouté cet article à ma liste de suivi.",
+    "zh": "我把这篇文章加入了关注列表。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bonne-maman": {
+    "fr": "Les enfants préparent un gâteau pour bonne-maman.",
+    "zh": "孩子们正在给奶奶做蛋糕。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "entrer en jeu": {
+    "fr": "Le prix ne doit pas être le seul facteur à entrer en jeu.",
+    "zh": "价格不应该是唯一需要考虑的因素。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "joueur de deuxième but": {
+    "fr": "Le joueur de deuxième but relance rapidement la balle.",
+    "zh": "二垒手迅速把球传了出去。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne plus se sentir": {
+    "fr": "À force de compliments, il semble ne plus se sentir.",
+    "zh": "听了太多赞美，他似乎得意忘形了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bas-bleu": {
+    "fr": "Dans ce roman ancien, le terme bas-bleu est employé pour se moquer d'une femme instruite.",
+    "zh": "在这部旧小说中，这个词被用来嘲讽有学问的女性。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se faire rare": {
+    "fr": "Avec la sécheresse, l'eau commence à se faire rare.",
+    "zh": "由于干旱，水开始变得稀缺。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se regarder dans le blanc des yeux": {
+    "fr": "Ils continuent à se regarder dans le blanc des yeux, sans parler.",
+    "zh": "他们仍然一言不发地直视着对方。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir mauvaise presse": {
+    "fr": "Cette entreprise commence à avoir mauvaise presse.",
+    "zh": "这家企业开始受到媒体的负面评价。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "centre de masse": {
+    "fr": "Le centre de masse de cet objet est situé au milieu.",
+    "zh": "这个物体的质心位于中部。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nombre naturel": {
+    "fr": "Sept est un nombre naturel.",
+    "zh": "七是一个自然数。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "femme d'ouvrage": {
+    "fr": "Une femme d'ouvrage vient nettoyer les bureaux le soir.",
+    "zh": "一名清洁女工晚上来打扫办公室。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "laisser sa peau": {
+    "fr": "Il a failli laisser sa peau dans cet accident.",
+    "zh": "他差点在这次事故中丧命。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "esprit-de-vin": {
+    "fr": "Ce vieux manuel utilise le terme esprit-de-vin pour désigner l'alcool.",
+    "zh": "这本旧手册用这个词指称酒精。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "joueur de troisième but": {
+    "fr": "Le joueur de troisième but surveille le coureur.",
+    "zh": "三垒手注视着跑垒员。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire défaut": {
+    "fr": "Les idées sont bonnes, mais les moyens risquent de faire défaut.",
+    "zh": "想法很好，但可能会缺少实施手段。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "voie de communication": {
+    "fr": "Le fleuve est une importante voie de communication.",
+    "zh": "这条河是一条重要的交通通道。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "oeuvre": {
+    "fr": "Dans ce fichier ancien, le mot « oeuvre » est écrit sans ligature.",
+    "zh": "在这个旧文件中，œuvre 没有使用连字写法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "table d'opération": {
+    "fr": "L'équipe prépare la table d'opération.",
+    "zh": "团队正在准备手术台。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-troisième": {
+    "fr": "Elle a terminé à la quatre-vingt-troisième place.",
+    "zh": "她获得了第八十三名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être sur son trente et un": {
+    "fr": "Pour ce mariage, il veut être sur son trente et un.",
+    "zh": "为了参加这场婚礼，他想盛装打扮。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "s'il te plaît": {
+    "fr": "Ferme la fenêtre, s'il te plaît.",
+    "zh": "请关一下窗户。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "lire en quelqu'un comme dans un livre ouvert": {
+    "fr": "Peut-on vraiment lire en quelqu'un comme dans un livre ouvert ?",
+    "zh": "真的能把一个人的心思看得一清二楚吗？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "niveau de difficulté": {
+    "fr": "Tu peux choisir le niveau de difficulté du jeu.",
+    "zh": "你可以选择游戏的难度等级。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pierre de lune": {
+    "fr": "Ce pendentif est orné d'une pierre de lune.",
+    "zh": "这个吊坠镶着一颗月光石。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sous-traiter": {
+    "fr": "L'entreprise préfère sous-traiter une partie du travail.",
+    "zh": "这家公司更愿意将部分工作外包。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "passer l'arme à gauche": {
+    "fr": "Dans ce roman policier, le témoin risque de passer l'arme à gauche.",
+    "zh": "在这部侦探小说中，证人可能会送命。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "traduction à vue": {
+    "fr": "L'examen comprend une traduction à vue d'un court texte.",
+    "zh": "考试包括一篇短文的视译。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faux-palais": {
+    "fr": "Le dentiste ajuste le faux-palais du patient.",
+    "zh": "牙医正在调整病人的牙齿保持器。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "préparer le terrain": {
+    "fr": "Cette première réunion doit préparer le terrain pour un accord.",
+    "zh": "这次初步会议应为达成协议铺平道路。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "demander la lune": {
+    "fr": "Avoir une réponse claire, ce n'est pas demander la lune.",
+    "zh": "想得到一个明确答复，并不是什么过分的要求。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "perte de connaissance": {
+    "fr": "Après sa chute, il a eu une brève perte de connaissance.",
+    "zh": "跌倒之后，他曾短暂失去意识。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sauver l'honneur": {
+    "fr": "Ce dernier but a permis à l'équipe de sauver l'honneur.",
+    "zh": "最后这粒进球为球队挽回了颜面。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "agent double": {
+    "fr": "Le personnage principal du film est un agent double.",
+    "zh": "这部电影的主角是一名双重间谍。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bel-enfant": {
+    "fr": "Ce document ancien emploie bel-enfant pour désigner un enfant du conjoint.",
+    "zh": "这份旧文件用这个词指配偶的孩子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "page d'accueil": {
+    "fr": "Clique sur le logo pour revenir à la page d'accueil.",
+    "zh": "点击标志，返回首页。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas être la mer à boire": {
+    "fr": "Ranger ces livres, ce n'est pas la mer à boire.",
+    "zh": "整理这些书，并不是什么难事。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "n'est pas la mer à boire"
+  },
+  "contre-transfert": {
+    "fr": "Le cours aborde le contre-transfert dans la relation thérapeutique.",
+    "zh": "这门课讨论治疗关系中的反移情。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mer d'huile": {
+    "fr": "Au lever du jour, nous découvrons une mer d'huile.",
+    "zh": "黎明时分，我们看到一片平静如镜的海。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "concours complet": {
+    "fr": "Elle participe à un concours complet d'équitation.",
+    "zh": "她参加了一场马术三项赛。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "demi-soeur": {
+    "fr": "Ma demi-soeur habite dans la même ville que moi.",
+    "zh": "我的同父异母姐姐和我住在同一座城市。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "si majeur": {
+    "fr": "Ce morceau pour piano est écrit en si majeur.",
+    "zh": "这首钢琴曲是用 B 大调写成的。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "d'une traite": {
+    "fr": "J'ai lu ce livre d'une traite.",
+    "zh": "我一口气读完了这本书。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "droit civil": {
+    "fr": "Elle étudie le droit civil à l'université.",
+    "zh": "她在大学学习民法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre de l'huile sur le feu": {
+    "fr": "Cette remarque risque de mettre de l'huile sur le feu.",
+    "zh": "这句话可能会火上浇油。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas voir plus loin que le bout de son nez": {
+    "fr": "Il semble ne pas voir plus loin que le bout de son nez.",
+    "zh": "他似乎只顾眼前，缺乏远见。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contre-manifestation": {
+    "fr": "Une contre-manifestation est organisée sur la place voisine.",
+    "zh": "附近的广场上组织了一场反示威活动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "s'il vous plait": {
+    "fr": "Un café, s'il vous plait.",
+    "zh": "请给我一杯咖啡。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trou blanc": {
+    "fr": "Le documentaire présente l'hypothèse du trou blanc.",
+    "zh": "纪录片介绍了白洞的假说。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "s'en falloir": {
+    "fr": "Il s'en est fallu de peu pour que le projet échoue.",
+    "zh": "这个项目差一点就失败了。",
+    "highlight": "s'en est fallu de peu",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "s'il te plait": {
+    "fr": "Attends-moi, s'il te plait.",
+    "zh": "请等一下我。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "franc français": {
+    "fr": "Avant l'euro, le franc français était la monnaie de la France.",
+    "zh": "在欧元出现之前，法国法郎是法国的货币。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "institut de beauté": {
+    "fr": "Elle a réservé un soin dans un institut de beauté.",
+    "zh": "她预约了美容院的护理。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pouvoir toujours courir": {
+    "fr": "Tu peux toujours courir : je ne te prêterai pas ma voiture.",
+    "zh": "你想也别想：我不会把车借给你。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "peux toujours courir"
+  },
+  "énergie nucléaire": {
+    "fr": "Ce débat porte sur la place de l'énergie nucléaire.",
+    "zh": "这场辩论讨论核能的地位。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "liste de diffusion": {
+    "fr": "Inscris-toi à la liste de diffusion pour recevoir les nouvelles.",
+    "zh": "加入邮件列表，即可收到最新消息。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sortir de nulle part": {
+    "fr": "Ce bruit semble sortir de nulle part.",
+    "zh": "这声音似乎不知从哪里突然传来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir hâte": {
+    "fr": "Je commence à avoir hâte de te revoir.",
+    "zh": "我开始迫不及待地想再见到你。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "banque d'investissement": {
+    "fr": "Elle travaille pour une banque d'investissement.",
+    "zh": "她在一家投资银行工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "attendre un heureux événement": {
+    "fr": "Ils viennent d'annoncer attendre un heureux événement.",
+    "zh": "他们刚刚宣布家里有喜了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire bon ménage": {
+    "fr": "Ces deux collègues semblent faire bon ménage.",
+    "zh": "这两位同事似乎相处得很融洽。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir des vues sur": {
+    "fr": "Il semble avoir des vues sur le poste de directeur.",
+    "zh": "他似乎看中了经理的职位。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "lait entier": {
+    "fr": "J'utilise du lait entier pour préparer cette crème.",
+    "zh": "我用全脂牛奶做这款奶油甜点。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "permis de séjour": {
+    "fr": "Elle doit renouveler son permis de séjour.",
+    "zh": "她需要更新居留许可。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "route royale": {
+    "fr": "Cette ancienne route royale reliait deux grandes villes.",
+    "zh": "这条旧时的王家大道连接着两座大城市。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "enseignement primaire": {
+    "fr": "L'enseignement primaire donne les bases de la lecture.",
+    "zh": "初等教育为阅读打下基础。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "forêt noire": {
+    "fr": "Pour son anniversaire, il a choisi une forêt noire.",
+    "zh": "他为自己的生日选了一个黑森林蛋糕。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mise en bouteille": {
+    "fr": "La mise en bouteille du jus commence ce matin.",
+    "zh": "果汁的装瓶工作今天上午开始。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nom spécifique": {
+    "fr": "Dans un nom scientifique, le nom spécifique suit le nom de genre.",
+    "zh": "在学名中，种加词位于属名之后。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se lever du pied gauche": {
+    "fr": "Il semble se lever du pied gauche et se plaint de tout.",
+    "zh": "他似乎一早就心情不好，什么都要抱怨。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tourner de l'œil": {
+    "fr": "La chaleur m'a presque fait tourner de l'œil.",
+    "zh": "炎热让我差点昏过去。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "appui-bras": {
+    "fr": "L'appui-bras de ce fauteuil est réglable.",
+    "zh": "这把扶手椅的扶手可以调节。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quasi-sœur": {
+    "fr": "Depuis le remariage de leurs parents, elles sont quasi-sœurs.",
+    "zh": "自父母再婚后，她们成了继姐妹。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se sortir les doigts du cul": {
+    "fr": "Il dit qu'il faut se sortir les doigts du cul et commencer le travail.",
+    "zh": "他说得赶紧行动起来，开始干活。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "lever les yeux au ciel": {
+    "fr": "Cette excuse lui fait lever les yeux au ciel.",
+    "zh": "这个借口让她翻了个白眼。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas payer de mine": {
+    "fr": "Ce petit restaurant peut ne pas payer de mine et être excellent.",
+    "zh": "这家小餐馆虽然不起眼，味道却可能非常好。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nombre carré": {
+    "fr": "Vingt-cinq est un nombre carré, car cinq fois cinq font vingt-cinq.",
+    "zh": "二十五是平方数，因为五乘五等于二十五。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "non-métal": {
+    "fr": "Le soufre est un non-métal.",
+    "zh": "硫是一种非金属。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arabe espagnol": {
+    "fr": "Ce chercheur étudie l'arabe espagnol du Moyen Âge.",
+    "zh": "这位研究者研究中世纪的安达卢斯阿拉伯语。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "billet de banque": {
+    "fr": "Un billet de banque est tombé de sa poche.",
+    "zh": "一张纸币从他的口袋里掉了出来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prendre les commandes": {
+    "fr": "La serveuse vient prendre les commandes des clients.",
+    "zh": "服务员过来为顾客点单。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "hors normes": {
+    "fr": "Ce sportif possède une endurance hors normes.",
+    "zh": "这位运动员有着超乎寻常的耐力。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas y aller par quatre chemins": {
+    "fr": "Je préfère ne pas y aller par quatre chemins : je refuse.",
+    "zh": "我就直说了：我拒绝。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "enseignement secondaire": {
+    "fr": "Il enseigne les sciences dans l'enseignement secondaire.",
+    "zh": "他在中学阶段教授科学。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fruit de mer": {
+    "fr": "La moule est un fruit de mer très apprécié.",
+    "zh": "贻贝是一种很受欢迎的海鲜。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "oreille moyenne": {
+    "fr": "L'oreille moyenne transmet les vibrations sonores.",
+    "zh": "中耳传递声音振动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "remettre à zéro": {
+    "fr": "Appuie ici pour remettre à zéro le compteur.",
+    "zh": "按这里将计数器归零。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clé primaire": {
+    "fr": "Chaque ligne de cette table possède une clé primaire unique.",
+    "zh": "这张表的每一行都有唯一的主键。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trou de nez": {
+    "fr": "Le médecin examine chaque trou de nez.",
+    "zh": "医生检查每一个鼻孔。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "manger son chapeau": {
+    "fr": "S'il se trompe encore, il va devoir manger son chapeau.",
+    "zh": "如果他再次弄错，就得承认自己错了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "accent grave": {
+    "fr": "Le mot « père » contient un accent grave.",
+    "zh": "père 这个词中有一个重音符。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "art plastique": {
+    "fr": "La sculpture est un art plastique.",
+    "zh": "雕塑是一种造型艺术。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "changer de registre": {
+    "fr": "Pour parler aux enfants, il faut parfois changer de registre.",
+    "zh": "和孩子说话时，有时需要改变表达方式。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "marque commerciale": {
+    "fr": "Ce nom est utilisé comme marque commerciale.",
+    "zh": "这个名称被用作商标。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "barre d'outils": {
+    "fr": "Le bouton se trouve dans la barre d'outils.",
+    "zh": "按钮位于工具栏中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tour d'ivoire": {
+    "fr": "Ce chercheur refuse de rester dans sa tour d'ivoire.",
+    "zh": "这位研究者不愿待在自己的象牙塔里。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arrière-gorge": {
+    "fr": "La fumée lui irrite l'arrière-gorge.",
+    "zh": "烟雾刺激了他的后咽部。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir la cote": {
+    "fr": "Cette chanson semble avoir la cote auprès des jeunes.",
+    "zh": "这首歌似乎很受年轻人欢迎。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "passer à tabac": {
+    "fr": "Les témoins ont vu plusieurs hommes passer à tabac un passant.",
+    "zh": "目击者看到几个人毒打了一名路人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "beau-parent": {
+    "fr": "Son beau-parent l'aide à organiser la fête.",
+    "zh": "他的姻亲长辈帮他筹备聚会。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "boîte d'envoi": {
+    "fr": "Le message est encore dans la boîte d'envoi.",
+    "zh": "邮件仍在发件箱中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bouton-d'or": {
+    "fr": "Un bouton-d'or pousse au bord du chemin.",
+    "zh": "一株金凤花生长在路边。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bulletin de vote": {
+    "fr": "Il glisse son bulletin de vote dans l'enveloppe.",
+    "zh": "他把选票放进信封。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ménage de printemps": {
+    "fr": "Nous faisons le ménage de printemps ce week-end.",
+    "zh": "这个周末我们要进行春季大扫除。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ours noir": {
+    "fr": "Le parc abrite une population d'ours noirs.",
+    "zh": "这座公园栖息着一群黑熊。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "ours noirs"
+  },
+  "calmer son jeu": {
+    "fr": "Après cette dispute, il devrait calmer son jeu.",
+    "zh": "争吵之后，他应该冷静下来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pomme d'amour": {
+    "fr": "Elle achète une pomme d'amour à la fête foraine.",
+    "zh": "她在游乐会上买了一个糖衣苹果。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "comité exécutif": {
+    "fr": "Le comité exécutif se réunira lundi.",
+    "zh": "执行委员会将于星期一开会。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "moteur à explosion": {
+    "fr": "Cette ancienne voiture possède un moteur à explosion.",
+    "zh": "这辆旧汽车装有内燃机。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "oreille interne": {
+    "fr": "L'oreille interne joue un rôle dans l'équilibre.",
+    "zh": "内耳在维持平衡方面发挥作用。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "culte de la personnalité": {
+    "fr": "Le livre critique le culte de la personnalité autour du dirigeant.",
+    "zh": "这本书批评了围绕领导者形成的个人崇拜。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "lâcher l'affaire": {
+    "fr": "Après plusieurs refus, elle décide de lâcher l'affaire.",
+    "zh": "几次被拒绝之后，她决定放弃这件事。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nom déposé": {
+    "fr": "Il faut vérifier si ce nom déposé peut être utilisé.",
+    "zh": "需要确认这个注册商标能否使用。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prime de bienvenue": {
+    "fr": "Le nouvel employé reçoit une prime de bienvenue.",
+    "zh": "这位新员工获得了一笔入职奖金。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "société anonyme": {
+    "fr": "L'entreprise a été créée sous la forme d'une société anonyme.",
+    "zh": "这家企业以股份有限公司的形式成立。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contre-expertise": {
+    "fr": "Le propriétaire demande une contre-expertise des dégâts.",
+    "zh": "业主要求对损失进行复核鉴定。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "liquide de gaz naturel": {
+    "fr": "Un liquide de gaz naturel peut servir de matière première industrielle.",
+    "zh": "天然气凝液可用作工业原料。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prendre ses jambes à son cou": {
+    "fr": "En entendant le chien aboyer, il préfère prendre ses jambes à son cou.",
+    "zh": "听到狗叫，他决定拔腿就跑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prisonnier politique": {
+    "fr": "L'association demande la libération de ce prisonnier politique.",
+    "zh": "该协会要求释放这名政治犯。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contre-indiquer": {
+    "fr": "Une allergie peut contre-indiquer ce traitement.",
+    "zh": "过敏可能使这种治疗成为禁忌。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mille marin": {
+    "fr": "La distance est indiquée en mille marin sur cette carte.",
+    "zh": "这张地图上的距离以海里表示。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas savoir sur quel pied danser": {
+    "fr": "Avec ces consignes contradictoires, elle avoue ne pas savoir sur quel pied danser.",
+    "zh": "面对相互矛盾的指示，她承认自己不知如何是好。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne douter de rien": {
+    "fr": "Il semble ne douter de rien, même sans expérience.",
+    "zh": "即使没有经验，他似乎也过于自信。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "social-démocrate": {
+    "fr": "Ce candidat défend un programme social-démocrate.",
+    "zh": "这位候选人主张一套社会民主主义纲领。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "drapeau jaune complet": {
+    "fr": "Le drapeau jaune complet impose la prudence sur tout le circuit.",
+    "zh": "全场黄旗要求整条赛道上的车手谨慎驾驶。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "frapper un ennemi à terre": {
+    "fr": "Il refuse de frapper un ennemi à terre.",
+    "zh": "他拒绝对已经倒下的对手落井下石。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "viol collectif": {
+    "fr": "Le tribunal juge une affaire de viol collectif.",
+    "zh": "法院正在审理一起轮奸案。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "calmer sa joie": {
+    "fr": "Avant de crier victoire, il faudrait calmer sa joie.",
+    "zh": "在高喊胜利之前，最好先冷静一下。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "courant continu": {
+    "fr": "Cette batterie fournit du courant continu.",
+    "zh": "这块电池提供直流电。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "délégué du personnel": {
+    "fr": "Le délégué du personnel transmet les demandes des salariés.",
+    "zh": "职工代表转达员工的诉求。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir les boules": {
+    "fr": "Il dit avoir les boules d'avoir raté son train.",
+    "zh": "他说没赶上火车，让他很恼火。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "boite de réception": {
+    "fr": "Le nouveau message apparaît dans ma boite de réception.",
+    "zh": "新邮件出现在我的收件箱中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "don d'organes": {
+    "fr": "Une campagne informe le public sur le don d'organes.",
+    "zh": "一项宣传活动向公众介绍器官捐赠。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "foire aux questions": {
+    "fr": "La réponse figure dans la foire aux questions du site.",
+    "zh": "答案列在网站的常见问题中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "générique de début": {
+    "fr": "Le générique de début présente les acteurs du film.",
+    "zh": "片头演职员表介绍了电影演员。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir de la chatte": {
+    "fr": "Il dit avoir de la chatte après avoir gagné deux fois.",
+    "zh": "他连赢两次，说自己运气好。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "boule-de-neige": {
+    "fr": "Une boule-de-neige fleurit près du portail.",
+    "zh": "一株雪球花在大门旁开花。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "centre-asiatique": {
+    "fr": "Le musée expose un textile centre-asiatique.",
+    "zh": "博物馆展出了一件中亚纺织品。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre dans le même panier": {
+    "fr": "Il ne faut pas mettre dans le même panier tous les candidats.",
+    "zh": "不应该把所有候选人混为一谈。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pavillon noir": {
+    "fr": "Le bateau pirate arbore un pavillon noir.",
+    "zh": "海盗船悬挂着黑色海盗旗。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "anglo-arabe": {
+    "fr": "Ce cheval anglo-arabe participe à une compétition.",
+    "zh": "这匹盎格鲁-阿拉伯马参加了一场比赛。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cercle familial": {
+    "fr": "Elle préfère discuter de ce problème dans le cercle familial.",
+    "zh": "她更愿意在家人之间讨论这个问题。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contre-filet": {
+    "fr": "Il commande un contre-filet avec des légumes.",
+    "zh": "他点了一份配蔬菜的西冷牛排。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "poser un lapin": {
+    "fr": "Il a oublié notre rendez-vous et m'a posé un lapin.",
+    "zh": "他忘了我们的约定，放了我鸽子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "système de fichiers": {
+    "fr": "Ce disque utilise un système de fichiers différent.",
+    "zh": "这块磁盘使用了不同的文件系统。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "métal précieux": {
+    "fr": "L'or est un métal précieux.",
+    "zh": "黄金是一种贵金属。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clef de sol": {
+    "fr": "Cette mélodie est écrite en clef de sol.",
+    "zh": "这段旋律是用高音谱号记谱的。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire chou blanc": {
+    "fr": "Après trois heures de recherche, nous avons fini par faire chou blanc.",
+    "zh": "找了三个小时，我们最后还是一无所获。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prête-plume": {
+    "fr": "Ce chanteur a fait appel à un prête-plume pour ses mémoires.",
+    "zh": "这位歌手请了一名代笔者撰写回忆录。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-quatrième": {
+    "fr": "Elle a terminé à la quatre-vingt-quatrième place.",
+    "zh": "她获得了第八十四名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-cinquième": {
+    "fr": "Elle a terminé à la quatre-vingt-cinquième place.",
+    "zh": "她获得了第八十五名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quarante-deuxième": {
+    "fr": "Elle a terminé à la quarante-deuxième place.",
+    "zh": "她获得了第四十二名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-deuxième": {
+    "fr": "Elle a terminé à la cinquante-deuxième place.",
+    "zh": "她获得了第五十二名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quarante-troisième": {
+    "fr": "Elle a terminé à la quarante-troisième place.",
+    "zh": "她获得了第四十三名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-troisième": {
+    "fr": "Elle a terminé à la cinquante-troisième place.",
+    "zh": "她获得了第五十三名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-sixième": {
+    "fr": "Elle a terminé à la quatre-vingt-sixième place.",
+    "zh": "她获得了第八十六名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-quatrième": {
+    "fr": "Elle a terminé à la cinquante-quatrième place.",
+    "zh": "她获得了第五十四名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-troisième": {
+    "fr": "Elle a terminé à la soixante-troisième place.",
+    "zh": "她获得了第六十三名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-septième": {
+    "fr": "Elle a terminé à la quatre-vingt-septième place.",
+    "zh": "她获得了第八十七名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-quatrième": {
+    "fr": "Elle a terminé à la soixante-quatrième place.",
+    "zh": "她获得了第六十四名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-cinquième": {
+    "fr": "Elle a terminé à la cinquante-cinquième place.",
+    "zh": "她获得了第五十五名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trente-septième": {
+    "fr": "Elle a terminé à la trente-septième place.",
+    "zh": "她获得了第三十七名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-cinquième": {
+    "fr": "Elle a terminé à la soixante-cinquième place.",
+    "zh": "她获得了第六十五名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-dix-huitième": {
+    "fr": "Elle a terminé à la quatre-vingt-dix-huitième place.",
+    "zh": "她获得了第九十八名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quarante-sixième": {
+    "fr": "Elle a terminé à la quarante-sixième place.",
+    "zh": "她获得了第四十六名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-sixième": {
+    "fr": "Elle a terminé à la cinquante-sixième place.",
+    "zh": "她获得了第五十六名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-septième": {
+    "fr": "Elle a terminé à la cinquante-septième place.",
+    "zh": "她获得了第五十七名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quarante-septième": {
+    "fr": "Elle a terminé à la quarante-septième place.",
+    "zh": "她获得了第四十七名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-sixième": {
+    "fr": "Elle a terminé à la soixante-sixième place.",
+    "zh": "她获得了第六十六名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-huitième": {
+    "fr": "Elle a terminé à la cinquante-huitième place.",
+    "zh": "她获得了第五十八名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-neuvième": {
+    "fr": "Elle a terminé à la quatre-vingt-neuvième place.",
+    "zh": "她获得了第八十九名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-septième": {
+    "fr": "Elle a terminé à la soixante-septième place.",
+    "zh": "她获得了第六十七名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-huitième": {
+    "fr": "Elle a terminé à la soixante-huitième place.",
+    "zh": "她获得了第六十八名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-dix-huitième": {
+    "fr": "Elle a terminé à la soixante-dix-huitième place.",
+    "zh": "她获得了第七十八名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-neuvième": {
+    "fr": "Elle a terminé à la cinquante-neuvième place.",
+    "zh": "她获得了第五十九名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quarante-neuvième": {
+    "fr": "Elle a terminé à la quarante-neuvième place.",
+    "zh": "她获得了第四十九名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-neuvième": {
+    "fr": "Elle a terminé à la soixante-neuvième place.",
+    "zh": "她获得了第六十九名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-dix-neuvième": {
+    "fr": "Elle a terminé à la soixante-dix-neuvième place.",
+    "zh": "她获得了第七十九名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-douzième": {
+    "fr": "Elle a terminé à la quatre-vingt-douzième place.",
+    "zh": "她获得了第九十二名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-douzième": {
+    "fr": "Elle a terminé à la soixante-douzième place.",
+    "zh": "她获得了第七十二名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-onzième": {
+    "fr": "Elle a terminé à la quatre-vingt-onzième place.",
+    "zh": "她获得了第九十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante et onzième": {
+    "fr": "Elle a terminé à la soixante et onzième place.",
+    "zh": "她获得了第七十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-treizième": {
+    "fr": "Elle a terminé à la quatre-vingt-treizième place.",
+    "zh": "她获得了第九十三名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-quinzième": {
+    "fr": "Elle a terminé à la quatre-vingt-quinzième place.",
+    "zh": "她获得了第九十五名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-seizième": {
+    "fr": "Elle a terminé à la quatre-vingt-seizième place.",
+    "zh": "她获得了第九十六名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-treizième": {
+    "fr": "Elle a terminé à la soixante-treizième place.",
+    "zh": "她获得了第七十三名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-quinzième": {
+    "fr": "Elle a terminé à la soixante-quinzième place.",
+    "zh": "她获得了第七十五名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-seizième": {
+    "fr": "Elle a terminé à la soixante-seizième place.",
+    "zh": "她获得了第七十六名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-quatorzième": {
+    "fr": "Elle a terminé à la quatre-vingt-quatorzième place.",
+    "zh": "她获得了第九十四名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante et unième": {
+    "fr": "Elle a terminé à la cinquante et unième place.",
+    "zh": "她获得了第五十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quarante et unième": {
+    "fr": "Elle a terminé à la quarante et unième place.",
+    "zh": "她获得了第四十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quatre-vingt-unième": {
+    "fr": "Elle a terminé à la quatre-vingt-unième place.",
+    "zh": "她获得了第八十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante et unième": {
+    "fr": "Elle a terminé à la soixante et unième place.",
+    "zh": "她获得了第六十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir un grain": {
+    "fr": "Il faut avoir un grain pour sortir sans manteau par ce froid !",
+    "zh": "这么冷的天不穿外套就出门，真是有点疯！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tirer le diable par la queue": {
+    "fr": "Avec ce petit salaire, elle doit tirer le diable par la queue.",
+    "zh": "工资这么低，她只能勉强维持生活。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "circuit intégré": {
+    "fr": "Cette carte électronique contient un circuit intégré.",
+    "zh": "这块电子板上装有集成电路。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "abri sous roche": {
+    "fr": "Les archéologues ont découvert un abri sous roche.",
+    "zh": "考古学家发现了一处岩棚。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "abri-sous-roche": {
+    "fr": "Cet abri-sous-roche a été occupé à la préhistoire.",
+    "zh": "这个岩棚在史前时期曾有人居住。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir la dalle": {
+    "fr": "Après cette longue marche, je commence à avoir la dalle.",
+    "zh": "走了这么久，我开始饿坏了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "château la pompe": {
+    "fr": "Au restaurant, il plaisante en commandant du château la pompe.",
+    "zh": "在餐馆里，他开玩笑说要喝自来水。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "salade russe": {
+    "fr": "Elle apporte une salade russe au pique-nique.",
+    "zh": "她带了一份俄式沙拉去野餐。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sous-exposer": {
+    "fr": "Avec ce réglage, tu risques de sous-exposer la photo.",
+    "zh": "用这个设置，你可能会让照片曝光不足。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "svp": {
+    "fr": "Envoyez votre réponse avant vendredi, svp.",
+    "zh": "请在星期五之前发送回复。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "reprendre du poil de la bête": {
+    "fr": "Après quelques jours de repos, elle commence à reprendre du poil de la bête.",
+    "zh": "休息了几天后，她开始恢复精神。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "eau potable": {
+    "fr": "Ce village a enfin accès à l'eau potable.",
+    "zh": "这个村庄终于有了饮用水。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "illustre inconnu": {
+    "fr": "Pour moi, cet acteur reste un illustre inconnu.",
+    "zh": "对我来说，这个演员完全是个陌生人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arrêter son char": {
+    "fr": "Avec cette histoire invraisemblable, il ferait mieux d'arrêter son char.",
+    "zh": "故事编得这么离谱，他最好别再胡说了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "baiser comme un lapin": {
+    "fr": "Le dictionnaire classe « baiser comme un lapin » parmi les expressions vulgaires.",
+    "zh": "词典把这个说法归为关于性行为的粗俗表达。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "condition suffisante": {
+    "fr": "Un diplôme n'est pas toujours une condition suffisante pour obtenir un emploi.",
+    "zh": "拥有文凭并不总是获得工作的充分条件。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nord-occidental": {
+    "fr": "Cette rivière traverse le plateau nord-occidental.",
+    "zh": "这条河流经西北部的高原。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prendre son essor": {
+    "fr": "Cette jeune entreprise commence à prendre son essor.",
+    "zh": "这家年轻的企业开始迅速发展。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sud-occidental": {
+    "fr": "Nous visitons le versant sud-occidental de la montagne.",
+    "zh": "我们游览了这座山的西南坡。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être sur la même longueur d'onde": {
+    "fr": "Pour travailler ensemble, il faut être sur la même longueur d'onde.",
+    "zh": "要一起工作，双方需要有共同的想法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clé de fa": {
+    "fr": "Cette partie de violoncelle est écrite en clé de fa.",
+    "zh": "这段大提琴声部用低音谱号记谱。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contre-indication": {
+    "fr": "Le médecin vérifie l'absence de contre-indication.",
+    "zh": "医生确认不存在禁忌情况。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "promis juré": {
+    "fr": "Je serai à l'heure, promis juré !",
+    "zh": "我一定准时，我保证！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mouche de feu": {
+    "fr": "L'enfant observe une mouche de feu dans l'obscurité.",
+    "zh": "孩子在黑暗中观察一只萤火虫。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mouche à feu": {
+    "fr": "Une mouche à feu brille au-dessus de l'herbe.",
+    "zh": "一只萤火虫在草丛上方发光。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tuer dans l'œuf": {
+    "fr": "Cette décision risque de tuer dans l'œuf toute nouvelle initiative.",
+    "zh": "这个决定可能把所有新倡议扼杀在萌芽状态。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "voleur de grand chemin": {
+    "fr": "Dans le conte, un voleur de grand chemin arrête les voyageurs.",
+    "zh": "故事里，一名拦路强盗截住了旅人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "grande marée": {
+    "fr": "La grande marée recouvre entièrement la plage.",
+    "zh": "大潮完全淹没了沙滩。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "renouvellement urbain": {
+    "fr": "Ce quartier fait l'objet d'un projet de renouvellement urbain.",
+    "zh": "这个街区正在进行城市更新。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rendre chèvre": {
+    "fr": "Ces problèmes répétés vont finir par me rendre chèvre.",
+    "zh": "这些反复出现的问题迟早会把我逼疯。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ultra-sonore": {
+    "fr": "Cet appareil utilise un signal ultra-sonore.",
+    "zh": "这台设备使用超声信号。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas être sorti de l'auberge": {
+    "fr": "Avec tous ces retards, on peut dire qu'on n'est pas sorti de l'auberge.",
+    "zh": "拖延了这么久，看来麻烦还远未解决。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "n'est pas sorti de l'auberge"
+  },
+  "parler français comme une vache espagnole": {
+    "fr": "Il plaisante en disant parler français comme une vache espagnole.",
+    "zh": "他开玩笑说自己的法语讲得很差。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pleurer comme une madeleine": {
+    "fr": "À la fin du film, elle se met à pleurer comme une madeleine.",
+    "zh": "电影结束时，她开始哭得稀里哗啦。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "aire urbaine": {
+    "fr": "Les transports relient les communes de cette aire urbaine.",
+    "zh": "公共交通连接着这个都市圈内的各个市镇。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "feuille de boucher": {
+    "fr": "Le boucher découpe la viande avec une feuille de boucher.",
+    "zh": "肉贩用一把砍肉刀切肉。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tourner les talons": {
+    "fr": "Sans ajouter un mot, il décide de tourner les talons.",
+    "zh": "他一句话也没再说，决定转身离开。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gorge-bleue à miroir": {
+    "fr": "Nous avons aperçu une gorge-bleue à miroir près du marais.",
+    "zh": "我们在沼泽边看到了一只蓝喉歌鸲。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "horloge interne": {
+    "fr": "Le décalage horaire perturbe mon horloge interne.",
+    "zh": "时差打乱了我的生物钟。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "protège-cahier": {
+    "fr": "Il choisit un protège-cahier rouge pour son cahier de français.",
+    "zh": "他为法语本选了一个红色书皮。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bracelet électronique": {
+    "fr": "Le juge lui impose le port d'un bracelet électronique.",
+    "zh": "法官要求他佩戴电子监控脚环。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est l'hôpital qui se fout de la charité": {
+    "fr": "Tu arrives toujours en retard et tu me critiques : c'est l'hôpital qui se fout de la charité !",
+    "zh": "你总是迟到，却还批评我，真是五十步笑百步！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arme de destruction massive": {
+    "fr": "Le traité concerne les armes de destruction massive.",
+    "zh": "这项条约涉及大规模杀伤性武器。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "armes de destruction massive"
+  },
+  "micro-jupe": {
+    "fr": "La vitrine présente une micro-jupe en jean.",
+    "zh": "橱窗里展示着一条牛仔超短裙。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prestation de serment": {
+    "fr": "La prestation de serment aura lieu demain matin.",
+    "zh": "宣誓仪式将于明天上午举行。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir de la veine": {
+    "fr": "Il reconnaît avoir de la veine d'être arrivé à temps.",
+    "zh": "他承认自己能及时赶到，真是幸运。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mettre à rude épreuve": {
+    "fr": "Ce déménagement va mettre à rude épreuve notre patience.",
+    "zh": "这次搬家将严峻考验我们的耐心。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arrière-petite-nièce": {
+    "fr": "Il reçoit la visite de son arrière-petite-nièce.",
+    "zh": "他的侄曾孙女来看望他。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "baguette de direction": {
+    "fr": "Le chef lève sa baguette de direction.",
+    "zh": "乐队指挥举起了指挥棒。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "œuf miroir": {
+    "fr": "Pour le déjeuner, il prépare un œuf miroir.",
+    "zh": "他午饭煎了一个单面煎蛋。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "casse-bonbons": {
+    "fr": "Ce bruit répétitif est vraiment casse-bonbons.",
+    "zh": "这个重复不断的声音实在烦人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se faire porter pâle": {
+    "fr": "Il envisage de se faire porter pâle pour éviter la réunion.",
+    "zh": "他打算装病请假，躲开这次会议。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cristal de roche": {
+    "fr": "Ce bijou contient un petit cristal de roche.",
+    "zh": "这件首饰上镶着一小块水晶。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire pâle figure": {
+    "fr": "Face à ce résultat, notre première tentative risque de faire pâle figure.",
+    "zh": "与这个结果相比，我们第一次的尝试可能显得逊色。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "film muet": {
+    "fr": "Ce soir, le cinéma projette un film muet.",
+    "zh": "今晚影院放映一部无声电影。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "oiseau-mouche": {
+    "fr": "Un oiseau-mouche vole devant la fleur.",
+    "zh": "一只蜂鸟在花前飞翔。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dormir comme une souche": {
+    "fr": "Après cette randonnée, il va dormir comme une souche.",
+    "zh": "这次徒步之后，他会睡得很沉。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être dans de beaux draps": {
+    "fr": "Sans nos billets, nous risquons d'être dans de beaux draps.",
+    "zh": "没带票，我们可能要陷入困境了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "borne d'incendie": {
+    "fr": "Il ne faut pas se garer devant une borne d'incendie.",
+    "zh": "不能把车停在消防栓前。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "peser dans la balance": {
+    "fr": "Son expérience peut peser dans la balance lors du recrutement.",
+    "zh": "招聘时，他的经验可能成为重要的决定因素。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "poivre noir": {
+    "fr": "Ajoute un peu de poivre noir dans la sauce.",
+    "zh": "在酱汁里加一点黑胡椒。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "baguette de batterie": {
+    "fr": "Il a cassé une baguette de batterie pendant le concert.",
+    "zh": "演出时，他敲断了一根鼓棒。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bouillon-blanc": {
+    "fr": "Le bouillon-blanc porte de grandes fleurs jaunes.",
+    "zh": "毛蕊花开着硕大的黄色花朵。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clef de fa": {
+    "fr": "La partie de basse est notée en clef de fa.",
+    "zh": "低音声部用低音谱号记谱。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "poupée russe": {
+    "fr": "La petite poupée russe se cache dans une plus grande.",
+    "zh": "小俄罗斯套娃藏在一个更大的套娃里。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "poupée russe"
+  },
+  "super-vilain": {
+    "fr": "Dans cette bande dessinée, le héros affronte un super-vilain.",
+    "zh": "在这部漫画中，英雄与一名超级反派对抗。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tache solaire": {
+    "fr": "L'observatoire suit l'évolution d'une tache solaire.",
+    "zh": "天文台追踪着一个太阳黑子的变化。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne plus se sentir pisser": {
+    "fr": "Depuis son succès, il semble ne plus se sentir pisser.",
+    "zh": "成功之后，他似乎得意忘形了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir la cuisse légère": {
+    "fr": "Dans ce roman ancien, « avoir la cuisse légère » est une expression péjorative.",
+    "zh": "在这部旧小说中，这个说法带有贬低女性的意味。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "impôt progressif": {
+    "fr": "Dans un impôt progressif, le taux augmente avec la base imposable.",
+    "zh": "累进税的税率随着计税基础增加而提高。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nord-oriental": {
+    "fr": "Le vent vient du secteur nord-oriental.",
+    "zh": "风从东北方向吹来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sud-oriental": {
+    "fr": "Le village se trouve sur le versant sud-oriental.",
+    "zh": "村庄位于东南坡上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "œuvre cinématographique": {
+    "fr": "Cette œuvre cinématographique a reçu plusieurs prix.",
+    "zh": "这部电影作品获得了多个奖项。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir la dent creuse": {
+    "fr": "Après une matinée de travail, il commence à avoir la dent creuse.",
+    "zh": "忙了一个上午，他开始饿了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "couche-culotte": {
+    "fr": "Elle met une couche-culotte propre au bébé.",
+    "zh": "她给婴儿换上干净的纸尿裤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fumer comme une cheminée": {
+    "fr": "Son voisin a la réputation de fumer comme une cheminée.",
+    "zh": "他的邻居因烟瘾很大而出名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "renvoyer l'ascenseur": {
+    "fr": "Tu m'as aidé ; je voudrais te renvoyer l'ascenseur.",
+    "zh": "你帮过我，我想回报你。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "écrase-merde": {
+    "fr": "Il appelle en plaisantant ses vieilles chaussures des écrase-merde.",
+    "zh": "他开玩笑地把自己的旧鞋叫作破鞋。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "boîte postale": {
+    "fr": "L'association reçoit son courrier dans une boîte postale.",
+    "zh": "这个协会通过一个邮政信箱收取邮件。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cellule souche": {
+    "fr": "Une cellule souche peut donner naissance à des cellules spécialisées.",
+    "zh": "干细胞可以分化为特化细胞。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire escale": {
+    "fr": "Notre avion doit faire escale à Madrid.",
+    "zh": "我们的飞机需要在马德里经停。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "filer un mauvais coton": {
+    "fr": "Depuis quelque temps, cette entreprise semble filer un mauvais coton.",
+    "zh": "一段时间以来，这家企业似乎一直在走下坡路。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas y aller avec le dos de la cuillère": {
+    "fr": "Pour critiquer ce projet, il semble ne pas y aller avec le dos de la cuillère.",
+    "zh": "批评这个项目时，他似乎毫不留情。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bloc-cylindres": {
+    "fr": "Le mécanicien inspecte le bloc-cylindres du moteur.",
+    "zh": "机械师检查发动机的气缸体。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cartier": {
+    "fr": "Ce musée présente les outils d'un ancien cartier.",
+    "zh": "这座博物馆展示了一位旧时扑克牌制造者的工具。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "courant alternatif": {
+    "fr": "Le réseau domestique fournit du courant alternatif.",
+    "zh": "家庭电网提供交流电。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire la tronche": {
+    "fr": "Il se met à faire la tronche quand on lui dit non.",
+    "zh": "别人一拒绝他，他就开始拉长脸。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se moquer comme de l'an quarante de": {
+    "fr": "Il semble se moquer comme de l'an quarante de nos conseils.",
+    "zh": "他似乎根本不在乎我们的建议。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "boite à ordures": {
+    "fr": "Il dépose le sac dans la boite à ordures.",
+    "zh": "他把袋子放进垃圾桶。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cloche de plongée": {
+    "fr": "La cloche de plongée descend lentement sous la surface.",
+    "zh": "潜水钟缓缓降入水下。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dollar australien": {
+    "fr": "Le prix est indiqué en dollar australien.",
+    "zh": "价格以澳元标示。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "amas ouvert": {
+    "fr": "Les astronomes observent un amas ouvert d'étoiles.",
+    "zh": "天文学家正在观测一个疏散星团。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir l'estomac dans les talons": {
+    "fr": "Après cette course, je commence à avoir l'estomac dans les talons.",
+    "zh": "跑完步，我开始饿得前胸贴后背。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir la patate": {
+    "fr": "Malgré l'heure matinale, elle semble avoir la patate.",
+    "zh": "尽管时间很早，她看起来仍精力充沛。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est l'hôpital qui se moque de la charité": {
+    "fr": "Tu me reproches ton propre défaut : c'est l'hôpital qui se moque de la charité !",
+    "zh": "你拿自己也有的毛病来指责我，真是五十步笑百步！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tirer la tronche": {
+    "fr": "Il préfère discuter plutôt que tirer la tronche.",
+    "zh": "他宁愿把话说开，也不愿一直生闷气。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "déménager à la cloche de bois": {
+    "fr": "Le locataire a tenté de déménager à la cloche de bois.",
+    "zh": "房客试图不付清房租就偷偷搬走。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "adresse de messagerie": {
+    "fr": "Indique ton adresse de messagerie dans ce champ.",
+    "zh": "在这个输入框中填写你的电子邮件地址。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bassin versant": {
+    "fr": "Cette rivière draine un vaste bassin versant.",
+    "zh": "这条河汇集了一个广阔流域的来水。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "lanceur de disque": {
+    "fr": "Le lanceur de disque s'entraîne sur le stade.",
+    "zh": "掷铁饼运动员正在体育场训练。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "torse-poil": {
+    "fr": "Il travaille torse-poil dans le jardin.",
+    "zh": "他光着膀子在花园里干活。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "afro-asiatique": {
+    "fr": "Ce colloque porte sur la coopération afro-asiatique.",
+    "zh": "这次研讨会讨论亚非合作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "défensif": {
+    "fr": "Ce joueur occupe un rôle défensif dans l'équipe.",
+    "zh": "这名球员在队内承担防守职责。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "désespoir du singe": {
+    "fr": "Un désespoir du singe pousse devant cette maison.",
+    "zh": "这座房子前长着一棵智利南洋杉。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tourner au vinaigre": {
+    "fr": "Sans dialogue, cette discussion risque de tourner au vinaigre.",
+    "zh": "如果缺少沟通，这场讨论可能会变得不愉快。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "baleine à bosse": {
+    "fr": "Une baleine à bosse vient respirer à la surface.",
+    "zh": "一头座头鲸浮到水面换气。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fumer comme un pompier": {
+    "fr": "Il prétend avoir arrêté de fumer comme un pompier.",
+    "zh": "他说自己已经不再像以前那样猛抽烟了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tailler en pièces": {
+    "fr": "Les critiques vont tailler en pièces cet argument.",
+    "zh": "评论者会把这个论点驳得体无完肤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être dans de sales draps": {
+    "fr": "Sans solution rapide, nous allons être dans de sales draps.",
+    "zh": "如果不能很快找到办法，我们就要陷入困境了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "faire ses choux gras": {
+    "fr": "Ce journal espère faire ses choux gras de cette affaire.",
+    "zh": "这家报纸希望靠这件事大赚一笔。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "interaction fondamentale": {
+    "fr": "La gravitation est une interaction fondamentale.",
+    "zh": "引力是一种基本相互作用。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pleurer à chaudes larmes": {
+    "fr": "En apprenant son départ, elle commence à pleurer à chaudes larmes.",
+    "zh": "得知他要离开，她开始泪如雨下。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rendre le dernier soupir": {
+    "fr": "Le vieux personnage finit par rendre le dernier soupir à la fin du roman.",
+    "zh": "小说结尾，这位年迈的角色最终咽下了最后一口气。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ligne latérale": {
+    "fr": "Le ballon a franchi la ligne latérale.",
+    "zh": "球越过了边线。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "chaîne latérale": {
+    "fr": "Le schéma montre la chaîne latérale de cette molécule.",
+    "zh": "图中展示了这个分子的侧链。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "en avoir ras la casquette": {
+    "fr": "Elle avoue en avoir ras la casquette de ces réunions inutiles.",
+    "zh": "她承认自己受够了这些无用的会议。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pyramide des âges": {
+    "fr": "La pyramide des âges montre le vieillissement de la population.",
+    "zh": "人口金字塔显示了人口老龄化。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ivoirien": {
+    "fr": "Cet écrivain ivoirien présente son nouveau roman.",
+    "zh": "这位科特迪瓦作家介绍自己的新小说。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pendre haut et court": {
+    "fr": "Dans ce récit ancien, le juge menace de le faire pendre haut et court.",
+    "zh": "在这篇旧故事中，法官威胁要将他绞死。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "écoutes téléphoniques": {
+    "fr": "L'enquête a eu recours à des écoutes téléphoniques.",
+    "zh": "调查采用了电话监听。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cabine de pilotage": {
+    "fr": "Les passagers ne peuvent pas entrer dans la cabine de pilotage.",
+    "zh": "乘客不能进入驾驶舱。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tailler le bout de gras": {
+    "fr": "Les voisins aiment tailler le bout de gras devant la porte.",
+    "zh": "邻居们喜欢在门前闲聊。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "chirurgien-dentiste": {
+    "fr": "Elle a pris rendez-vous chez un chirurgien-dentiste.",
+    "zh": "她预约了一位牙科医生。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "disque compact": {
+    "fr": "Il conserve encore ses albums sur disque compact.",
+    "zh": "他仍然保留着光盘版的音乐专辑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "femme de réconfort": {
+    "fr": "Le musée explique l'histoire des femmes de réconfort pendant la guerre.",
+    "zh": "博物馆介绍了战时慰安妇的历史。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "islamisme": {
+    "fr": "Ce cours distingue l'islamisme politique de la pratique religieuse.",
+    "zh": "这门课区分政治伊斯兰主义与宗教实践。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "muscle lisse": {
+    "fr": "La paroi de l'intestin contient du muscle lisse.",
+    "zh": "肠壁中含有平滑肌。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "peser un âne mort": {
+    "fr": "Avec tous ces livres, cette valise doit peser un âne mort.",
+    "zh": "装了这么多书，这个箱子一定重得要命。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "requin marteau": {
+    "fr": "Un requin marteau nage près du récif.",
+    "zh": "一条双髻鲨在礁石附近游动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gymnastique artistique": {
+    "fr": "Elle pratique la gymnastique artistique depuis son enfance.",
+    "zh": "她从小就练习竞技体操。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "interaction élémentaire": {
+    "fr": "Le cours présente chaque interaction élémentaire en physique.",
+    "zh": "课程介绍了物理学中的每种基本相互作用。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "jeter l'ancre": {
+    "fr": "Le capitaine décide de jeter l'ancre près de la côte.",
+    "zh": "船长决定在海岸附近抛锚。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cravate de notaire": {
+    "fr": "Dans ce glossaire, « cravate de notaire » désigne une pratique sexuelle.",
+    "zh": "在这份词汇表中，这个说法指一种性行为。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "étouffer dans l'œuf": {
+    "fr": "Ils veulent étouffer dans l'œuf toute tentative de révolte.",
+    "zh": "他们想把一切反抗尝试扼杀在萌芽状态。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ensuit": {
+    "fr": "La forme « ensuit » apparaît dans ce texte ancien.",
+    "zh": "这个旧文本中出现了 ensuit 这种形式。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "langue d'oc": {
+    "fr": "Elle étudie la poésie en langue d'oc.",
+    "zh": "她研究奥克语诗歌。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "logiciel de rançon": {
+    "fr": "Un logiciel de rançon bloque l'accès aux fichiers.",
+    "zh": "勒索软件阻止了对文件的访问。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "programmation orientée objet": {
+    "fr": "Ce cours introduit la programmation orientée objet.",
+    "zh": "这门课介绍面向对象编程。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être pendu aux lèvres de": {
+    "fr": "Son auditoire semblait être pendu aux lèvres de la conférencière.",
+    "zh": "听众似乎都在聚精会神地聆听女演讲者。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "forcement": {
+    "fr": "Le récit décrit le forcement d'une porte par les soldats.",
+    "zh": "故事描写了士兵强行破门的情形。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "patinage de vitesse": {
+    "fr": "Il participe à une compétition de patinage de vitesse.",
+    "zh": "他参加了一场速度滑冰比赛。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rendre son tablier": {
+    "fr": "Après plusieurs années, elle décide de rendre son tablier.",
+    "zh": "多年之后，她决定辞职。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "assimilation progressive": {
+    "fr": "L'assimilation progressive modifie un son sous l'influence du son précédent.",
+    "zh": "顺向同化指一个音受到前一个音的影响而改变。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mouiller son lit": {
+    "fr": "Le petit garçon a peur de mouiller son lit.",
+    "zh": "小男孩害怕自己会尿床。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "franc-maçon": {
+    "fr": "Ce personnage historique était franc-maçon.",
+    "zh": "这位历史人物曾是共济会成员。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "raccourci clavier": {
+    "fr": "Ce raccourci clavier permet de copier le texte.",
+    "zh": "这个键盘快捷键可以复制文本。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "surf des neiges": {
+    "fr": "Il pratique le surf des neiges chaque hiver.",
+    "zh": "他每年冬天都进行单板滑雪。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tailler une pipe": {
+    "fr": "Le dictionnaire indique que « tailler une pipe » est une expression sexuelle vulgaire.",
+    "zh": "词典指出，这个说法是指口交的粗俗表达。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nager comme un fer à repasser": {
+    "fr": "Il prétend nager comme un fer à repasser et préfère rester au bord.",
+    "zh": "他说自己游泳很差，宁愿待在岸边。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "complément d'objet indirect": {
+    "fr": "Dans cette phrase, « à Marie » est un complément d'objet indirect.",
+    "zh": "在这个句子中，à Marie 是间接宾语。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "jurer ses grands dieux": {
+    "fr": "Il peut jurer ses grands dieux qu'il dit la vérité.",
+    "zh": "他可以对天发誓，说自己讲的是真话。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se presser le citron": {
+    "fr": "Il faut se presser le citron pour trouver une solution.",
+    "zh": "得绞尽脑汁，才能找到解决办法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tomate cerise": {
+    "fr": "Elle ajoute une tomate cerise dans chaque assiette.",
+    "zh": "她在每个盘子里加了一颗圣女果。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bou": {
+    "fr": "Cette vieille boîte porte le mot « bou » pour désigner un thé de Chine.",
+    "zh": "这个旧茶盒上用 bou 一词指称一种中国茶。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "indo-européen commun": {
+    "fr": "Les linguistes reconstruisent des formes de l'indo-européen commun.",
+    "zh": "语言学家重建原始印欧语的形式。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pêcher en eaux troubles": {
+    "fr": "Il cherche à pêcher en eaux troubles pour tirer profit du conflit.",
+    "zh": "他试图浑水摸鱼，从冲突中获利。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sport nautique": {
+    "fr": "La voile est un sport nautique.",
+    "zh": "帆船是一项水上运动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tenir la chandelle": {
+    "fr": "Je préfère rentrer plutôt que tenir la chandelle pendant leur rendez-vous.",
+    "zh": "我宁愿回家，也不愿在他们约会时当电灯泡。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "épingle à linge": {
+    "fr": "Une épingle à linge maintient la serviette sur la corde.",
+    "zh": "一只晾衣夹把毛巾固定在绳子上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bey": {
+    "fr": "Le bey reçoit les visiteurs dans son palais.",
+    "zh": "贝伊在自己的宫殿中接待来访者。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "couronne du gland": {
+    "fr": "Le schéma anatomique présente la couronne du gland.",
+    "zh": "解剖图展示了龟头冠的结构。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "jurer fidélité": {
+    "fr": "Les chevaliers viennent jurer fidélité au roi.",
+    "zh": "骑士们前来宣誓效忠国王。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cire d'abeille": {
+    "fr": "Cette bougie est fabriquée avec de la cire d'abeille.",
+    "zh": "这支蜡烛用蜂蜡制成。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "colin-tampon": {
+    "fr": "Il dit se soucier de cette remarque comme de colin-tampon.",
+    "zh": "他说自己对这句话毫不在乎。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se faire la malle": {
+    "fr": "Le chat profite de la porte ouverte pour se faire la malle.",
+    "zh": "猫趁着门开着，溜了出去。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est l'hôpital qui se moque de l'infirmerie": {
+    "fr": "Tu fais la même erreur : c'est l'hôpital qui se moque de l'infirmerie !",
+    "zh": "你自己也犯同样的错，真是五十步笑百步！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "étymologie populaire": {
+    "fr": "Cette explication repose sur une étymologie populaire.",
+    "zh": "这种解释建立在民间词源的基础上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "boudin noir": {
+    "fr": "Il sert du boudin noir avec des pommes.",
+    "zh": "他端上了配苹果的血肠。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bunker": {
+    "fr": "Les visiteurs entrent dans un ancien bunker.",
+    "zh": "游客们走进了一座旧地堡。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "garde rapprochée": {
+    "fr": "La garde rapprochée du président sécurise le passage.",
+    "zh": "总统的贴身警卫确保通道安全。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se regarder le nombril": {
+    "fr": "Cette équipe doit cesser de se regarder le nombril et écouter les autres.",
+    "zh": "这个团队应停止自我中心的做法，倾听他人的意见。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "uranium enrichi": {
+    "fr": "Le rapport précise les règles de stockage de l'uranium enrichi.",
+    "zh": "报告说明了浓缩铀的储存规则。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vélodrome": {
+    "fr": "Les cyclistes s'entraînent sur la piste du vélodrome.",
+    "zh": "自行车运动员在赛车场的赛道上训练。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cherry": {
+    "fr": "Le menu propose un verre de cherry après le repas.",
+    "zh": "菜单上有餐后饮用的一杯樱桃酒。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tension superficielle": {
+    "fr": "La tension superficielle maintient la petite goutte presque ronde.",
+    "zh": "表面张力使小液滴保持近似圆形。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est parti mon kiki": {
+    "fr": "Tout est prêt : c'est parti mon kiki !",
+    "zh": "一切准备好了，咱们出发！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trousse de toilette": {
+    "fr": "J'ai oublié ma trousse de toilette à l'hôtel.",
+    "zh": "我把洗漱包忘在酒店了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "haïtien": {
+    "fr": "Ce musicien haïtien joue ce soir.",
+    "zh": "这位海地音乐家今晚演出。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "niçois": {
+    "fr": "Ce restaurant niçois sert une cuisine locale.",
+    "zh": "这家尼斯餐馆供应当地菜肴。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-et-onzième": {
+    "fr": "Elle a terminé à la soixante-et-onzième place.",
+    "zh": "她获得了第七十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "auto-allumage": {
+    "fr": "Le mécanicien vérifie la cause de cet auto-allumage.",
+    "zh": "机械师检查这种自燃现象的原因。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "balai-brosse": {
+    "fr": "Il nettoie la terrasse avec un balai-brosse.",
+    "zh": "他用擦地刷清洗露台。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dormir comme un bienheureux": {
+    "fr": "Après le voyage, il peut enfin dormir comme un bienheureux.",
+    "zh": "旅途结束后，他终于可以酣然入睡。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "oie des neiges": {
+    "fr": "Une oie des neiges se pose près du lac.",
+    "zh": "一只雪雁落在湖边。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cité-dortoir": {
+    "fr": "Beaucoup d'habitants de cette cité-dortoir travaillent ailleurs.",
+    "zh": "这座卧城的许多居民在别处工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "influer": {
+    "fr": "Le climat peut influer sur les habitudes alimentaires.",
+    "zh": "气候可能影响饮食习惯。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "solution physiologique": {
+    "fr": "Le laboratoire utilise une solution physiologique.",
+    "zh": "实验室使用生理盐水。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "électro-ménager": {
+    "fr": "Ce magasin vend du matériel électro-ménager.",
+    "zh": "这家商店出售家用电器设备。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "magnitude absolue": {
+    "fr": "La magnitude absolue permet de comparer la luminosité des étoiles.",
+    "zh": "绝对星等可用于比较恒星的光度。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sommet de l'iceberg": {
+    "fr": "Ces dépenses ne sont que le sommet de l'iceberg.",
+    "zh": "这些支出只是冰山一角。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clé d'ut": {
+    "fr": "Cette partie d'alto se lit en clé d'ut.",
+    "zh": "这段中提琴声部用中音谱号记谱。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "comme marée en carême": {
+    "fr": "Ton aide arrive comme marée en carême.",
+    "zh": "你的帮助来得恰到好处。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "déroulant": {
+    "fr": "Choisis une langue dans le menu déroulant.",
+    "zh": "从下拉菜单中选择一种语言。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ice tea": {
+    "fr": "Elle commande un ice tea bien frais.",
+    "zh": "她点了一杯冰凉的冰茶。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "membre viril": {
+    "fr": "Ce terme ancien, « membre viril », figure dans le glossaire anatomique.",
+    "zh": "解剖学词汇表中列有 membre viril 这个旧称。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "water polo": {
+    "fr": "Il joue au water polo dans l'équipe universitaire.",
+    "zh": "他在大学校队打水球。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tordre le nez": {
+    "fr": "Le critique semble tordre le nez devant cette proposition.",
+    "zh": "这位评论者似乎对这个提议不太满意。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir les crocs": {
+    "fr": "Après l'entraînement, je commence à avoir les crocs.",
+    "zh": "训练结束后，我开始饿得慌。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "paraitre": {
+    "fr": "Ce roman doit paraitre au printemps.",
+    "zh": "这部小说将于春天出版。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir d'autres chats à fouetter": {
+    "fr": "Il dit avoir d'autres chats à fouetter que de discuter de cette rumeur.",
+    "zh": "他说自己还有比讨论这条传闻更重要的事。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "coupe-cigare": {
+    "fr": "Un coupe-cigare se trouve dans ce coffret.",
+    "zh": "这个盒子里有一把雪茄剪。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "couplé": {
+    "fr": "Il a parié sur un couplé pour la prochaine course.",
+    "zh": "他为下一场赛马押了一个双中组合。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rat d'égout": {
+    "fr": "Un rat d'égout se cache près de la canalisation.",
+    "zh": "一只褐鼠躲在管道附近。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rwandais": {
+    "fr": "Ce chercheur rwandais présente ses travaux.",
+    "zh": "这位卢旺达研究者介绍自己的研究成果。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arr": {
+    "fr": "L'abréviation « arr » renvoie ici à un arrondissement.",
+    "zh": "这里的缩写 arr 指一个行政区。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "palmier à huile": {
+    "fr": "Un palmier à huile pousse au bord de la plantation.",
+    "zh": "一棵油棕生长在种植园边缘。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clef d'ut": {
+    "fr": "Le professeur nous explique comment lire la clef d'ut.",
+    "zh": "老师给我们讲解如何识读中音谱号。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "libyen": {
+    "fr": "Ce poète libyen écrit en arabe.",
+    "zh": "这位利比亚诗人用阿拉伯语创作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "moyenne arithmétique": {
+    "fr": "La moyenne arithmétique de deux et quatre est trois.",
+    "zh": "二与四的算术平均数是三。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "respectif": {
+    "fr": "Ils ont présenté leur projet respectif.",
+    "zh": "他们分别介绍了各自的项目。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sex friend": {
+    "fr": "Le personnage décrit son partenaire comme un sex friend.",
+    "zh": "这个角色把自己的伴侣称作性伴侣。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "jeter son dévolu": {
+    "fr": "Elle semble jeter son dévolu sur cette maison.",
+    "zh": "她似乎看中了这栋房子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bernard-l'ermite": {
+    "fr": "Un bernard-l'ermite se déplace avec sa coquille.",
+    "zh": "一只寄居蟹带着自己的壳移动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pleuvoir comme vache qui pisse": {
+    "fr": "Il commence à pleuvoir comme vache qui pisse.",
+    "zh": "天开始下起倾盆大雨。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "qqch": {
+    "fr": "Dans mes notes, « qqch » remplace « quelque chose ».",
+    "zh": "在我的笔记里，qqch 是 quelque chose 的缩写。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se creuser la cervelle": {
+    "fr": "Il faut se creuser la cervelle pour résoudre cette énigme.",
+    "zh": "得绞尽脑汁，才能解开这个谜题。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "truite arc-en-ciel": {
+    "fr": "Une truite arc-en-ciel nage dans le bassin.",
+    "zh": "一条虹鳟在水池里游动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bander comme un cerf": {
+    "fr": "Dans ce dialogue, « bander comme un cerf » relève du registre sexuel vulgaire.",
+    "zh": "在这段对话中，这个说法属于粗俗的性表达。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bander comme un taureau": {
+    "fr": "Le glossaire signale que « bander comme un taureau » est une expression sexuelle vulgaire.",
+    "zh": "词汇表指出，这个说法属于粗俗的性表达。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bander comme un âne": {
+    "fr": "Le dictionnaire classe « bander comme un âne » parmi les expressions sexuelles vulgaires.",
+    "zh": "词典把这个说法归为粗俗的性表达。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "concombre de mer": {
+    "fr": "Le concombre de mer se déplace lentement sur le fond.",
+    "zh": "海参在海底缓缓移动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "décerner": {
+    "fr": "Le jury va décerner le prix demain.",
+    "zh": "评审团将于明天颁奖。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "extrémisme": {
+    "fr": "Le débat porte sur les moyens de combattre l'extrémisme.",
+    "zh": "这场辩论讨论如何反对极端主义。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "feuille volante": {
+    "fr": "Il note l'adresse sur une feuille volante.",
+    "zh": "他把地址记在一张散页纸上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "iconographie": {
+    "fr": "Cette étude analyse l'iconographie des manuscrits.",
+    "zh": "这项研究分析手稿中的图像表现。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "violon alto": {
+    "fr": "Le violon alto joue une mélodie plus grave.",
+    "zh": "中提琴演奏着一段音区更低的旋律。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "documenter": {
+    "fr": "Ces photographies permettent de documenter les changements du quartier.",
+    "zh": "这些照片可以记录街区的变化。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gabonais": {
+    "fr": "Ce village gabonais se trouve près de la forêt.",
+    "zh": "这个加蓬村庄位于森林附近。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "amine": {
+    "fr": "Cette molécule contient un groupe amine.",
+    "zh": "这个分子含有一个胺基团。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "baser": {
+    "fr": "Il faut baser cette décision sur des faits vérifiables.",
+    "zh": "应该依据可核实的事实作出这个决定。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bull terrier": {
+    "fr": "Le bull terrier attend près de son maître.",
+    "zh": "这只牛头梗在主人身边等候。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "casse-noisettes": {
+    "fr": "Il ouvre les noisettes avec un casse-noisettes.",
+    "zh": "他用榛子夹夹开榛子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "octroyer": {
+    "fr": "La ville va octroyer une aide à cette association.",
+    "zh": "市政府将向这个协会提供资助。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "interférence": {
+    "fr": "Une interférence perturbe le signal radio.",
+    "zh": "干扰影响了无线电信号。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "naine blanche": {
+    "fr": "Une naine blanche est le vestige compact d'une étoile.",
+    "zh": "白矮星是一颗恒星留下的致密残骸。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "naine noire": {
+    "fr": "Une naine noire est un objet stellaire théorique.",
+    "zh": "黑矮星是一种理论上的恒星残骸。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "naine rouge": {
+    "fr": "Cette naine rouge est moins lumineuse que le Soleil.",
+    "zh": "这颗红矮星的亮度低于太阳。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "châtelain": {
+    "fr": "Le châtelain accueille les visiteurs dans la cour.",
+    "zh": "城堡主人在庭院中迎接游客。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "conservatisme": {
+    "fr": "L'essai analyse le conservatisme de cette époque.",
+    "zh": "这篇文章分析了那个时代的保守主义。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contentant": {
+    "fr": "Il cherche un compromis contentant les deux parties.",
+    "zh": "他在寻找一个令双方都满意的折中方案。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "étalement urbain": {
+    "fr": "L'étalement urbain réduit les terres agricoles autour de la ville.",
+    "zh": "城市扩张减少了市区周边的农业用地。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se rincer l'œil": {
+    "fr": "Il prétend venir admirer le paysage, mais ses amis disent qu'il veut se rincer l'œil.",
+    "zh": "他声称是来欣赏风景的，朋友们却说他是来饱眼福的。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "alphabet phonétique international": {
+    "fr": "L'alphabet phonétique international sert à noter les sons des langues.",
+    "zh": "国际音标用于记录语言的语音。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "interaction électromagnétique": {
+    "fr": "L'interaction électromagnétique agit entre des particules chargées.",
+    "zh": "电磁相互作用存在于带电粒子之间。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vent stellaire": {
+    "fr": "Le vent stellaire emporte de la matière loin de l'étoile.",
+    "zh": "恒星风把物质带离恒星。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "hadj": {
+    "fr": "Il prépare son voyage pour accomplir le hadj.",
+    "zh": "他正在准备出行，以完成朝觐。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "économie planifiée": {
+    "fr": "Ce chapitre étudie le fonctionnement d'une économie planifiée.",
+    "zh": "这一章研究计划经济的运行方式。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bicarbonate": {
+    "fr": "Cette réaction produit un bicarbonate.",
+    "zh": "这个反应生成一种碳酸氢盐。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "chauffe-biberon": {
+    "fr": "Le chauffe-biberon est posé sur le plan de travail.",
+    "zh": "奶瓶加热器放在操作台上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "créole haïtien": {
+    "fr": "Elle parle français et créole haïtien.",
+    "zh": "她会说法语和海地克里奥尔语。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "expressif": {
+    "fr": "Son visage est particulièrement expressif.",
+    "zh": "他的面部表情格外丰富。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gueux comme un rat d'église": {
+    "fr": "Dans le roman, il se décrit comme gueux comme un rat d'église.",
+    "zh": "在小说中，他把自己形容为一贫如洗。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "expéditeur": {
+    "fr": "Le nom de l'expéditeur figure au dos de l'enveloppe.",
+    "zh": "寄件人的姓名写在信封背面。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "humeur vitrée": {
+    "fr": "L'humeur vitrée remplit une grande partie de l'œil.",
+    "zh": "玻璃体占据眼球内部很大一部分空间。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sérum physiologique": {
+    "fr": "Le flacon de sérum physiologique est encore fermé.",
+    "zh": "这瓶生理盐水还没有打开。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dormir comme un sabot": {
+    "fr": "Après cette journée, je vais dormir comme un sabot.",
+    "zh": "忙了这一天之后，我会睡得很沉。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nébuleuse planétaire": {
+    "fr": "Cette nébuleuse planétaire entoure une étoile en fin de vie.",
+    "zh": "这片行星状星云围绕着一颗生命接近尾声的恒星。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "daphné": {
+    "fr": "Un daphné pousse à l'entrée du jardin.",
+    "zh": "花园入口处长着一株瑞香。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "univ": {
+    "fr": "Il écrit « univ » à la place d'« université » dans ses notes.",
+    "zh": "他在笔记中用 univ 缩写 université。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "y avoir anguille sous roche": {
+    "fr": "Avec ces réponses vagues, il doit y avoir anguille sous roche.",
+    "zh": "回答这么含糊，这里面一定另有隐情。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "chlorure de calcium": {
+    "fr": "Le laboratoire conserve du chlorure de calcium dans ce récipient.",
+    "zh": "实验室把氯化钙保存在这个容器中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rémunérer": {
+    "fr": "L'association souhaite rémunérer ce travail supplémentaire.",
+    "zh": "该协会希望支付这部分额外工作的报酬。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "appauvrissement": {
+    "fr": "L'appauvrissement du sol menace les cultures.",
+    "zh": "土壤贫瘠化威胁着农作物。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "variole du singe": {
+    "fr": "Ce document utilise l'ancien nom « variole du singe » pour parler de la mpox.",
+    "zh": "这份文件用猴痘这一旧称来指称 mpox。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "consultable": {
+    "fr": "Le catalogue est consultable en ligne.",
+    "zh": "目录可以在线查阅。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "frêne commun": {
+    "fr": "Un frêne commun pousse au bord du chemin.",
+    "zh": "路边长着一棵欧洲白蜡树。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rouler carrosse": {
+    "fr": "Avec son salaire modeste, il ne peut pas rouler carrosse.",
+    "zh": "凭他微薄的工资，可过不上富裕生活。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "actus": {
+    "fr": "Je consulte les actus locales chaque matin.",
+    "zh": "我每天早晨查看本地新闻。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "assimilée": {
+    "fr": "Cette étude décrit le parcours d'une assimilée dans la société majoritaire.",
+    "zh": "这项研究描述了一位被同化女性融入主流社会的经历。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "aéronef": {
+    "fr": "Cet aéronef peut transporter plusieurs passagers.",
+    "zh": "这架航空器可以运载多名乘客。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "c'est la poêle qui se moque du chaudron": {
+    "fr": "Tu me reproches d'être désordonné : c'est la poêle qui se moque du chaudron !",
+    "zh": "你居然嫌我乱，真是五十步笑百步！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas mâcher ses mots": {
+    "fr": "Elle préfère ne pas mâcher ses mots et expliquer clairement son désaccord.",
+    "zh": "她更愿意直言不讳，明确说明自己的不同意见。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "psi": {
+    "fr": "La lettre grecque psi s'écrit Ψ en majuscule.",
+    "zh": "希腊字母 psi 的大写是 Ψ。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "amas stellaire": {
+    "fr": "Ce télescope permet d'observer un amas stellaire.",
+    "zh": "这架望远镜可以观测一个星团。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "houille": {
+    "fr": "Cette ancienne mine produisait de la houille.",
+    "zh": "这座旧矿曾经生产煤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "langue reconstruite": {
+    "fr": "Une langue reconstruite est établie à partir de comparaisons entre langues.",
+    "zh": "重构语言通过比较不同语言建立起来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "refiler": {
+    "fr": "Il a essayé de me refiler un billet déchiré.",
+    "zh": "他试图把一张破钞票塞给我。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "glace carbonique": {
+    "fr": "La boîte contient de la glace carbonique.",
+    "zh": "盒子里装有干冰。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "tour de potier": {
+    "fr": "Elle façonne un bol sur son tour de potier.",
+    "zh": "她在陶轮上制作一只碗。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ascendance": {
+    "fr": "Cet arbre généalogique présente son ascendance.",
+    "zh": "这张家谱展示了他的祖先世系。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sidérurgie": {
+    "fr": "La sidérurgie a longtemps marqué l'histoire de cette région.",
+    "zh": "钢铁工业长期影响着这个地区的历史。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "épuré": {
+    "fr": "Ce bâtiment possède un style épuré.",
+    "zh": "这座建筑的风格简洁。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "équation différentielle": {
+    "fr": "Les étudiants apprennent à résoudre une équation différentielle.",
+    "zh": "学生们学习求解微分方程。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dac": {
+    "fr": "Dac, je t'appelle ce soir.",
+    "zh": "好，我今晚给你打电话。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "déblocage": {
+    "fr": "Le déblocage du compte a pris plusieurs jours.",
+    "zh": "账户解冻花了几天时间。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "propulser": {
+    "fr": "Ce moteur sert à propulser le bateau.",
+    "zh": "这台发动机用来推动船只。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "commandité": {
+    "fr": "Le commandité assume une responsabilité illimitée dans cette société.",
+    "zh": "在这家公司中，无限责任股东承担无限责任。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "hémoglobine": {
+    "fr": "L'hémoglobine participe au transport de l'oxygène dans le sang.",
+    "zh": "血红蛋白参与血液中的氧气运输。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "popularisé": {
+    "fr": "Ce style a été popularisé par le cinéma.",
+    "zh": "这种风格通过电影得到广泛传播。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "togolais": {
+    "fr": "Ce peintre togolais expose ses œuvres à Paris.",
+    "zh": "这位多哥画家在巴黎展出自己的作品。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "algue verte": {
+    "fr": "Une algue verte recouvre une partie du rocher.",
+    "zh": "一片绿藻覆盖着岩石的一部分。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoir la langue bien pendue": {
+    "fr": "Cet enfant semble avoir la langue bien pendue : il raconte tout.",
+    "zh": "这个孩子似乎很健谈，什么都说。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "éjaculation précoce": {
+    "fr": "La brochure présente l'éjaculation précoce comme un sujet de santé sexuelle.",
+    "zh": "这本宣传册把早泄作为性健康问题加以介绍。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "calculateur quantique": {
+    "fr": "Ce laboratoire travaille sur un calculateur quantique.",
+    "zh": "这个实验室正在研究量子计算机。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "commémoratif": {
+    "fr": "Un timbre commémoratif a été émis pour cet anniversaire.",
+    "zh": "为纪念这个周年，发行了一枚纪念邮票。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cornée": {
+    "fr": "La cornée se trouve à l'avant de l'œil.",
+    "zh": "角膜位于眼球前部。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dopamine": {
+    "fr": "Le cours explique plusieurs fonctions de la dopamine.",
+    "zh": "这门课介绍了多巴胺的几种功能。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ronger son frein": {
+    "fr": "En attendant la décision, il ne peut que ronger son frein.",
+    "zh": "等待决定时，他只能强忍着不耐烦。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "réactiver": {
+    "fr": "Ce lien permet de réactiver ton compte.",
+    "zh": "通过这个链接可以重新激活你的账户。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "attendre sous l'orme": {
+    "fr": "Il peut toujours attendre sous l'orme : personne ne viendra.",
+    "zh": "他只能白等了，不会有人来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "avoisinant": {
+    "fr": "Le parc dessert aussi le quartier avoisinant.",
+    "zh": "这座公园也为邻近的街区提供服务。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "couplage": {
+    "fr": "Le schéma présente le couplage entre ces deux systèmes.",
+    "zh": "图中展示了这两个系统之间的耦合。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dislocation à droite": {
+    "fr": "La phrase « Il arrive, ton frère » illustre une dislocation à droite.",
+    "zh": "Il arrive, ton frère 这个句子体现了右偏置结构。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dislocation à gauche": {
+    "fr": "La phrase « Ton frère, il arrive » illustre une dislocation à gauche.",
+    "zh": "Ton frère, il arrive 这个句子体现了左偏置结构。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "double croche": {
+    "fr": "Cette mesure commence par une double croche.",
+    "zh": "这个小节以一个十六分音符开始。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "défensivement": {
+    "fr": "L'équipe joue très bien défensivement.",
+    "zh": "球队在防守方面表现很好。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "infecter": {
+    "fr": "Ce virus peut infecter les cellules.",
+    "zh": "这种病毒可以感染细胞。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rectum": {
+    "fr": "Le rectum constitue la dernière partie du gros intestin.",
+    "zh": "直肠构成大肠的末端部分。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "espèce envahissante": {
+    "fr": "Cette plante est considérée comme une espèce envahissante.",
+    "zh": "这种植物被视为入侵物种。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "neurologie": {
+    "fr": "Elle travaille dans un service de neurologie.",
+    "zh": "她在神经科工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "radicalisé": {
+    "fr": "Le personnage radicalisé refuse désormais tout compromis.",
+    "zh": "这个变得激进的角色如今拒绝一切妥协。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "stratégiquement": {
+    "fr": "Ce port est stratégiquement situé.",
+    "zh": "这个港口的战略位置十分重要。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "à l'accoutumée": {
+    "fr": "Comme à l'accoutumée, il arrive avant tout le monde.",
+    "zh": "和往常一样，他比所有人都先到。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "détrôner": {
+    "fr": "Cette nouvelle équipe espère détrôner le champion.",
+    "zh": "这支新队伍希望取代冠军的地位。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "expliciter": {
+    "fr": "Peux-tu expliciter le sens de cette phrase ?",
+    "zh": "你能说明一下这个句子的意思吗？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fuselage": {
+    "fr": "Les techniciens inspectent le fuselage de l'avion.",
+    "zh": "技术人员检查飞机的机身。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pisser dans son froc": {
+    "fr": "Ce bruit l'a tellement effrayé qu'il a cru pisser dans son froc.",
+    "zh": "那个声音把他吓坏了，差点吓尿裤子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "porto-ricain": {
+    "fr": "Ce musicien porto-ricain joue ce soir.",
+    "zh": "这位波多黎各音乐家今晚演出。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "asymétrie": {
+    "fr": "Le dessin présente une légère asymétrie.",
+    "zh": "这幅图有一点不对称。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "drac": {
+    "fr": "Dans cette légende, le drac habite près de la rivière.",
+    "zh": "在这个传说中，德拉克栖居在河边。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas être sorti des ronces": {
+    "fr": "Avec ce nouveau problème, on n'est pas sorti des ronces.",
+    "zh": "又出了这个新问题，我们还没脱离困境。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "n'est pas sorti des ronces"
+  },
+  "pomme épineuse": {
+    "fr": "La pomme épineuse est le fruit du datura.",
+    "zh": "曼陀罗果是曼陀罗结出的果实。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pénalement": {
+    "fr": "Le texte examine ce qui peut être sanctionné pénalement.",
+    "zh": "这篇文字探讨了哪些行为可能受到刑事处罚。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "burkinabé": {
+    "fr": "Ce professeur burkinabé enseigne la littérature.",
+    "zh": "这位布基纳法索教师教授文学。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "messager sagittaire": {
+    "fr": "Le messager sagittaire marche dans les hautes herbes.",
+    "zh": "蛇鹫在高草丛中行走。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas avoir le cul sorti des ronces": {
+    "fr": "Il dit qu'on n'a pas le cul sorti des ronces avec ces dettes.",
+    "zh": "他说，背着这些债，我们还远没摆脱困境。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "n'a pas le cul sorti des ronces"
+  },
+  "symboliser": {
+    "fr": "Cette couleur peut symboliser l'espoir.",
+    "zh": "这种颜色可以象征希望。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bicarbonate de soude": {
+    "fr": "Le bicarbonate de soude se trouve dans le placard de la cuisine.",
+    "zh": "小苏打放在厨房的橱柜里。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "caricatural": {
+    "fr": "Ce portrait donne une image caricaturale du personnage.",
+    "zh": "这幅肖像以夸张的方式描绘人物。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "caricaturale"
+  },
+  "caritatif": {
+    "fr": "Ce concert caritatif aide une association locale.",
+    "zh": "这场慈善音乐会为当地协会提供帮助。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fusiller du regard": {
+    "fr": "Il semble fusiller du regard la personne qui l'a interrompu.",
+    "zh": "他似乎在怒视打断他的人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "instituer": {
+    "fr": "La ville souhaite instituer une journée sans voiture.",
+    "zh": "市政府希望设立无车日。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pleuvoir à seaux": {
+    "fr": "Il se met à pleuvoir à seaux pendant notre promenade.",
+    "zh": "我们散步时，天开始下起倾盆大雨。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bullshit": {
+    "fr": "Le personnage emploie le mot anglais « bullshit » pour rejeter cet argument.",
+    "zh": "这个角色用英语借词 bullshit 表示这个论点是胡说。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "champenois": {
+    "fr": "Le vignoble champenois attire de nombreux visiteurs.",
+    "zh": "香槟地区的葡萄园吸引了许多游客。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "panse à bière": {
+    "fr": "Il plaisante sur sa petite panse à bière.",
+    "zh": "他拿自己的小啤酒肚开玩笑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "peste porcine": {
+    "fr": "Le vétérinaire surveille les cas de peste porcine.",
+    "zh": "兽医正在监测猪瘟病例。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "se creuser les méninges": {
+    "fr": "Nous devons nous creuser les méninges pour trouver une idée.",
+    "zh": "我们得开动脑筋，想个主意。",
+    "source": "启航法语 · 例句",
+    "authored": true,
+    "highlight": "nous creuser les méninges"
+  },
+  "bazooka": {
+    "fr": "Le musée expose un ancien bazooka.",
+    "zh": "博物馆展出了一具旧式反坦克火箭筒。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "déterminant possessif": {
+    "fr": "Dans « mon livre », « mon » est un déterminant possessif.",
+    "zh": "在 mon livre 中，mon 是物主限定词。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "immortaliser": {
+    "fr": "Elle prend une photo pour immortaliser ce moment.",
+    "zh": "她拍了一张照片，留住这个瞬间。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nota bene": {
+    "fr": "Il ajoute « nota bene » avant une remarque importante.",
+    "zh": "他在一条重要备注前加上了 nota bene。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pierre à aiguiser": {
+    "fr": "Il utilise une pierre à aiguiser pour entretenir son couteau.",
+    "zh": "他用磨刀石保养自己的刀。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "prendre ses cliques et ses claques": {
+    "fr": "Après cette dispute, il décide de prendre ses cliques et ses claques.",
+    "zh": "这场争吵之后，他决定收拾东西走人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vénitienne": {
+    "fr": "Elle porte des vénitiennes en cuir souple.",
+    "zh": "她穿着柔软皮革制成的威尼斯式乐福鞋。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "autofinancement": {
+    "fr": "L'association cherche à améliorer son autofinancement.",
+    "zh": "这个协会希望提高资金自给能力。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contrevenant": {
+    "fr": "Le contrevenant reçoit une amende.",
+    "zh": "违章者收到了一张罚单。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "adjectif possessif": {
+    "fr": "« Ton » est un adjectif possessif dans « ton cahier ».",
+    "zh": "在 ton cahier 中，ton 是主有形容词。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "angle obtus": {
+    "fr": "Un angle obtus est plus grand qu'un angle droit.",
+    "zh": "钝角大于直角。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "voie métabolique": {
+    "fr": "Ce schéma représente une voie métabolique.",
+    "zh": "这张图展示了一条代谢途径。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "accédant": {
+    "fr": "L'accédant à la propriété prépare son dossier de financement.",
+    "zh": "这位购房者正在准备融资材料。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bicentenaire": {
+    "fr": "Le musée prépare une exposition pour cet anniversaire bicentenaire.",
+    "zh": "博物馆正在为这个二百周年纪念筹备展览。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "chow mein": {
+    "fr": "Elle commande un chow mein aux légumes.",
+    "zh": "她点了一份蔬菜炒面。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "hépatique à trois lobes": {
+    "fr": "Une hépatique à trois lobes fleurit au printemps.",
+    "zh": "一株三角草在春天开花。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sable mouvant": {
+    "fr": "Le panneau signale une zone de sable mouvant.",
+    "zh": "标志提示这里有一片流沙区域。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arabe andalou": {
+    "fr": "Ce manuscrit contient des mots d'arabe andalou.",
+    "zh": "这份手稿中含有安达卢斯阿拉伯语词语。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bomber le torse": {
+    "fr": "Après sa victoire, il ne peut s'empêcher de bomber le torse.",
+    "zh": "获胜之后，他忍不住挺起胸膛，十分得意。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cancérologie": {
+    "fr": "Elle travaille dans un centre de cancérologie.",
+    "zh": "她在一家肿瘤治疗中心工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cresson de fontaine": {
+    "fr": "Le cresson de fontaine pousse près de ce ruisseau.",
+    "zh": "西洋菜生长在这条小溪附近。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gé": {
+    "fr": "La lettre G se prononce « gé » en français.",
+    "zh": "法语中字母 G 的名称读作 gé。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "réagissant": {
+    "fr": "Ce public réagissant vivement aux plaisanteries encourage l'acteur.",
+    "zh": "观众对笑话反应热烈，让演员深受鼓舞。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "salto avant": {
+    "fr": "La gymnaste réussit un salto avant.",
+    "zh": "这位体操运动员完成了一个前空翻。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "septante-neuf": {
+    "fr": "Le billet coûte septante-neuf euros.",
+    "zh": "票价是七十九欧元。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "équilibrage": {
+    "fr": "L'équilibrage des roues améliore le confort de conduite.",
+    "zh": "车轮平衡能提高驾驶的舒适度。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bouvet": {
+    "fr": "Le menuisier utilise un bouvet pour réaliser cette rainure.",
+    "zh": "木匠用槽刨刨出这道凹槽。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "saccager": {
+    "fr": "Ils ont tenté de saccager le local.",
+    "zh": "他们试图毁坏这间屋子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "système lymphatique": {
+    "fr": "Ce schéma présente le système lymphatique.",
+    "zh": "这张图展示了淋巴系统。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ésotérisme": {
+    "fr": "Cette bibliothèque possède plusieurs ouvrages sur l'ésotérisme.",
+    "zh": "这座图书馆藏有几本研究秘传思想的著作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "annoté": {
+    "fr": "J'ai acheté un exemplaire annoté de ce roman.",
+    "zh": "我买了一本这部小说的注释版。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "arc à poulies": {
+    "fr": "Le club expose un arc à poulies.",
+    "zh": "俱乐部展示着一把复合弓。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bermuda": {
+    "fr": "Il porte un bermuda bleu pendant les vacances.",
+    "zh": "度假时，他穿着蓝色百慕大短裤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "esclavagisme": {
+    "fr": "L'exposition retrace l'histoire de l'esclavagisme.",
+    "zh": "展览回顾了奴隶制的历史。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fédérateur": {
+    "fr": "Ce projet joue un rôle fédérateur dans l'équipe.",
+    "zh": "这个项目对团队起到了凝聚作用。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "aller à vau-l'eau": {
+    "fr": "Sans organisation, ce projet risque d'aller à vau-l'eau.",
+    "zh": "如果缺少组织，这个项目可能会每况愈下。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "existentiel": {
+    "fr": "Le héros traverse un doute existentiel.",
+    "zh": "主人公陷入了对自身存在意义的怀疑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "partir à vau-l'eau": {
+    "fr": "Avec tous ces retards, le programme menace de partir à vau-l'eau.",
+    "zh": "一再拖延下去，整个计划恐怕要泡汤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "poreux": {
+    "fr": "Ce matériau poreux absorbe facilement l'eau.",
+    "zh": "这种多孔材料很容易吸水。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soap": {
+    "fr": "Ma grand-mère suit le même soap depuis des années.",
+    "zh": "我奶奶多年来一直追同一部肥皂剧。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "électrolyse": {
+    "fr": "Le cours présente une expérience d'électrolyse.",
+    "zh": "这门课介绍了一个电解实验。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "flocon d'avoine": {
+    "fr": "Un flocon d'avoine est resté au fond du bol.",
+    "zh": "碗底还剩着一片燕麦。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "infection sexuellement transmissible": {
+    "fr": "La brochure informe sur la prévention d'une infection sexuellement transmissible.",
+    "zh": "这本宣传册介绍了性传播感染的预防。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "soixante-et-unième": {
+    "fr": "Elle a terminé à la soixante-et-unième place.",
+    "zh": "她获得了第六十一名。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sérotonine": {
+    "fr": "Le cours de biologie aborde le rôle de la sérotonine.",
+    "zh": "生物课介绍了血清素的作用。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "accroitre": {
+    "fr": "Cette formation doit accroitre les compétences de l'équipe.",
+    "zh": "这次培训旨在增强团队的技能。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fragiliser": {
+    "fr": "Ces fissures peuvent fragiliser le mur.",
+    "zh": "这些裂缝可能削弱墙体的牢固程度。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fumer comme un sapeur": {
+    "fr": "Il reconnaît fumer comme un sapeur depuis des années.",
+    "zh": "他承认自己多年来烟瘾很大。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "réintroduire": {
+    "fr": "La mairie veut réintroduire des arbres dans cette rue.",
+    "zh": "市政府想在这条街上重新种树。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cartographique": {
+    "fr": "Ce document cartographique représente la région.",
+    "zh": "这份地图资料描绘了这个地区。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "filtrant": {
+    "fr": "Le dispositif filtrant retient les poussières.",
+    "zh": "过滤装置能够截留灰尘。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gazoduc": {
+    "fr": "Un gazoduc traverse la plaine.",
+    "zh": "一条天然气管道穿过平原。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ne pas savoir à quel saint se vouer": {
+    "fr": "Avec ces réponses contradictoires, elle avoue ne pas savoir à quel saint se vouer.",
+    "zh": "面对这些相互矛盾的答复，她承认自己已不知该求助于谁。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "oki": {
+    "fr": "Oki, on se retrouve à huit heures.",
+    "zh": "好的，我们八点见。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "équinoxe d'automne": {
+    "fr": "L'équinoxe d'automne a lieu en septembre dans l'hémisphère Nord.",
+    "zh": "北半球的秋分在九月。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "équinoxe de printemps": {
+    "fr": "Nous parlons de l'équinoxe de printemps en cours de sciences.",
+    "zh": "我们在科学课上讨论春分。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "expatrier": {
+    "fr": "Elle a choisi de s'expatrier pour travailler à l'étranger.",
+    "zh": "她选择移居国外工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "forceps": {
+    "fr": "Le médecin explique l'utilisation des forceps.",
+    "zh": "医生讲解产钳的用途。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "icone": {
+    "fr": "Clique sur cette icone pour ouvrir le dossier.",
+    "zh": "点击这个图标打开文件夹。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "informatisation": {
+    "fr": "L'informatisation des archives facilite leur consultation.",
+    "zh": "档案信息化方便了查阅。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "mathématiques récréatives": {
+    "fr": "Ce livre propose des problèmes de mathématiques récréatives.",
+    "zh": "这本书提供了趣味数学题。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gaz naturel liquéfié": {
+    "fr": "Ce navire transporte du gaz naturel liquéfié.",
+    "zh": "这艘船运输液化天然气。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "redécouvert": {
+    "fr": "Ce texte redécouvert intéresse les historiens.",
+    "zh": "这份重新发现的文本引起了历史学家的兴趣。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "supplanté": {
+    "fr": "Cet ancien procédé a été supplanté par une technique plus simple.",
+    "zh": "这种旧方法已经被更简单的技术取代。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "traite négrière": {
+    "fr": "Ce musée présente l'histoire de la traite négrière.",
+    "zh": "这座博物馆介绍了贩卖非洲奴隶的历史。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "chaufferie": {
+    "fr": "Le technicien entre dans la chaufferie du bâtiment.",
+    "zh": "技术人员进入了大楼的锅炉房。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contrasté": {
+    "fr": "Le bilan de cette année est très contrasté.",
+    "zh": "今年的总体情况好坏参半。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "couteux": {
+    "fr": "Ce voyage risque d'être couteux.",
+    "zh": "这次旅行可能花费不菲。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "goulet d'étranglement": {
+    "fr": "Ce carrefour constitue un goulet d'étranglement pour la circulation.",
+    "zh": "这个路口构成了交通瓶颈。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "hindouisme": {
+    "fr": "Le cours présente plusieurs traditions de l'hindouisme.",
+    "zh": "这门课介绍了印度教的几种传统。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "invalidé": {
+    "fr": "Le résultat a été invalidé après vérification.",
+    "zh": "核查后，这个结果被判定无效。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trouble du déficit de l'attention avec ou sans hyperactivité": {
+    "fr": "Le document explique le trouble du déficit de l'attention avec ou sans hyperactivité.",
+    "zh": "这份文件介绍了注意缺陷障碍，无论是否伴有多动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "uranium appauvri": {
+    "fr": "Le rapport mentionne la présence d'uranium appauvri.",
+    "zh": "报告提到了贫化铀的存在。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "butée": {
+    "fr": "La butée empêche la porte de s'ouvrir davantage.",
+    "zh": "限位块阻止门继续打开。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "casse-croute": {
+    "fr": "Nous achetons un casse-croute avant de prendre le train.",
+    "zh": "坐火车之前，我们买了一份简餐。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "codifié": {
+    "fr": "Ce langage codifié suit des règles précises.",
+    "zh": "这种规范化的语言遵循明确的规则。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "influençable": {
+    "fr": "Ce personnage est très influençable.",
+    "zh": "这个角色很容易受他人影响。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "stylisé": {
+    "fr": "Le logo représente un oiseau stylisé.",
+    "zh": "标志上画着一只经过艺术化处理的鸟。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "armurier": {
+    "fr": "Cet armurier restaure des armes anciennes.",
+    "zh": "这位军械师修复古旧武器。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "nocivité": {
+    "fr": "L'étude examine la nocivité de cette substance.",
+    "zh": "这项研究考察这种物质的有害性。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "parasitaire": {
+    "fr": "Cette infection parasitaire fait l'objet d'une étude.",
+    "zh": "这种寄生虫感染是研究的对象。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pronom démonstratif": {
+    "fr": "Dans cette phrase, « celui-ci » est un pronom démonstratif.",
+    "zh": "在这个句子中，celui-ci 是指示代词。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "échéancier": {
+    "fr": "L'échéancier indique la date de chaque paiement.",
+    "zh": "付款时间表列明了每笔款项的支付日期。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "être sur les rotules": {
+    "fr": "Après cette journée, je vais être sur les rotules.",
+    "zh": "忙完这一天，我会累得筋疲力尽。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "angelus": {
+    "fr": "L'angelus sonne au clocher du village.",
+    "zh": "村里的钟楼响起了三钟经的钟声。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "fusil-mitrailleur": {
+    "fr": "Le musée conserve un ancien fusil-mitrailleur.",
+    "zh": "博物馆保存着一挺旧式轻机枪。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "uniformiser": {
+    "fr": "Ce règlement vise à uniformiser les pratiques.",
+    "zh": "这项规定旨在统一各方的做法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "aérogare": {
+    "fr": "Les voyageurs attendent dans l'aérogare.",
+    "zh": "旅客们在航站楼里等候。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "béatification": {
+    "fr": "La cérémonie de béatification attire de nombreux fidèles.",
+    "zh": "宣福礼吸引了许多信众。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "confessionnel": {
+    "fr": "Cet établissement possède un caractère confessionnel.",
+    "zh": "这所机构带有宗教背景。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "jurisconsulte": {
+    "fr": "Le roi consulte un jurisconsulte avant de décider.",
+    "zh": "国王在作出决定前向一位法学家咨询。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "quémander": {
+    "fr": "Il refuse de quémander une faveur.",
+    "zh": "他不愿低声下气地乞求恩惠。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "radicaliser": {
+    "fr": "Ce discours risque de radicaliser le débat.",
+    "zh": "这番话可能使争论变得更加激进。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dispositif intra-utérin": {
+    "fr": "La brochure décrit le dispositif intra-utérin.",
+    "zh": "这本宣传册介绍了宫内节育器。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "herbicide": {
+    "fr": "L'étiquette identifie ce produit comme un herbicide.",
+    "zh": "标签标明这是一种除草剂。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "transposée": {
+    "fr": "La transposée d'une matrice échange ses lignes et ses colonnes.",
+    "zh": "矩阵的转置将行与列互换。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "agripper": {
+    "fr": "Elle essaie de s'agripper à la rampe.",
+    "zh": "她试图紧紧抓住栏杆。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ber": {
+    "fr": "Le bateau repose sur un ber avant sa mise à l'eau.",
+    "zh": "船在下水前放置在下水架上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bicolore": {
+    "fr": "Ce drapeau bicolore est visible de loin.",
+    "zh": "这面双色旗从很远处就能看见。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gériatrie": {
+    "fr": "Elle travaille dans un service de gériatrie.",
+    "zh": "她在老年医学科工作。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "hypothéquer": {
+    "fr": "Ils envisagent d'hypothéquer leur maison.",
+    "zh": "他们正在考虑抵押房屋。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "immunologie": {
+    "fr": "Cette chercheuse est spécialisée en immunologie.",
+    "zh": "这位研究者专攻免疫学。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ovulation": {
+    "fr": "Le schéma présente les étapes autour de l'ovulation.",
+    "zh": "这张图介绍了排卵前后的阶段。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "roseraie": {
+    "fr": "Nous nous promenons dans la roseraie du parc.",
+    "zh": "我们在公园的玫瑰园里散步。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "aminé": {
+    "fr": "Cette molécule contient un groupe aminé.",
+    "zh": "这个分子含有一个氨基。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "incurvé": {
+    "fr": "Le dossier incurvé de cette chaise est confortable.",
+    "zh": "这把椅子向内弯曲的靠背很舒适。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "septicémie": {
+    "fr": "Le cours de médecine présente un cas de septicémie.",
+    "zh": "医学课介绍了一例败血症病例。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "acide aminé": {
+    "fr": "Un acide aminé entre dans la composition des protéines.",
+    "zh": "氨基酸参与构成蛋白质。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "baud": {
+    "fr": "Le baud mesure le nombre de symboles transmis par seconde.",
+    "zh": "波特用于计量每秒传输的符号数。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pédaler dans la semoule": {
+    "fr": "Sans consigne claire, nous avons l'impression de pédaler dans la semoule.",
+    "zh": "缺少明确指示，我们感觉自己一直在瞎忙。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "pénalisant": {
+    "fr": "Ce retard est pénalisant pour toute l'équipe.",
+    "zh": "这次延误对整个团队都很不利。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "éthylène": {
+    "fr": "L'éthylène est un gaz utilisé dans l'industrie.",
+    "zh": "乙烯是一种工业用气体。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bêche-de-mer": {
+    "fr": "La bêche-de-mer est aussi appelée concombre de mer.",
+    "zh": "海参也被称为 bêche-de-mer。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "convier": {
+    "fr": "Nous souhaitons te convier à notre fête.",
+    "zh": "我们想邀请你参加聚会。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "guadeloupéen": {
+    "fr": "Ce groupe guadeloupéen joue une musique entraînante.",
+    "zh": "这个瓜德罗普乐队演奏的音乐十分带劲。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "néonazi": {
+    "fr": "L'article analyse la propagande d'un mouvement néonazi.",
+    "zh": "文章分析了一个新纳粹运动的宣传。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "qualitativement": {
+    "fr": "Ces deux méthodes diffèrent qualitativement.",
+    "zh": "这两种方法在性质上有所不同。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "taupe-grillon": {
+    "fr": "Une taupe-grillon creuse le sol du jardin.",
+    "zh": "一只蝼蛄在花园的土壤里挖洞。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "traumatiser": {
+    "fr": "Cet accident risque de traumatiser les témoins.",
+    "zh": "这次事故可能给目击者留下心理创伤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "archiduchesse": {
+    "fr": "Le portrait représente une archiduchesse autrichienne.",
+    "zh": "这幅肖像描绘了一位奥地利女大公。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "camaro": {
+    "fr": "Dans ce dialogue familier, il appelle son ami « camaro ».",
+    "zh": "在这段口语对话中，他把自己的朋友叫作 camaro。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "centralisateur": {
+    "fr": "Ce système centralisateur concentre les décisions au même niveau.",
+    "zh": "这套集中化体系把决策权集中在同一层级。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "confédéral": {
+    "fr": "Le conseil confédéral se réunit cette semaine.",
+    "zh": "邦联委员会本周开会。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cyberpunk": {
+    "fr": "Ce roman appartient au genre cyberpunk.",
+    "zh": "这部小说属于赛博朋克类型。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "diaboliser": {
+    "fr": "Il ne faut pas diaboliser tous ceux qui pensent autrement.",
+    "zh": "不应该把所有持不同想法的人妖魔化。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "encerclement": {
+    "fr": "La carte montre l'encerclement de la ville.",
+    "zh": "地图显示了城市被包围的情况。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "généticien": {
+    "fr": "Un généticien étudie les variations de ce gène.",
+    "zh": "一位遗传学家研究这个基因的变异。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "micron": {
+    "fr": "Un micron correspond à un millionième de mètre.",
+    "zh": "一微米等于一米的一百万分之一。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "obstiner": {
+    "fr": "Il ne faut pas s'obstiner dans une erreur.",
+    "zh": "不应该在错误上固执己见。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sauteur en hauteur": {
+    "fr": "Le sauteur en hauteur prend son élan.",
+    "zh": "跳高运动员开始助跑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "sauteur en longueur": {
+    "fr": "Le sauteur en longueur atterrit dans le sable.",
+    "zh": "跳远运动员落在沙坑中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "appartenances": {
+    "fr": "L'acte mentionne la maison et ses appartenances.",
+    "zh": "这份文书提到了房屋及其附属建筑。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "bjr": {
+    "fr": "Dans ce message rapide, « bjr » remplace « bonjour ».",
+    "zh": "在这条简短消息中，bjr 是 bonjour 的缩写。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "charolais": {
+    "fr": "Ce bœuf charolais vient d'un élevage local.",
+    "zh": "这头夏洛来牛来自当地养殖场。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "craquage": {
+    "fr": "Le craquage transforme de grosses molécules en molécules plus petites.",
+    "zh": "裂化把大分子转化为较小的分子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "enchevêtrement quantique": {
+    "fr": "Ce cours explique l'enchevêtrement quantique de deux particules.",
+    "zh": "这门课介绍了两个粒子的量子纠缠。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "muscle squelettique": {
+    "fr": "Un muscle squelettique permet de déplacer les os.",
+    "zh": "骨骼肌使骨骼得以运动。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vaticane": {
+    "fr": "La délégation vaticane participe à la rencontre.",
+    "zh": "梵蒂冈代表团参加了会晤。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "j'": {
+    "fr": "J'aime apprendre le français.",
+    "zh": "我喜欢学习法语。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "s'": {
+    "fr": "Il préfère s'asseoir près de la fenêtre.",
+    "zh": "他更愿意坐在窗边。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "de plus": {
+    "fr": "Ce logement est calme ; de plus, il est proche de la gare.",
+    "zh": "这套房子很安静，而且离车站很近。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "à la fin": {
+    "fr": "À la fin du cours, nous posons nos questions.",
+    "zh": "在课结束时，我们提出自己的问题。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "à la con": {
+    "fr": "Encore une remarque à la con !",
+    "zh": "又是一句愚蠢的话！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "vingt-et-un": {
+    "fr": "Le billet coûte vingt-et-un euros.",
+    "zh": "票价是二十一欧元。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "qui vive": {
+    "fr": "La sentinelle a crié : « Qui vive ? »",
+    "zh": "哨兵喊道：来者何人？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "cinquante-cinq": {
+    "fr": "Cette veste coûte cinquante-cinq euros.",
+    "zh": "这件夹克五十五欧元。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "auto-stop": {
+    "fr": "Ils voyagent en auto-stop depuis une semaine.",
+    "zh": "他们搭顺风车旅行已经一周了。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "casse-cou": {
+    "fr": "Ce cascadeur est un vrai casse-cou.",
+    "zh": "这位特技演员真是个敢冒险的人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "alternance": {
+    "fr": "L'alternance entre travail et repos est nécessaire.",
+    "zh": "工作与休息相结合很有必要。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "appartenance": {
+    "fr": "Cette carte prouve son appartenance à l'association.",
+    "zh": "这张卡证明他是协会成员。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "paysan": {
+    "fr": "Ce paysan vend ses légumes au marché.",
+    "zh": "这位农民在市场上卖自己的蔬菜。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "roc": {
+    "fr": "La maison est construite sur un roc solide.",
+    "zh": "房子建在坚固的岩石上。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "débarqué": {
+    "fr": "À peine débarqué du bateau, il a appelé sa famille.",
+    "zh": "刚从船上下来，他就给家人打了电话。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "aigu": {
+    "fr": "Son cri aigu a surpris tout le monde.",
+    "zh": "他尖厉的叫声让所有人都吃了一惊。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "à l'envi": {
+    "fr": "Les journalistes répètent à l'envi la même formule.",
+    "zh": "记者们争相重复同一句说法。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "garni": {
+    "fr": "Ce sandwich est bien garni.",
+    "zh": "这个三明治里的馅料很足。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "amnésie": {
+    "fr": "L'accident a provoqué une amnésie passagère.",
+    "zh": "这次事故造成了短暂失忆。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "puant": {
+    "fr": "Ce vieux fromage est vraiment puant.",
+    "zh": "这块放了很久的奶酪真臭。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "rebâtir": {
+    "fr": "Ils veulent rebâtir la maison après l'incendie.",
+    "zh": "火灾之后，他们想重建房屋。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ammonium": {
+    "fr": "Le laboratoire analyse les ions ammonium.",
+    "zh": "实验室正在分析铵离子。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "clac": {
+    "fr": "La porte s'est fermée : clac !",
+    "zh": "门砰的一声关上了！",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "ambulancier": {
+    "fr": "Un ambulancier accompagne le patient.",
+    "zh": "一名救护人员陪同着病人。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "coi": {
+    "fr": "Il est resté coi devant cette réponse.",
+    "zh": "听到这个答复，他一时说不出话来。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "amaigrissement": {
+    "fr": "Un amaigrissement important inquiète son entourage.",
+    "zh": "明显的消瘦让他身边的人感到担心。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "gouvernant": {
+    "fr": "Un bon gouvernant doit écouter la population.",
+    "zh": "一位好的执政者应当倾听民众的声音。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "retentir": {
+    "fr": "Un cri vient de retentir au loin.",
+    "zh": "远处刚刚传来一声喊叫。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "trou de ver": {
+    "fr": "Le roman imagine un voyage à travers un trou de ver.",
+    "zh": "这部小说想象了一次穿越虫洞的旅行。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "contre-attaquer": {
+    "fr": "L'équipe se prépare à contre-attaquer.",
+    "zh": "球队准备发起反击。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "dent-de-lion": {
+    "fr": "Une dent-de-lion pousse dans la pelouse.",
+    "zh": "一株蒲公英生长在草坪中。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "as-tu besoin d'aide": {
+    "fr": "As-tu besoin d'aide pour porter ce sac ?",
+    "zh": "你需要帮忙提这个袋子吗？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "as-tu des frères et sœurs": {
+    "fr": "Dis-moi, as-tu des frères et sœurs ?",
+    "zh": "告诉我，你有兄弟姐妹吗？",
+    "source": "启航法语 · 例句",
+    "authored": true
+  },
+  "wi": {
+    "fr": "Il écrit « wi » dans son message pour dire oui.",
+    "zh": "他在消息里用 wi 来表示同意。",
+    "source": "启航法语 · 例句",
+    "authored": true
+  }
+}

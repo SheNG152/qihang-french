@@ -19,6 +19,7 @@ export function createRepository() {
         tx.oncomplete = resolve; tx.onerror = () => reject(new Error('保存失败，请检查存储空间 / Échec de sauvegarde, vérifiez l’espace libre.')); tx.onabort = () => reject(new Error('保存已中止 / Sauvegarde interrompue.'));
       });
     },
+    async cacheAudio(asset){const db=await open();return new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put(asset.bytes,asset.id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});},
     audio: key => read('audio', key),
     async allAudio() { const db = await open(); return new Promise((resolve, reject) => { const tx = db.transaction('audio'), store = tx.objectStore('audio'), values = []; store.openCursor().onsuccess = e => { const cur = e.target.result; if (cur) { values.push({ id: cur.key, bytes: cur.value }); cur.continue(); } }; tx.oncomplete = () => resolve(values); tx.onerror = () => reject(tx.error); }); },
   };

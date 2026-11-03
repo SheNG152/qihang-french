@@ -1,0 +1,33 @@
+{
+  "rester": {
+    "pos": "v.",
+    "gender": null,
+    "meanings": [
+      "留下；停留",
+      "保持某种状态；剩余"
+    ],
+    "ipa": "/ʁɛs.te/",
+    "example": {
+      "fr": "Je préfère rester à la maison ce soir.",
+      "zh": "今晚我更愿意待在家里。",
+      "authored": true,
+      "source": "启航法语 · 例句"
+    }
+  },
+  "radical": {
+    "pos": "adj.",
+    "gender": null,
+    "meanings": [
+      "根本的；彻底的",
+      "激进的",
+      "n.m. 词根；词干"
+    ],
+    "ipa": "/ʁa.di.kal/",
+    "example": {
+      "fr": "Ce projet exige un changement radical.",
+      "zh": "这个项目需要一次彻底的改变。",
+      "authored": true,
+      "source": "启航法语 · 例句"
+    }
+  }
+}

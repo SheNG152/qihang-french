@@ -1,0 +1,8 @@
+<template><view class="conjugation-options"><Bi zh="不规则动词练习" fr="Verbes irréguliers" small/><view class="conjugation-choices"><button hover-class="none" :class="{selected:plan.infinitive}" @click="toggleInfinitive"><Icon :name="plan.infinitive?'check':'plus'"/><Bi zh="原形" fr="Infinitif" small/></button><button v-for="t in TENSES" :key="t.id" hover-class="none" :class="{selected:plan.tenses.includes(t.id)}" @click="toggleTense(t.id)"><Icon :name="plan.tenses.includes(t.id)?'check':'plus'"/><Bi :zh="t.id" :fr="t.fr" small/></button></view></view></template>
+<script setup>
+import {computed} from 'vue';import Bi from './Bi.vue';import Icon from './Icon.vue';import {TENSES,normalizePlan} from '../conjugation/catalog.js';
+const props=defineProps({modelValue:Object});const emit=defineEmits(['update:modelValue']);const plan=computed(()=>normalizePlan(props.modelValue));
+function toggleInfinitive(){const p={...plan.value,infinitive:!plan.value.infinitive};if(p.infinitive||p.tenses.length)emit('update:modelValue',p);}
+function toggleTense(id){const p={...plan.value,tenses:plan.value.tenses.includes(id)?plan.value.tenses.filter(t=>t!==id):[...plan.value.tenses,id]};if(p.infinitive||p.tenses.length)emit('update:modelValue',p);}
+</script>
+<style scoped>.conjugation-options{margin:18px 0}.conjugation-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}.conjugation-choices>button{display:flex;align-items:center;gap:8px;padding:11px;border:1px solid #d8e1ef;border-radius:13px;background:#f7faff}.conjugation-choices>button.selected{background:#e5edfb;border-color:#a0b6d6}.conjugation-choices .icon{width:16px;height:16px}</style>

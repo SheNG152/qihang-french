@@ -1,0 +1,350 @@
+{
+  "par": {
+    "pos": "prép.",
+    "meanings": [
+      "通过",
+      "由",
+      "每"
+    ]
+  },
+  "plus": {
+    "pos": "adv.",
+    "meanings": [
+      "更多",
+      "更",
+      "不再"
+    ]
+  },
+  "quand": {
+    "pos": "adv.",
+    "meanings": [
+      "什么时候",
+      "当……时"
+    ]
+  },
+  "dit": {
+    "pos": "adj.",
+    "meanings": [
+      "所说的",
+      "称为"
+    ]
+  },
+  "premier": {
+    "pos": "adj.",
+    "meanings": [
+      "第一的",
+      "首要的"
+    ]
+  },
+  "cas": {
+    "pos": "n.",
+    "meanings": [
+      "情况",
+      "情形",
+      "事例"
+    ]
+  },
+  "mal": {
+    "pos": "adv.",
+    "meanings": [
+      "不好地",
+      "错误地"
+    ]
+  },
+  "pendant": {
+    "pos": "prép.",
+    "meanings": [
+      "在……期间"
+    ]
+  },
+  "moment": {
+    "pos": "n.",
+    "meanings": [
+      "片刻",
+      "时刻"
+    ]
+  },
+  "reste": {
+    "pos": "n.",
+    "meanings": [
+      "剩余",
+      "其余部分"
+    ]
+  },
+  "prix": {
+    "pos": "n.",
+    "meanings": [
+      "价格",
+      "奖项"
+    ]
+  },
+  "lieu": {
+    "pos": "n.",
+    "meanings": [
+      "地方",
+      "地点"
+    ]
+  },
+  "saint": {
+    "pos": "adj.",
+    "meanings": [
+      "神圣的",
+      "圣洁的"
+    ]
+  },
+  "suite": {
+    "pos": "n.",
+    "meanings": [
+      "后续",
+      "一系列"
+    ]
+  },
+  "passe": {
+    "pos": "n.",
+    "meanings": [
+      "通行证",
+      "传球"
+    ]
+  },
+  "question": {
+    "pos": "n.",
+    "meanings": [
+      "问题",
+      "疑问"
+    ]
+  },
+  "sens": {
+    "pos": "n.",
+    "meanings": [
+      "意义",
+      "方向",
+      "感觉"
+    ]
+  },
+  "partir": {
+    "pos": "v.",
+    "meanings": [
+      "离开",
+      "出发"
+    ]
+  },
+  "plan": {
+    "pos": "n.",
+    "meanings": [
+      "计划",
+      "地图",
+      "平面"
+    ]
+  },
+  "type": {
+    "pos": "n.",
+    "meanings": [
+      "类型",
+      "种类"
+    ]
+  },
+  "simple": {
+    "pos": "adj.",
+    "meanings": [
+      "简单的",
+      "单纯的"
+    ]
+  },
+  "série": {
+    "pos": "n.",
+    "meanings": [
+      "系列",
+      "连续"
+    ]
+  },
+  "peine": {
+    "pos": "n.",
+    "meanings": [
+      "痛苦",
+      "困难",
+      "惩罚"
+    ]
+  },
+  "terme": {
+    "pos": "n.",
+    "meanings": [
+      "词语",
+      "期限"
+    ]
+  },
+  "culture": {
+    "pos": "n.",
+    "meanings": [
+      "文化",
+      "种植"
+    ]
+  },
+  "sinon": {
+    "pos": "adv.",
+    "meanings": [
+      "否则",
+      "不然"
+    ]
+  },
+  "lien": {
+    "pos": "n.",
+    "meanings": [
+      "联系",
+      "链接"
+    ]
+  },
+  "montre": {
+    "pos": "n.",
+    "meanings": [
+      "手表"
+    ]
+  },
+  "travers": {
+    "pos": "n.",
+    "meanings": [
+      "横向",
+      "缺点"
+    ]
+  },
+  "prise": {
+    "pos": "n.",
+    "meanings": [
+      "抓住",
+      "插座"
+    ]
+  },
+  "haute": {
+    "pos": "adj.",
+    "meanings": [
+      "高的（阴性）"
+    ]
+  },
+  "journal": {
+    "pos": "n.",
+    "meanings": [
+      "报纸",
+      "日记"
+    ]
+  },
+  "version": {
+    "pos": "n.",
+    "meanings": [
+      "版本",
+      "说法"
+    ]
+  },
+  "instant": {
+    "pos": "n.",
+    "meanings": [
+      "瞬间",
+      "片刻"
+    ]
+  },
+  "note": {
+    "pos": "n.",
+    "meanings": [
+      "笔记",
+      "分数",
+      "音符"
+    ]
+  },
+  "vis": {
+    "pos": "n.",
+    "meanings": [
+      "螺丝钉"
+    ]
+  },
+  "parole": {
+    "pos": "n.",
+    "meanings": [
+      "话语",
+      "发言"
+    ]
+  },
+  "suivi": {
+    "pos": "n.",
+    "meanings": [
+      "跟踪",
+      "后续处理"
+    ]
+  },
+  "soi": {
+    "pos": "pron.",
+    "meanings": [
+      "自己"
+    ]
+  },
+  "pose": {
+    "pos": "n.",
+    "meanings": [
+      "安装",
+      "姿势"
+    ]
+  },
+  "joué": {
+    "pos": "adj.",
+    "meanings": [
+      "已演奏的",
+      "已演出的"
+    ]
+  },
+  "regard": {
+    "pos": "n.",
+    "meanings": [
+      "目光",
+      "注视"
+    ]
+  },
+  "poser": {
+    "pos": "v.",
+    "meanings": [
+      "放置",
+      "提出"
+    ]
+  },
+  "usage": {
+    "pos": "n.",
+    "meanings": [
+      "使用",
+      "惯例"
+    ]
+  },
+  "tableau": {
+    "pos": "n.",
+    "meanings": [
+      "画",
+      "黑板",
+      "表格"
+    ]
+  },
+  "surface": {
+    "pos": "n.",
+    "meanings": [
+      "表面",
+      "面积"
+    ]
+  },
+  "cru": {
+    "pos": "adj.",
+    "meanings": [
+      "生的",
+      "未加工的"
+    ]
+  },
+  "rester": {
+    "pos": "v.",
+    "meanings": [
+      "留下",
+      "停留",
+      "保持"
+    ]
+  },
+  "radical": {
+    "pos": "adj.",
+    "meanings": [
+      "根本的",
+      "彻底的",
+      "激进的"
+    ]
+  }
+}

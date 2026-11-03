@@ -7,18 +7,19 @@
 </template>
 <script setup>
 import {ref,onMounted,onUnmounted} from 'vue';import Bi from './Bi.vue';import Icon from './Icon.vue';import OralSetup from './OralSetup.vue';import {oralCall} from '../oral/native-bridge.js';import {download} from '../platform/files.js';
-const emit=defineEmits(['notice','modes','settings']),prepared=ref(localStorage.getItem('qihang-oral-prepared-v1')==='1'),frame=ref(null);let timer,alive=true;
+const emit=defineEmits(['notice','modes','settings','home']),prepared=ref(localStorage.getItem('qihang-oral-prepared-v1')==='1'),frame=ref(null);let timer,alive=true;
 const frameURL=new URL('static/oral/index.html',window.location.href).href;
 function enter(){prepared.value=true;localStorage.setItem('qihang-oral-prepared-v1','1');}
 function receiveStatus(value){if(!value.model?.ready&&value.model?.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v1')==='1'&&value.provider?.status==='connected'&&value.microphone)enter();}
 async function refresh(){try{const status=await oralCall('status');if(!alive)return;const native=window.QihangNative;if(typeof native?.microphonePermission==='function'&&native.microphonePermission()!=='granted'){prepared.value=false;return;}if(!status.model.ready&&status.model.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v1')==='1'&&status.model.ready)prepared.value=true;}catch{}}
 async function receive(event){if(event.origin!==location.origin||event.source!==(frame.value?.$el||frame.value)?.contentWindow)return;const data=event.data;
+ if(data?.type==='qihang-oral-view')emit('home',data.home===true);
  if(data?.type==='qihang-oral-error')emit('notice',data.message);
  if(data?.type==='qihang-oral-native-state')refresh();
  if(data?.type==='qihang-oral-link'&&data.url?.startsWith('https://'))window.QihangNative?.openExternalLink?window.QihangNative.openExternalLink(data.url):window.open(data.url,'_blank','noopener,noreferrer');
  if(data?.type==='qihang-oral-export-archive'&&/^A1-[a-z0-9-]+\.zip$/i.test(data.name)&&typeof data.data==='string'&&data.data.length<110*1024*1024){try{const bytes=Uint8Array.from(atob(data.data),c=>c.charCodeAt(0));await download(data.name,bytes,'application/zip');}catch(e){emit('notice',e.message);}}
 }
-onMounted(()=>{refresh();timer=setInterval(refresh,2000);window.addEventListener('message',receive);});onUnmounted(()=>{alive=false;clearInterval(timer);window.removeEventListener('message',receive);});
+onMounted(()=>{emit('home',true);refresh();timer=setInterval(refresh,2000);window.addEventListener('message',receive);});onUnmounted(()=>{alive=false;clearInterval(timer);window.removeEventListener('message',receive);});
 </script>
 <style scoped>
 .oral-mode-local{height:100%;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1100px;margin:0 auto}.oral-local-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 22px 12px;flex-shrink:0}.oral-settings-button{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:13px;border:1px solid #dae4f2;background:linear-gradient(145deg,#fff,#eef3fb);color:#7d92b4}.oral-settings-button>.icon{width:17px;height:17px}.oral-local-setup{flex:1;min-height:0;overflow-y:auto;padding:10px 19px 35px}.oral-local-frame{flex:1;min-height:0;width:100%;border:0;background:transparent;display:block}@media(max-width:720px){.oral-local-bar{padding:0 16px 10px}.oral-local-setup{padding:6px 13px 25px}}

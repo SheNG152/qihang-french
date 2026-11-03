@@ -11,6 +11,7 @@ public final class ModelStore {
  public final File model;
  private final File partial,manifestFile,preference;
  private final JSONObject manifest;
+ private final boolean inferenceModel;
  private final ExecutorService worker=Executors.newSingleThreadExecutor();
  private final AtomicBoolean inUse=new AtomicBoolean();
  private volatile String state="checking",error="",source="",sourceId="",failure="",selectedSource;
@@ -18,7 +19,10 @@ public final class ModelStore {
  private boolean restartRequested,closed;
  private volatile HttpURLConnection connection;
  public ModelStore(File root,JSONObject manifest)throws Exception{
-  this.manifest=manifest;File dir=new File(root,"models");dir.mkdirs();
+  this(root,manifest,true);
+ }
+ public ModelStore(File root,JSONObject manifest,boolean inferenceModel)throws Exception{
+  this.manifest=manifest;this.inferenceModel=inferenceModel;File dir=new File(root,"models");dir.mkdirs();
   model=new File(dir,manifest.getString("filename"));partial=new File(dir,manifest.getString("filename")+".part");
   manifestFile=new File(dir,"verified.json");preference=new File(dir,"download-source.json");
   JSONArray configured=manifest.getJSONArray("sources");for(int i=0;i<configured.length();i++){JSONObject s=configured.getJSONObject(i);if(s.optString("id").isEmpty())s.put("id",s.optString("url").contains("hf-mirror.com")?"mirror":"origin");}
@@ -53,7 +57,7 @@ public final class ModelStore {
  public JSONObject description(){return J.o("id",modelId(),"label",manifest.optString("label",modelId()));}
  public synchronized void delete()throws Exception{
   if(running||inUse.get()||"checking".equals(state))throw new IOException("请等待校验、下载或识别结束 / Attendez la fin de l’opération.");
-  NativeSpeech.release();Files.deleteIfExists(model.toPath());Files.deleteIfExists(partial.toPath());Files.deleteIfExists(manifestFile.toPath());ready=false;error="";failure="";state="missing";
+  if(inferenceModel)NativeSpeech.release();Files.deleteIfExists(model.toPath());Files.deleteIfExists(partial.toPath());Files.deleteIfExists(manifestFile.toPath());ready=false;error="";failure="";state="missing";
  }
  public synchronized void importFrom(InputStream in)throws Exception{
   if(in==null)throw new IOException("无法读取模型文件 / Fichier illisible.");
@@ -63,7 +67,7 @@ public final class ModelStore {
  }
  private void checkSpace(long need)throws IOException{if(model.getParentFile().getUsableSpace()<Math.max(0,need)+128L*1024*1024)throw new IOException("存储空间不足 / Espace insuffisant.");}
  private void promote()throws Exception{
-  state="verifying";verify(partial);NativeSpeech.release();
+  state="verifying";verify(partial);if(inferenceModel)NativeSpeech.release();
   try{Files.move(partial.toPath(),model.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}catch(AtomicMoveNotSupportedException e){Files.move(partial.toPath(),model.toPath(),StandardCopyOption.REPLACE_EXISTING);}
   J.atomic(manifestFile,J.bytes(J.o("sha256",manifest.getString("sha256"),"revision",manifest.getString("revision")).toString()));ready=true;state="ready";error="";
  }

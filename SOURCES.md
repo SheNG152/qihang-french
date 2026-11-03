@@ -195,3 +195,7 @@
    真正活着的，是那些奋力前行的人。
 
    [原文出处](https://fr.wikisource.org/wiki/Les_Châtiments/«_Ceux_qui_vivent,_ce_sont_ceux_qui_luttent_;_ce_sont_…_»)
+
+## 逗号导入词库
+
+词库来源可在程序设置帮助页查看；许可、固定版本和署名随程序保存在 static/lexicon（Windows 分享版位于“网页”目录内）；词库按 CC BY-SA 4.0、Tatoeba 例句按 CC BY 2.0、IPA-dict 按 MIT 提供。课本外词汇及例句的语音包通过 GitHub 分发，可在软件设置 → 语音中下载；课内录音已内置。

@@ -1,0 +1,8 @@
+French pronunciation audio: Creative Commons Attribution 4.0 International.
+SPDX-License-Identifier: CC-BY-4.0
+
+License: https://creativecommons.org/licenses/by/4.0/legalcode
+Attribution, source, and modifications: see ATTRIBUTION.md and MODEL_CARD.txt.
+
+This license applies to the generated audio assets in this directory.
+Application source code retains its MIT license.
