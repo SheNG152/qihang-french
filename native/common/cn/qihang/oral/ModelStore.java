@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.*;
 /** Sources serve the same pinned bytes. A partial file is never an inference input. */
 public final class ModelStore {
- public final File model;
- private final File partial,manifestFile,preference,bundled;
+ public volatile File model;
+ private final File imported,partial,manifestFile,preference,bundled;
  private final JSONObject manifest;
  private final boolean inferenceModel;
  private final ExecutorService worker=Executors.newSingleThreadExecutor();
@@ -26,19 +26,14 @@ public final class ModelStore {
  }
  public ModelStore(File root,JSONObject manifest,boolean inferenceModel,File bundled)throws Exception{
   this.manifest=manifest;this.inferenceModel=inferenceModel;this.bundled=bundled;File dir=new File(root,"models");dir.mkdirs();
-  model=new File(dir,manifest.getString("filename"));partial=new File(dir,manifest.getString("filename")+".part");
+  imported=new File(dir,manifest.getString("filename"));model=bundled!=null&&bundled.isFile()?bundled:imported;partial=new File(dir,manifest.getString("filename")+".part");
   manifestFile=new File(dir,"verified.json");preference=new File(dir,"download-source.json");
   JSONArray configured=manifest.getJSONArray("sources");for(int i=0;i<configured.length();i++){JSONObject s=configured.getJSONObject(i);if(s.optString("id").isEmpty())s.put("id",s.optString("url").contains("hf-mirror.com")?"mirror":"origin");}
   selectedSource=hasSource("mirror")?"mirror":configured.getJSONObject(0).getString("id");
   try{String saved=J.json(preference).optString("id");if(hasSource(saved))selectedSource=saved;}catch(Exception ignored){}
-  worker.submit(()->{try{if(model.isFile()){verify(model);ready=true;state="ready";}else if(bundled!=null&&bundled.isFile())installBundle();else state=partial.length()>0?"paused":"missing";}catch(Exception e){ready=false;state="invalid";error=J.safe(e);}});
- }
- private void installBundle()throws Exception{
-  state="installing";verify(bundled);
-  // A hard link saves a second gigabyte on the same drive. Imports always replace,
-  // never truncate model, so the packaged bytes cannot be changed through this link.
-  try{Files.createLink(model.toPath(),bundled.toPath());ready=true;state="ready";}
-  catch(IOException|UnsupportedOperationException e){checkSpace(manifest.getLong("size"));Files.copy(bundled.toPath(),partial.toPath(),StandardCopyOption.REPLACE_EXISTING);promote();}
+  // The complete package is self-contained. Read the verified bundled bytes
+  // directly, including when the application and user profile use different drives.
+  worker.submit(()->{try{if(model.isFile()){verify(model);ready=true;state="ready";}else state=partial.length()>0?"paused":"missing";}catch(Exception e){ready=false;state="invalid";error=J.safe(e);}});
  }
  private boolean hasSource(String id){JSONArray all=manifest.optJSONArray("sources");if(all!=null)for(int i=0;i<all.length();i++)if(id.equals(all.optJSONObject(i).optString("id")))return true;return false;}
  public JSONObject status(){
@@ -66,6 +61,7 @@ public final class ModelStore {
  public long minimumMemory(){return manifest.optLong("minimumMemoryBytes",1800L*1024*1024);}
  public JSONObject description(){return J.o("id",modelId(),"label",manifest.optString("label",modelId()));}
  public synchronized void delete()throws Exception{
+  if(model.equals(bundled))throw new IOException("随附模型属于完整程序包，不在此删除 / Le modèle fait partie du paquet complet.");
   if(running||inUse.get()||"checking".equals(state)||"installing".equals(state))throw new IOException("请等待校验、下载或识别结束 / Attendez la fin de l’opération.");
   if(inferenceModel)NativeSpeech.release();Files.deleteIfExists(model.toPath());Files.deleteIfExists(partial.toPath());Files.deleteIfExists(manifestFile.toPath());ready=false;error="";failure="";state="missing";
  }
@@ -78,7 +74,7 @@ public final class ModelStore {
  private void checkSpace(long need)throws IOException{if(model.getParentFile().getUsableSpace()<Math.max(0,need)+128L*1024*1024)throw new IOException("存储空间不足 / Espace insuffisant.");}
  private void promote()throws Exception{
   state="verifying";verify(partial);if(inferenceModel)NativeSpeech.release();
-  try{Files.move(partial.toPath(),model.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}catch(AtomicMoveNotSupportedException e){Files.move(partial.toPath(),model.toPath(),StandardCopyOption.REPLACE_EXISTING);}
+  try{Files.move(partial.toPath(),imported.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}catch(AtomicMoveNotSupportedException e){Files.move(partial.toPath(),imported.toPath(),StandardCopyOption.REPLACE_EXISTING);}model=imported;
   J.atomic(manifestFile,J.bytes(J.o("sha256",manifest.getString("sha256"),"revision",manifest.getString("revision")).toString()));ready=true;state="ready";error="";
  }
  private HttpURLConnection open(String address,long offset)throws Exception{
