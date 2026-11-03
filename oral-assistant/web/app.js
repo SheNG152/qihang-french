@@ -184,6 +184,11 @@ function renderProgress(){
  $('remainingTime').textContent=p.completed?'✓':`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
  if(!p.completed&&seconds>=target)$('stageMessage').textContent+=' 参考时间已到，完成当前交流后收尾；不会截断录音。';
 }
+if(window.QihangShortAudioExperiment&&window.QihangOralClient?.local){
+ const label=node('label','短句加速（试验）'),check=node('input');check.type='checkbox';check.id='shortAudioMode';check.checked=window.QihangOralClient.shortAudioEnabled;
+ check.onchange=()=>window.QihangOralClient.setShortAudioMode(check.checked);label.append(check);document.querySelector('.mic-options')?.append(label);
+ const note=node('p','若识别变差，可关闭短句加速，按完整窗口重新录音。','quiet');label.parentElement?.append(note);
+}
 function transcript(target, session, audio=false) {
   target.replaceChildren();
   if(!session.messages.length) {const current=session.stages[session.stage_index];target.append(node('div',session.phase==='preparation'?'准备好后，开始和考官交流。':current==='exchange'?'轮到你提问 · À vous de poser une question.':current==='roleplay'?'可以先打招呼 · Vous pouvez commencer.':'考官即将和你打招呼…','empty-dialogue'));return;}
@@ -192,6 +197,7 @@ function transcript(target, session, audio=false) {
     box.append(node('div',(row.role==='user'?'你':'Camille')+(audio?' · '+(stageNames[row.stage]||''):''),'who'));
     box.append(node('p',row.text || (row.audio?(row.interrupted?'录音已保存 · 本次发言被中断':['failed','cancelled'].includes(row.recognition_status)?'未识别成功 · 可回听或重新录音':'录音已保存 · 等待识别'):'尚未收到识别文字')));
     if(row.recognition)box.append(node('small','独立法语识别 · 原始转写','revision-note'));
+    if(row.recognition&&window.QihangShortAudioExperiment)box.append(node('small',`识别 ${(row.recognition.elapsed_ms/1000).toFixed(1)}秒 · 编码 ${(row.recognition.encoder_ms/1000).toFixed(1)}秒 · 计算窗口 ${((row.recognition.audio_context||1500)/50).toFixed(1)}秒`,'revision-note'));
     if(row.asr_reviews?.length) {
       box.append(node('span','本地法语复核（独立候选）：'+(row.asr_reviews.at(-1).text||'未识别出文字'),'asr-note'));
       box.append(node('small','两种识别都可能出错，请结合原声确认。','asr-note quiet'));

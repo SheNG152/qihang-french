@@ -53,7 +53,8 @@ else:
 sources += [base/'native/cpp/speech.cpp'];flags+=['-I'+str(whisper/'include')]
 def compile_one(item):
     i,source=item;obj=out/(str(i)+'.o');command=[str(cxx if source.suffix=='.cpp' else cc),*flags,*(['-std=c++17'] if source.suffix=='.cpp' else ['-std=gnu11']),'-c',str(source),'-o',str(obj)]
-    signature=hashlib.sha256((' '.join(command)+str(source.stat().st_mtime_ns)).encode()).hexdigest();stamp=out/(str(i)+'.stamp')
+    headers=''.join(hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(source.parent.glob('*.h'))) if source.parent==base/'native/cpp' else ''
+    signature=hashlib.sha256((' '.join(command)+str(source.stat().st_mtime_ns)+headers).encode()).hexdigest();stamp=out/(str(i)+'.stamp')
     if obj.is_file() and stamp.is_file() and stamp.read_text()==signature:return obj
     result=subprocess.run(command,capture_output=True)
     (out/(str(i)+'.log')).write_bytes(result.stdout+result.stderr)

@@ -2,7 +2,8 @@
  * No remote ASR, shared device identity, server URL or auto-resend of an uncertain turn. */
 import {oralCall as call} from './native-bridge.js';
 const bank=await fetch('bank-full.json').then(r=>r.json()),now=()=>Date.now()/1000,id=()=>crypto.randomUUID();
-let activeChannel=null;
+let activeChannel=null,shortAudio=window.QihangShortAudioExperiment===true;
+try{if(shortAudio&&localStorage.getItem('qihang-short-audio')==='off')shortAudio=false;}catch{}
 const stage=s=>s.stages[s.stage_index],accepted=m=>m.role==='user'&&['confirmed','automatic'].includes(m.confirmation_status);
 const normalized=t=>t.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
 const repeat=t=>/repete|repet|pas compris|pardon|plus lent|encore une fois/i.test(normalized(t));
@@ -103,7 +104,7 @@ class LocalChannel {
   const current=()=>!this.closed&&!this.suspended&&this.session===session&&!session.ended&&this.recognizingRow===row.id&&row.confirmation_status!=='cancelled';
   let result;
   try{
-   const job=await call('recognize',{audio:row.audio}),started=performance.now();let shown='';
+   const job=await call('recognize',{audio:row.audio,shortAudio:window.QihangShortAudioExperiment===true&&shortAudio}),started=performance.now();let shown='';
    while(current()){
     result=await call('job',{id:job.job});if(!current())return;
     if(result.state!=='running')break;
@@ -119,7 +120,7 @@ class LocalChannel {
    if(!current())return;this.recognizingRow=null;delete session.awaiting_confirmation;
    if(result?.state==='done'&&result.text?.trim()){
     row.text=row.original_asr=row.confirmed_text=result.text.trim();row.recognition_status='done';row.confirmation_status='automatic';row.submission_source='local_asr';row.submitted_at=now();
-    row.recognition={engine:'whisper.cpp',native_library:result.nativeLibrary||'baseline',model:result.model||'whisper-large-v3-french-q5_0',elapsed_ms:result.elapsedMs,model_load_ms:result.modelLoadMs,inference_ms:result.inferenceMs,encoder_ms:result.encoderMs,decoder_ms:result.decoderMs,threads:result.threads,backend:result.backend};await this.update();
+    row.recognition={engine:'whisper.cpp',native_library:result.nativeLibrary||'baseline',audio_context:result.audioContext||1500,short_audio_requested:!!result.shortAudioRequested,model:result.model||'whisper-large-v3-french-q5_0',elapsed_ms:result.elapsedMs,model_load_ms:result.modelLoadMs,inference_ms:result.inferenceMs,encoder_ms:result.encoderMs,decoder_ms:result.decoderMs,threads:result.threads,backend:result.backend};await this.update();
     try{await this.control();}catch(error){row.delivery_error=error.message;await this.update();this.emit('notice',{message:error.message});}
    }else{
     row.recognition_status=result?.state==='cancelled'?'cancelled':'failed';row.confirmation_status='not_sent';row.recognition_error=result?.error||'未识别出文字，请重新录音 / Réenregistrez votre réponse.';
@@ -159,7 +160,7 @@ async function api(path,options={}){const body=options.body?JSON.parse(options.b
  else throw Error('此操作不可用 / Action indisponible.');
  return {ok:true,json:async()=>value};
 }
-window.QihangOralClient={local:true,fetch:api,createSocket(){if(activeChannel&&!activeChannel.closed)activeChannel.close();activeChannel=new LocalChannel();return activeChannel;},workletURL:new URL('capture.js',location.href).href,async setAudio(player,path){const id=path.split('/').at(-1).replace(/\.wav$/,'');const r=await call('audio.read',{id});if(player.dataset.blob)URL.revokeObjectURL(player.dataset.blob);const url=URL.createObjectURL(new Blob([unbase64(r.data)],{type:'audio/wav'}));player.src=url;player.dataset.blob=url;player.dataset.recordingSource=path;},connectionFailed(message){parent.postMessage({type:'qihang-oral-error',message},location.origin);},async offlineBootstrap(){return {provider:{status:'offline',message:'请完成口语准备 / Préparez le mode oral.'},stages:bank.stages,scenes:bank.scenes};},async exportSession(id){const a=await call('session.export',{id});parent.postMessage({type:'qihang-oral-export-archive',name:a.name,data:a.data},location.origin);}};
+window.QihangOralClient={local:true,get shortAudioEnabled(){return shortAudio;},setShortAudioMode(value){shortAudio=!!value;try{localStorage.setItem('qihang-short-audio',shortAudio?'on':'off');}catch{}},fetch:api,createSocket(){if(activeChannel&&!activeChannel.closed)activeChannel.close();activeChannel=new LocalChannel();return activeChannel;},workletURL:new URL('capture.js',location.href).href,async setAudio(player,path){const id=path.split('/').at(-1).replace(/\.wav$/,'');const r=await call('audio.read',{id});if(player.dataset.blob)URL.revokeObjectURL(player.dataset.blob);const url=URL.createObjectURL(new Blob([unbase64(r.data)],{type:'audio/wav'}));player.src=url;player.dataset.blob=url;player.dataset.recordingSource=path;},connectionFailed(message){parent.postMessage({type:'qihang-oral-error',message},location.origin);},async offlineBootstrap(){return {provider:{status:'offline',message:'请完成口语准备 / Préparez le mode oral.'},stages:bank.stages,scenes:bank.scenes};},async exportSession(id){const a=await call('session.export',{id});parent.postMessage({type:'qihang-oral-export-archive',name:a.name,data:a.data},location.origin);}};
 document.addEventListener('visibilitychange',()=>{
  const channel=activeChannel;
  if(channel&&!channel.closed)channel.queue=channel.queue.then(()=>document.hidden?channel.suspend():channel.foreground()).catch(e=>channel.emit('notice',{message:e.message}));

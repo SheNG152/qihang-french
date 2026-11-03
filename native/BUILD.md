@@ -36,6 +36,8 @@ npm run build:apk
 
 `recognizer.cpuLibrary`及识别结果的`nativeLibrary`标明实际选用实现，练习记录的recognition.native_library保留这一诊断值。模型、量化等级、语言、音频上下文和解码策略不变；没有启用远程识别或上传原声。不同硬件浮点指令可能出现数值差异，准确度仍需原句对照复测。
 
+后续test2仅在Android明确opt-in时使用transcribeShort入口，根据录音时长缩小短句计算窗口；默认接口与Windows仍是完整窗口。详见docs/安卓短句窗口试验_20261104.md，不能将试验行为泛称为上下文未改变。JNI timings末尾增加audio_context，Java兼容旧Windows七项计时数组。重编Android库时本地头文件也纳入缓存指纹，避免只改窗口头文件却复用旧对象。
+
 Python 仅用于维护时导出题库、编译原生库，不进入成品。原模块及其参考答案保留于 `oral-assistant`，主应用只复制运行需要的题库和界面文件。
 
 ## 运行及数据边界
