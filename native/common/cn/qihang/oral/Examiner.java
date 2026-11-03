@@ -6,7 +6,7 @@ import java.util.*;
 import java.security.SecureRandom;
 import java.util.concurrent.*;
 public final class Examiner {
- public static final String PROTOCOL_REVISION="20261102-asr-performance";
+ public static final String PROTOCOL_REVISION="20261103-bundled-onboarding";
  // The platform accepts only short detect/wake phrases. Actual speech and exam
  // instructions are transferred exclusively through the current-task MCP tool.
  static final String TASK_TRIGGER="读取当前任务";

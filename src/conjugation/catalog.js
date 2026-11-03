@@ -1,6 +1,6 @@
-import catalog from './catalog.json';
-import audio from './audio.json';
-import ipa from './phonetics.json';
+import catalog from './catalog.json' with {type:'json'};
+import audio from './audio.json' with {type:'json'};
+import ipa from './phonetics.json' with {type:'json'};
 import {conjugationSpeech,speechTextKey} from './speech-text.js';
 export const PERSONS=['je','tu','il','nous','vous','ils'];
 export const TENSES=[{id:'现在时',fr:'Présent'},{id:'复合过去时',fr:'Passé composé'},{id:'未完成过去时',fr:'Imparfait'}];

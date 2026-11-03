@@ -15,7 +15,7 @@ public final class OralCore {
  private String recordingId="",recordingSession="",recordingStage="",recordingRow="";private volatile String recordingState="idle";private FileOutputStream capture;private long recordingBytes;private volatile long recognitionGeneration;
  private final Object turnLock=new Object();
  private ByteArrayOutputStream reply=new ByteArrayOutputStream();private String replyTurn="";private int replyRate=24000;
- public OralCore(File root,JSONObject manifest,JSONObject schema,Host host)throws Exception{this.root=root;this.host=host;root.mkdirs();new File(root,"recordings").mkdirs();new File(root,"sessions").mkdirs();model=new ModelStore(root,manifest);examiner=new Examiner(root,host,schema,this::providerEvent);recoverRecording();examiner.resume();}
+ public OralCore(File root,JSONObject manifest,JSONObject schema,Host host)throws Exception{this.root=root;this.host=host;root.mkdirs();new File(root,"recordings").mkdirs();new File(root,"sessions").mkdirs();model=new ModelStore(root,manifest,true,manifest.optString("bundledModelPath").isEmpty()?null:new File(manifest.getString("bundledModelPath")));examiner=new Examiner(root,host,schema,this::providerEvent);recoverRecording();examiner.resume();}
  private synchronized void event(String type,JSONObject value){try{value.put("type",type);value.put("seq",++sequence);events.add(value);while(events.size()>6000)events.remove();}catch(Exception ignored){}}
  private synchronized void providerEvent(String type,JSONObject value){try{if("audio".equals(type)){byte[] b=Base64.getDecoder().decode(value.optString("pcm"));if(reply.size()+b.length<32*1024*1024)reply.write(b);replyRate=value.optInt("rate",24000);}if("turn_end".equals(type)&&reply.size()>0&&!replyTurn.isEmpty()){String id=UUID.randomUUID().toString();J.atomic(audio(id),wav(reply.toByteArray(),replyRate));event("reply_recording",J.o("audio",id,"turn",replyTurn));reply.reset();}event(type,value);}catch(Exception e){event("error",J.o("message","回复录音保存失败 / Enregistrement de la réponse impossible."));}}
  public String call(String payload){try{JSONObject request=new JSONObject(payload),args=request.optJSONObject("args");if(args==null)args=J.o();String method=request.getString("method");JSONObject result=dispatch(method,args);return J.o("ok",true,"value",result).toString();}catch(Throwable e){return J.o("ok",false,"error",J.safe(e)).toString();}}
@@ -25,6 +25,8 @@ public final class OralCore {
    case "status":ensureSpeechPrepared();return J.o("model",modelStatus(),"recognizer",speechStatus(),"provider",examiner.state(),"recording",recordingState,"availableMemory",host.availableMemory(),"native",true);
    case "recognizer.prepare":preparationError="";ensureSpeechPrepared();return speechStatus();
    case "events":{JSONArray batch=new JSONArray();synchronized(this){long since=a.optLong("after");for(JSONObject e:events)if(e.optLong("seq")>since)batch.put(e);return J.o("events",batch,"cursor",sequence);}}
+   case "model.start":model.start();return model.status();
+   case "model.pause":model.pause();return model.status();
    case "model.import":host.importModel(model);return J.o("opened",true);
    case "model.delete":if(!a.optBoolean("confirmed"))throw new IOException("请先确认删除 / Confirmez la suppression.");model.delete();return model.status();
    case "binding.begin":examiner.begin();return examiner.state();
