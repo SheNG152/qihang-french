@@ -43,5 +43,5 @@ android/signing/
 
 /.lexicon-work/
 
-# Optional voice assets are distributed through GitHub Release.
+# Generated recordings are restored and verified by prepare-bundled-audio.mjs.
 /src/static/lexicon/audio/*.mp3

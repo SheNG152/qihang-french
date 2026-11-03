@@ -17,7 +17,9 @@ const openmp=path.join(tools,'vcredist-cabs/1/expanded-a12/vcomp140.dll_amd64');
 const openmpBytes=await fs.readFile(openmp),openmpSha=createHash('sha256').update(openmpBytes).digest('hex');
 if(openmpSha!=='55aba23cdcd6484fbb06f4155b8ca75adfce7a881f10afd0c49457165e677164')throw Error('OpenMP 运行库校验失败');
 await fs.copyFile(openmp,path.join(out,'bin/vcomp140.dll'));
-for(const name of ['model-manifest.json','evaluation-schema.json','extra-audio-manifest.json'])await fs.copyFile(path.join(root,'native',name),path.join(out,name));
+for(const name of ['model-manifest.json','evaluation-schema.json'])await fs.copyFile(path.join(root,'native',name),path.join(out,name));
 await fs.cp(path.join(root,'native/licenses'),path.join(out,'licenses'),{recursive:true});
 await fs.writeFile(path.join(out,'runtime-source.json'),JSON.stringify({jre:asset.release_name,source:asset.binary.package.link,sha256:asset.binary.package.checksum,whisper:'v1.8.3',opus:'1.5.2',openmp:{version:'14.44.35211.0',source:'https://aka.ms/vs/17/release/vc_redist.x64.exe',installerSha256:'cc0ff0eb1dc3f5188ae6300faef32bf5beeba4bdd6e8e445a9184072096b713b',dllSha256:openmpSha},modelIncluded:false},null,2));
 console.log('Windows 本地运行包已生成');
+
+await fs.rm(path.join(out,'extra-audio-manifest.json'),{force:true});

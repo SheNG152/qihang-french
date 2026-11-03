@@ -13,4 +13,4 @@
 - OpenLexicon / Lexique 3.83：https://github.com/chrplr/openlexicon ，固定提交 9009f488f664536940965453c127f43cf18b84a4；Lexique 数据来源 https://www.lexique.org/databases/Lexique383/Lexique383.zip ，CC BY-SA 4.0，用于补充词头、词性、性别与词频。
 - ECDICT：https://github.com/skywind3000/ECDICT ，固定提交 39cfb9672c0906b63569e0453c2e6abfb9ab182a，MIT（见 ECDICT-MIT.txt）；为部分英文词义提供汉语对照，translationPivot 和 glossEn 保留对应关系。补充词义经自动匹配与部分人工整理，不属于官方分级词表。
 
-课本外词汇的单词与例句合成录音通过 GitHub 分发，在设置 → 语音中下载、续传、导入或删除。使用 fr-FR-DeniseNeural 音色生成。课内录音内置，词库不捆绑第三方真人录音，不共享语音服务账号。
+课本外词汇的单词与例句合成录音随安装包内置，可离线播放。使用 fr-FR-DeniseNeural 音色生成。课内录音内置，词库不捆绑第三方真人录音，不共享语音服务账号。

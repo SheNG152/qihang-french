@@ -8,7 +8,7 @@ const items=[
 {icon:'repeat',zh:'复习答错可在次日加练，不改变正常日期；可在设置关闭',fr:'Erreur en révision : reprise le lendemain, sans décaler le calendrier'},
 {icon:'cards',zh:'背诵与做题看主要释义，详细释义页可查看其他意思',fr:'Sens principal dans les cartes et exercices, autres sens dans la fiche'},
 {icon:'cards',zh:'教材 → 导入本：逗号导入，每课30词，先背20词，每轮练5词',fr:'Manuels → Mots importés : 30 mots par leçon, 20 cartes, séries de 5'},
-{icon:'sound',zh:'课内录音已内置；课外单词和例句语音在设置 → 语音中下载',fr:'Audio des leçons intégré ; autres mots et phrases à télécharger dans Réglages → Audio'},
+{icon:'sound',zh:'单词和例句录音已内置，点击即可离线播放',fr:'Audio des mots et des phrases intégré, disponible hors ligne'},
 {icon:'book',zh:'每轮 5 词，组内顺序固定；学完一课可进入下一课',fr:'5 mots, ordre conservé ; puis leçon suivante'},
 {icon:'sound',zh:'选义听例句，释义听单词；无例句则听单词',fr:'Choix : phrase ou mot ; fiche : mot'},
 {icon:'repeat',zh:'各课到期词混合乱序复习，每轮 5 词',fr:'Révision mélangée : 5 mots, toutes leçons'},

@@ -64,8 +64,10 @@ run(path.join(java,'java.exe'),['-cp',path.join(tools,'lib/d8.jar'),'com.android
 const contents=unzipSync(fs.readFileSync(path.join(build,'resources.apk')));
 // Write web assets with UTF-8 ZIP names: Windows aapt2 cannot open Chinese filenames.
 const web=path.join(root,'dist/build/h5');
+const dictionaryAudioIndex=JSON.parse(fs.readFileSync(path.join(web,'static/lexicon/audio/index.json'),'utf8'));
+const dictionaryAudioFiles=new Set(Object.values(dictionaryAudioIndex.entries).map(clip=>clip.file));
 function addAssets(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);if(entry.isSymbolicLink())throw new Error('网页资源不能包含外部链接');if(entry.isDirectory())addAssets(file);else{
- const relative=path.relative(web,file).replaceAll('\\','/');if(/^static\/lexicon\/audio\/[a-f0-9]{64}\.mp3$/.test(relative))continue;if(refreshRepairWeb&&relative.startsWith('static/'))continue;
+ const relative=path.relative(web,file).replaceAll('\\','/');if(/^static\/lexicon\/audio\/[a-f0-9]{64}\.mp3$/.test(relative)&&!dictionaryAudioFiles.has(path.basename(relative)))continue;if(refreshRepairWeb&&relative.startsWith('static/'))continue;
  let bytes=fs.readFileSync(file);
  if(refreshRepairWeb&&/\.(?:js|html|json|css)$/.test(relative)){
   const text=bytes.toString('utf8').replaceAll(sourceManifest.name,appName).replaceAll('versionName:"'+sourceManifest.versionName+'"','versionName:"'+version+'"').replaceAll('"versionName":"'+sourceManifest.versionName+'"','"versionName":"'+version+'"').replaceAll('versionCode:"'+sourceManifest.versionCode+'"','versionCode:"'+versionCode+'"').replaceAll('"versionCode":"'+sourceManifest.versionCode+'"','"versionCode":"'+versionCode+'"');
@@ -76,7 +78,7 @@ function addAssets(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:tru
 if(repairAssets){for(const [name,bytes] of Object.entries(repairAssets))if(name.startsWith('assets/')||name.startsWith('lib/'))contents[name]=bytes;}
 else{
 addAssets(web);
-for(const name of ['model-manifest.json','evaluation-schema.json','extra-audio-manifest.json'])contents['assets/native/'+name]=fs.readFileSync(path.join(root,'native',name));
+for(const name of ['model-manifest.json','evaluation-schema.json'])contents['assets/native/'+name]=fs.readFileSync(path.join(root,'native',name));
 const nativeLibrary=path.join(root,'android/jniLibs/arm64-v8a/libqihang_speech.so');
 if(!fs.existsSync(nativeLibrary))throw new Error('缺少本机语音识别库，请先运行 build:native');
 contents['lib/arm64-v8a/libqihang_speech.so']=fs.readFileSync(nativeLibrary);
@@ -145,6 +147,7 @@ const packed=unzipSync(fs.readFileSync(apk)),assets=Object.keys(packed).filter(n
 for(const name of assets)if(!expectedAssets[name]?.equals(Buffer.from(packed[name])))throw new Error('APK 资源不匹配：'+name);
 const expectedSpeech=repairAssets&&!(refreshRepairWeb&&repairRevision>=7)?repairAssets['lib/arm64-v8a/libqihang_speech.so']:fs.readFileSync(path.join(root,'android/jniLibs/arm64-v8a/libqihang_speech.so'));
 if(!Buffer.from(expectedSpeech).equals(Buffer.from(packed['lib/arm64-v8a/libqihang_speech.so'])))throw new Error('原生识别库与预期文件不一致');
+if(!repairAssets)for(const name of dictionaryAudioFiles){const bytes=packed['assets/static/lexicon/audio/'+name];if(!bytes||createHash('sha256').update(bytes).digest('hex')+'.mp3'!==name)throw Error('内置词库录音缺失或损坏：'+name);}
 const contentFile=packed['assets/static/content/inspire1.zip'];if(!contentFile)throw new Error('APK 缺少正式词库');
 if(repairAssets&&!Buffer.from(repairAssets['assets/static/content/inspire1.zip']).equals(Buffer.from(contentFile)))throw new Error('原词库发生变化');
 const content=unzipSync(contentFile),bundle=JSON.parse(new TextDecoder().decode(content['manifest.json']));

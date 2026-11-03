@@ -8,15 +8,18 @@ const appName=JSON.parse(await fs.readFile(path.join(app,'src/manifest.json'),'u
 const startName=`启动${appName}.bat`;
 const output=path.join(app,'分享版'),web=path.join(output,'网页');
 await fs.access(path.join(app,'dist/build/h5/index.html'));
+const dictionaryAudioIndex=JSON.parse(await fs.readFile(path.join(app,'dist/build/h5/static/lexicon/audio/index.json'),'utf8'));
+const dictionaryAudioFiles=new Set(Object.values(dictionaryAudioIndex.entries).map(clip=>clip.file));
 await fs.mkdir(output,{recursive:true});
 // Replace only the generated web resources; never copy browser profiles or backups.
 if((await fs.realpath(output)).toLowerCase()!==output.toLowerCase())throw new Error('分享目录不能指向项目外部');
 await fs.cp(path.join(app,'native/build/windows-host'),path.join(output,'口语运行'),{recursive:true});
 await fs.rm(path.join(output,'server.ps1'),{force:true});
+await fs.rm(path.join(output,'口语运行/extra-audio-manifest.json'),{force:true});
 const previousWeb=await fs.lstat(web).catch(error=>{if(error.code!=='ENOENT')throw error;return null;});
 if(path.dirname(web)!==output||previousWeb?.isSymbolicLink())throw new Error('网页资源路径无效');
 await fs.rm(web,{recursive:true,force:true});
-await fs.cp(path.join(app,'dist/build/h5'),web,{recursive:true,filter:source=>!/[\\/]static[\\/]lexicon[\\/]audio[\\/][a-f0-9]{64}\.mp3$/.test(source)});
+await fs.cp(path.join(app,'dist/build/h5'),web,{recursive:true,filter:source=>!/[\\/]static[\\/]lexicon[\\/]audio[\\/][a-f0-9]{64}\.mp3$/.test(source)||dictionaryAudioFiles.has(path.basename(source))});
 const start=await fs.readFile(path.join(app,'launcher/start.bat'),'utf8');
 await fs.writeFile(path.join(output,startName),start.replace(/\r?\n/g,'\r\n'),'utf8');
 await fs.copyFile(path.join(app,'SOURCES.md'),path.join(output,'SOURCES.md'));

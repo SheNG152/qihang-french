@@ -4,16 +4,15 @@
 
 ## 下载测试版
 
-[打开测试版下载页](https://github.com/zyh307/qihang-french/releases/tag/v2.2.1)
+[打开测试版下载页](https://github.com/zyh307/qihang-french/releases/tag/v2.2.2)
 
 | 设备 | 下载文件 | 打开方式 |
 |---|---|---|
-| Windows | [Windows ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.1/QihangFrench-Windows-v2.2.1.zip) | 完整解压，双击“启动启航法语.bat” |
-| 安卓 | [APK](https://github.com/zyh307/qihang-french/releases/download/v2.2.1/QihangFrench-Android-v2.2.1.apk) | 下载后安装 |
+| Windows | [Windows ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.2/QihangFrench-Windows-v2.2.2.zip) | 完整解压，双击“启动启航法语.bat” |
+| 安卓 | [APK](https://github.com/zyh307/qihang-french/releases/download/v2.2.2/QihangFrench-Android-v2.2.2.apk) | 下载后安装 |
 | 口语练习，两端通用 | [ggml-model-q5_0.bin](https://github.com/zyh307/qihang-french/releases/download/v2.1.1-beta.1/ggml-model-q5_0.bin) | 设置 → 口语 → 导入本地模型 |
-| 非课内单词和例句语音，两端通用 | [语音包 ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.0/QihangFrench-ExtraAudio-v1.zip) | 设置 → 语音 → 下载语音包，或导入本地语音包 |
 
-课内录音已内置。课外词库包含 18,655 个词条，支持逗号导入；单词与例句录音通过 GitHub 下载，支持暂停、继续和删除。网络无法连接 GitHub 时，可下载 ZIP 后在同一入口导入。
+词库包含 18,655 个词条，支持逗号导入。课内录音、课外单词和例句录音均已内置，安装后可离线播放，无需另下语音包。
 
 只用词汇或语法功能，不需要下载识别模型。识别模型约 1.08 GB，口语转写在当前设备运行；考官回复需要联网。
 

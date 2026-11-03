@@ -36,7 +36,6 @@
       <Bi v-if="data.settings.reviewReminders!==false&&backgroundReminderFailed" zh="后台提醒未开启，请重新开启复习提醒。" fr="Réactivez les rappels en arrière-plan." small/>
 
      </section>
-     <section v-else-if="vocabularySection==='audio'" class="glass settings-card"><ExtraAudioSettings/></section>
      <section v-else-if="vocabularySection==='data'" class="glass settings-card">
       <button hover-class="none" class="setting-action" @click="$emit('import')"><Icon name="plus" /><Bi zh="导入课次" fr="Importer" /><Icon name="arrow" /></button>
       <button hover-class="none" class="setting-action" :disabled="busy" @click="$emit('backup')"><Icon name="download" /><Bi zh="词汇备份（含录音）" fr="Sauvegarder le vocabulaire" /><Icon name="arrow" /></button>
@@ -60,7 +59,6 @@
  </view>
 </template>
 <script setup>
-import ExtraAudioSettings from './ExtraAudioSettings.vue';
 import {ref,onMounted,onUnmounted} from 'vue';
 import Bi from './Bi.vue';import Icon from './Icon.vue';import StudyGuide from './StudyGuide.vue';import OralSetup from './OralSetup.vue';
 import appManifest from '../manifest.json';import {nativeHost} from '../platform/native.js';import {notificationAvailable,openNotificationSettings,exactAlarmPermission,openExactAlarmSettings} from '../platform/notifications.js';
@@ -69,7 +67,7 @@ const emit=defineEmits(['close','setting','grammarSetting','goal','notifications
 const alarmPermission=ref(exactAlarmPermission()),backgroundReminderFailed=ref(window.qihangBackgroundReminderReady===false);const refreshPermissions=()=>{alarmPermission.value=exactAlarmPermission();backgroundReminderFailed.value=window.qihangBackgroundReminderReady===false;};onMounted(()=>document.addEventListener('visibilitychange',refreshPermissions));onUnmounted(()=>document.removeEventListener('visibilitychange',refreshPermissions));
 const scope=ref(props.initialScope),vocabularySection=ref('study');
 const scopes=[{id:'general',icon:'settings',zh:'通用',fr:'Général'},{id:'vocabulary',icon:'book',zh:'词汇',fr:'Vocabulaire'},{id:'grammar',icon:'grammar',zh:'语法',fr:'Grammaire'},{id:'oral',icon:'microphone',zh:'口语',fr:'Expression orale'}];
-const vocabularyTabs=[{id:'study',icon:'book',zh:'学习',fr:'Étude'},{id:'review',icon:'repeat',zh:'复习',fr:'Révision'},{id:'audio',icon:'sound',zh:'语音',fr:'Audio'},{id:'data',icon:'upload',zh:'资料',fr:'Données'},{id:'guide',icon:'info',zh:'帮助',fr:'Aide'}];
+const vocabularyTabs=[{id:'study',icon:'book',zh:'学习',fr:'Étude'},{id:'review',icon:'repeat',zh:'复习',fr:'Révision'},{id:'data',icon:'upload',zh:'资料',fr:'Données'},{id:'guide',icon:'info',zh:'帮助',fr:'Aide'}];
 const articles=[{id:'choice',zh:'选择冠词',fr:'Choisir'},{id:'typed',zh:'自行填写',fr:'Écrire'}];
 const motions=[{id:'slide',zh:'滑动',fr:'Glisser'},{id:'page',zh:'翻页',fr:'Tourner'},{id:'none',zh:'关闭',fr:'Aucune'}];
 const reviewModes=[{id:'both',zh:'认义＋填空',fr:'Sens + écrit'},{id:'spelling',zh:'只做填空',fr:'Écrit seul'}];

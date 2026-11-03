@@ -198,4 +198,4 @@
 
 ## 逗号导入词库
 
-词库来源可在程序设置帮助页查看；许可、固定版本和署名随程序保存在 static/lexicon（Windows 分享版位于“网页”目录内）；词库按 CC BY-SA 4.0、Tatoeba 例句按 CC BY 2.0、IPA-dict 按 MIT 提供。课本外词汇及例句的语音包通过 GitHub 分发，可在软件设置 → 语音中下载；课内录音已内置。
+词库来源可在程序设置帮助页查看；许可、固定版本和署名随程序保存在 static/lexicon（Windows 分享版位于“网页”目录内）；词库按 CC BY-SA 4.0、Tatoeba 例句按 CC BY 2.0、IPA-dict 按 MIT 提供。课内录音、课本外词汇及例句录音均随软件内置，可离线播放。

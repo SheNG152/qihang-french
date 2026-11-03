@@ -34,7 +34,7 @@ import org.json.JSONObject;
 /** Offline Android host: local assets, system file picker and scoped exports. */
 public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
-    private static final int PICK_FILE=41, SAVE_FILE=42, NOTIFY_PERMISSION=43, MICROPHONE_PERMISSION=44, IMPORT_EXTRA_AUDIO=45;
+    private static final int PICK_FILE=41, SAVE_FILE=42, NOTIFY_PERMISSION=43, MICROPHONE_PERMISSION=44;
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest microphoneRequest;
@@ -46,7 +46,6 @@ public final class MainActivity extends Activity {
     private long visualRequest;
     private volatile cn.qihang.oral.OralCore oralCore;
     private OralHost oralHost;
-    private cn.qihang.oral.ExtraAudioStore extraAudio;
     // JavaScript bridge calls run off the UI thread. Publish navigation trust
     // from UI callbacks; never call WebView.getUrl() from a bridge method.
     private volatile boolean bridgeTrusted;
@@ -62,7 +61,6 @@ public final class MainActivity extends Activity {
             });
             oralCore=new cn.qihang.oral.OralCore(new File(getFilesDir(),"oral-v1"),model,schema,oralHost);
         }catch(Throwable e){oralError="口语服务暂时无法启动，请重新打开 / Rouvrez le mode oral.";}
-        try{extraAudio=new cn.qihang.oral.ExtraAudioStore(new File(getFilesDir(),"oral-v1"),new JSONObject(new String(cn.qihang.oral.J.read(getAssets().open("native/extra-audio-manifest.json"),1024*1024),java.nio.charset.StandardCharsets.UTF_8)));}catch(Exception ignored){}
         getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
         container=new FrameLayout(this);
         container.setBackgroundColor(Color.rgb(243,245,251));
@@ -120,7 +118,7 @@ public final class MainActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest request){
                 Uri uri=request.getUrl();String file=assetPath(uri);
                 if(file==null)return oralRequestAllowed(uri)?null:notFound();
-                try{if(file.startsWith("extra-audio/")){File local=extraAudio==null?null:extraAudio.file(file.substring(12));return local==null?notFound():new WebResourceResponse("audio/mpeg",null,new java.io.FileInputStream(local));}return new WebResourceResponse(mime(file),"UTF-8",200,"OK",Collections.singletonMap("Cache-Control","no-cache"),getAssets().open(file));}
+                try{return new WebResourceResponse(mime(file),"UTF-8",200,"OK",Collections.singletonMap("Cache-Control","no-cache"),getAssets().open(file));}
                 catch(IOException error){return notFound();}
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){return assetPath(request.getUrl())==null;}
@@ -179,8 +177,6 @@ public final class MainActivity extends Activity {
         }
     }
     public final class NativeBridge {
-        @JavascriptInterface public String extraAudioCall(String payload){if(!trustedPage()||extraAudio==null)return "{\"ok\":false,\"error\":\"语音包暂不可用 / Audio indisponible.\"}";return extraAudio.call(payload);}
-        @JavascriptInterface public void importExtraAudio(){runOnUiThread(()->{if(!trustedPage())return;Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT);pick.addCategory(Intent.CATEGORY_OPENABLE);pick.setType("application/zip");pick.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivityForResult(pick,IMPORT_EXTRA_AUDIO);});}
         @JavascriptInterface public String oralCall(String payload){
             try{
                 if(!trustedPage())return "{\"ok\":false,\"error\":\"Accès refusé\"}";
@@ -235,7 +231,6 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);
-        if(request==IMPORT_EXTRA_AUDIO){if(result==RESULT_OK&&data!=null&&data.getData()!=null&&extraAudio!=null){try{extraAudio.importFrom(getContentResolver().openInputStream(data.getData()));}catch(Exception e){event("qihang-audio-error",cn.qihang.oral.J.o("message",cn.qihang.oral.J.safe(e)));}}return;}
         if(request==OralHost.IMPORT_MODEL){final cn.qihang.oral.ModelStore target=oralHost==null?null:oralHost.takeImportTarget();if(result==RESULT_OK&&data!=null&&data.getData()!=null&&target!=null){final Uri modelUri=data.getData();new Thread(()->{try{target.importFrom(getContentResolver().openInputStream(modelUri));}catch(Exception e){event("qihang-oral-error",cn.qihang.oral.J.o("message",cn.qihang.oral.J.safe(e)));}},"qihang-model-import").start();}return;}
         if(request==PICK_FILE&&fileCallback!=null){
             ArrayList<Uri> uris=new ArrayList<>();
@@ -270,5 +265,5 @@ public final class MainActivity extends Activity {
     @Override public void onWindowFocusChanged(boolean focus){super.onWindowFocusChanged(focus);if(focus)restoreFrame();}
     @Override protected void onResume(){super.onResume();resumed=true;if(webView!=null){webView.onResume();webView.resumeTimers();restoreFrame();openReviewIntent();ReminderReceiver.check(this);microphonePermissionResult();}}
     @Override protected void onPause(){resumed=false;if(oralCore!=null){final cn.qihang.oral.OralCore current=oralCore;new Thread(current::background,"qihang-oral-pause").start();}if(webView!=null)webView.onPause();super.onPause();}
-    @Override protected void onDestroy(){if(extraAudio!=null)extraAudio.close();bridgeTrusted=false;if(oralCore!=null){final cn.qihang.oral.OralCore current=oralCore;oralCore=null;new Thread(current::close,"qihang-oral-close").start();}if(microphoneRequest!=null){microphoneRequest.deny();microphoneRequest=null;}if(fileCallback!=null)fileCallback.onReceiveValue(null);pendingBytes=null;if(webView!=null){container.removeView(webView);webView.destroy();webView=null;}super.onDestroy();}
+    @Override protected void onDestroy(){bridgeTrusted=false;if(oralCore!=null){final cn.qihang.oral.OralCore current=oralCore;oralCore=null;new Thread(current::close,"qihang-oral-close").start();}if(microphoneRequest!=null){microphoneRequest.deny();microphoneRequest=null;}if(fileCallback!=null)fileCallback.onReceiveValue(null);pendingBytes=null;if(webView!=null){container.removeView(webView);webView.destroy();webView=null;}super.onDestroy();}
 }
