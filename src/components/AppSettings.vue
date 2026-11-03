@@ -74,7 +74,7 @@ const reviewModes=[{id:'both',zh:'认义＋填空',fr:'Sens + écrit'},{id:'spel
 const grammarTypes=[{id:'both',zh:'全部',fr:'Tous'},{id:'translate',zh:'中译选句',fr:'Traduction'},{id:'judge',zh:'判断用法',fr:'Vrai ou faux'}];
 function setting(key,value){if(!props.dataReady){emit('notice','请等待词汇资料读取完成 / Attendez la fin du chargement.');return;}emit('setting',key,value);}
 function grammarSetting(key,value){emit('grammarSetting',key,value);}
-function enterOral(){localStorage.setItem('qihang-oral-prepared-v1','1');emit('mode','oral');}
+function enterOral(){localStorage.setItem('qihang-oral-prepared-v2','1');emit('mode','oral');}
 </script>
 <style scoped>
 .settings-scope-tabs>button,.settings-panel-tabs>button,.segments>button,.review-setting{transition:background-color .18s,border-color .18s,color .18s,box-shadow .18s}
