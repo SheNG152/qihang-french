@@ -7,11 +7,11 @@
 </template>
 <script setup>
 import {ref,onMounted,onUnmounted} from 'vue';import Bi from './Bi.vue';import Icon from './Icon.vue';import OralSetup from './OralSetup.vue';import {oralCall} from '../oral/native-bridge.js';import {download} from '../platform/files.js';
-const emit=defineEmits(['notice','modes','settings','home']),prepared=ref(localStorage.getItem('qihang-oral-prepared-v1')==='1'),frame=ref(null);let timer,alive=true;
+const emit=defineEmits(['notice','modes','settings','home']),prepared=ref(localStorage.getItem('qihang-oral-prepared-v2')==='1'),frame=ref(null);let timer,alive=true;
 const frameURL=new URL('static/oral/index.html',window.location.href).href;
-function enter(){prepared.value=true;localStorage.setItem('qihang-oral-prepared-v1','1');}
-function receiveStatus(value){if(!value.model?.ready&&value.model?.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v1')==='1'&&value.provider?.status==='connected'&&value.microphone)enter();}
-async function refresh(){try{const status=await oralCall('status');if(!alive)return;const native=window.QihangNative;if(typeof native?.microphonePermission==='function'&&native.microphonePermission()!=='granted'){prepared.value=false;return;}if(!status.model.ready&&status.model.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v1')==='1'&&status.model.ready)prepared.value=true;}catch{}}
+function enter(){prepared.value=true;localStorage.setItem('qihang-oral-prepared-v2','1');}
+function receiveStatus(value){if(value.recognizer?.ready===false||!value.model?.ready&&value.model?.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v2')==='1'&&value.provider?.status==='connected'&&value.microphone)enter();}
+async function refresh(){try{const status=await oralCall('status');if(!alive)return;const native=window.QihangNative;if(typeof native?.microphonePermission==='function'&&native.microphonePermission()!=='granted'){prepared.value=false;return;}if(status.recognizer?.ready===false||!status.model.ready&&status.model.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v2')==='1'&&status.model.ready)prepared.value=true;}catch{}}
 async function receive(event){if(event.origin!==location.origin||event.source!==(frame.value?.$el||frame.value)?.contentWindow)return;const data=event.data;
  if(data?.type==='qihang-oral-view')emit('home',data.home===true);
  if(data?.type==='qihang-oral-error')emit('notice',data.message);

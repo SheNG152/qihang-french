@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.*;
 /** Sources serve the same pinned bytes. A partial file is never an inference input. */
 public final class ModelStore {
- public final File model;
- private final File partial,manifestFile,preference;
+ public volatile File model;
+ private final File imported,partial,manifestFile,preference,bundled;
  private final JSONObject manifest;
  private final boolean inferenceModel;
  private final ExecutorService worker=Executors.newSingleThreadExecutor();
@@ -22,23 +22,28 @@ public final class ModelStore {
   this(root,manifest,true);
  }
  public ModelStore(File root,JSONObject manifest,boolean inferenceModel)throws Exception{
-  this.manifest=manifest;this.inferenceModel=inferenceModel;File dir=new File(root,"models");dir.mkdirs();
-  model=new File(dir,manifest.getString("filename"));partial=new File(dir,manifest.getString("filename")+".part");
+  this(root,manifest,inferenceModel,null);
+ }
+ public ModelStore(File root,JSONObject manifest,boolean inferenceModel,File bundled)throws Exception{
+  this.manifest=manifest;this.inferenceModel=inferenceModel;this.bundled=bundled;File dir=new File(root,"models");dir.mkdirs();
+  imported=new File(dir,manifest.getString("filename"));model=bundled!=null&&bundled.isFile()?bundled:imported;partial=new File(dir,manifest.getString("filename")+".part");
   manifestFile=new File(dir,"verified.json");preference=new File(dir,"download-source.json");
   JSONArray configured=manifest.getJSONArray("sources");for(int i=0;i<configured.length();i++){JSONObject s=configured.getJSONObject(i);if(s.optString("id").isEmpty())s.put("id",s.optString("url").contains("hf-mirror.com")?"mirror":"origin");}
   selectedSource=hasSource("mirror")?"mirror":configured.getJSONObject(0).getString("id");
   try{String saved=J.json(preference).optString("id");if(hasSource(saved))selectedSource=saved;}catch(Exception ignored){}
+  // The complete package is self-contained. Read the verified bundled bytes
+  // directly, including when the application and user profile use different drives.
   worker.submit(()->{try{if(model.isFile()){verify(model);ready=true;state="ready";}else state=partial.length()>0?"paused":"missing";}catch(Exception e){ready=false;state="invalid";error=J.safe(e);}});
  }
  private boolean hasSource(String id){JSONArray all=manifest.optJSONArray("sources");if(all!=null)for(int i=0;i<all.length();i++)if(id.equals(all.optJSONObject(i).optString("id")))return true;return false;}
  public JSONObject status(){
   JSONArray choices=new JSONArray(),all=manifest.optJSONArray("sources");
   for(int i=0;all!=null&&i<all.length();i++){JSONObject s=all.optJSONObject(i);choices.put(J.o("id",s.optString("id"),"name",s.optString("name")));}
-  return J.o("state",state,"ready",ready&&!running&&"ready".equals(state),"running",running,"storedBytes",model.length()+partial.length(),"downloaded",ready&&!running?model.length():partial.length(),"total",manifest.optLong("size"),"error",error,"source",source,"sourceId",sourceId,"selectedSource",selectedSource,"sources",choices,"failure",failure,"domesticVerified",manifest.optBoolean("domesticDeploymentVerified"),"name",manifest.optString("id"));
+  return J.o("state",state,"ready",ready&&!running&&"ready".equals(state),"running",running,"storedBytes",model.length()+partial.length(),"downloaded",ready&&!running?model.length():partial.length(),"total",manifest.optLong("size"),"error",error,"source",source,"sourceId",sourceId,"selectedSource",selectedSource,"sources",choices,"failure",failure,"domesticVerified",manifest.optBoolean("domesticDeploymentVerified"),"name",manifest.optString("id"),"path",model.getAbsolutePath(),"filename",manifest.optString("filename"),"bundledPath",bundled==null?"":bundled.getAbsolutePath(),"bundledAvailable",bundled!=null&&bundled.isFile());
  }
  private void verify(File f)throws Exception{if(f.length()!=manifest.getLong("size")||!J.sha(f).equals(manifest.getString("sha256")))throw new IOException("模型校验失败，请重新下载或导入 / Modèle invalide.");}
  public synchronized void start(){
-  if(closed||running||ready||"checking".equals(state))return;
+  if(closed||running||ready||"checking".equals(state)||"installing".equals(state))return;
   running=true;paused=false;error="";failure="";state="connecting";
   worker.submit(()->{try{download();}catch(Throwable e){if(!paused){state="failed";error=J.safe(e);}}finally{boolean restart;synchronized(this){if(paused)state="paused";running=false;connection=null;restart=restartRequested&&!closed;restartRequested=false;}if(restart)start();}});
  }
@@ -56,19 +61,20 @@ public final class ModelStore {
  public long minimumMemory(){return manifest.optLong("minimumMemoryBytes",1800L*1024*1024);}
  public JSONObject description(){return J.o("id",modelId(),"label",manifest.optString("label",modelId()));}
  public synchronized void delete()throws Exception{
-  if(running||inUse.get()||"checking".equals(state))throw new IOException("请等待校验、下载或识别结束 / Attendez la fin de l’opération.");
+  if(model.equals(bundled))throw new IOException("随附模型属于完整程序包，不在此删除 / Le modèle fait partie du paquet complet.");
+  if(running||inUse.get()||"checking".equals(state)||"installing".equals(state))throw new IOException("请等待校验、下载或识别结束 / Attendez la fin de l’opération.");
   if(inferenceModel)NativeSpeech.release();Files.deleteIfExists(model.toPath());Files.deleteIfExists(partial.toPath());Files.deleteIfExists(manifestFile.toPath());ready=false;error="";failure="";state="missing";
  }
  public synchronized void importFrom(InputStream in)throws Exception{
   if(in==null)throw new IOException("无法读取模型文件 / Fichier illisible.");
-  if(closed||running||inUse.get()||"checking".equals(state)){in.close();throw new IOException("请等待校验、下载或识别结束 / Attendez la fin de l’opération.");}
+  if(closed||running||inUse.get()||"checking".equals(state)||"installing".equals(state)){in.close();throw new IOException("请等待校验、下载或识别结束 / Attendez la fin de l’opération.");}
   running=true;state="importing";error="";
   worker.submit(()->{try(InputStream stream=in){checkSpace(Math.max(0,manifest.optLong("size")-partial.length()));try(FileOutputStream out=new FileOutputStream(partial)){byte[] b=new byte[1024*1024];long count=0;int n;while((n=stream.read(b))!=-1){count+=n;if(count>manifest.optLong("size"))throw new IOException("模型大小不符 / Taille du modèle incorrecte.");out.write(b,0,n);}out.getFD().sync();}promote();}catch(Throwable e){state=ready?"ready":"invalid";error=J.safe(e);}finally{running=false;}});
  }
  private void checkSpace(long need)throws IOException{if(model.getParentFile().getUsableSpace()<Math.max(0,need)+128L*1024*1024)throw new IOException("存储空间不足 / Espace insuffisant.");}
  private void promote()throws Exception{
   state="verifying";verify(partial);if(inferenceModel)NativeSpeech.release();
-  try{Files.move(partial.toPath(),model.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}catch(AtomicMoveNotSupportedException e){Files.move(partial.toPath(),model.toPath(),StandardCopyOption.REPLACE_EXISTING);}
+  try{Files.move(partial.toPath(),imported.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}catch(AtomicMoveNotSupportedException e){Files.move(partial.toPath(),imported.toPath(),StandardCopyOption.REPLACE_EXISTING);}model=imported;
   J.atomic(manifestFile,J.bytes(J.o("sha256",manifest.getString("sha256"),"revision",manifest.getString("revision")).toString()));ready=true;state="ready";error="";
  }
  private HttpURLConnection open(String address,long offset)throws Exception{

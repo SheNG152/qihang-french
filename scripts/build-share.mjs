@@ -1,7 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {zipSync} from 'fflate';
+import {Zip,ZipDeflate} from 'fflate';
+import {createReadStream,createWriteStream} from 'node:fs';
+import {once} from 'node:events';
+import {prepareFrenchModel} from './prepare-french-model.mjs';
 
 const app=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const appName=JSON.parse(await fs.readFile(path.join(app,'src/manifest.json'),'utf8')).name;
@@ -14,6 +17,13 @@ await fs.mkdir(output,{recursive:true});
 // Replace only the generated web resources; never copy browser profiles or backups.
 if((await fs.realpath(output)).toLowerCase()!==output.toLowerCase())throw new Error('分享目录不能指向项目外部');
 await fs.cp(path.join(app,'native/build/windows-host'),path.join(output,'口语运行'),{recursive:true});
+const model=await prepareFrenchModel();
+const modelName=JSON.parse(await fs.readFile(path.join(app,'native/model-manifest.json'),'utf8')).filename;
+await fs.mkdir(path.join(output,'口语运行/models'),{recursive:true});
+await fs.copyFile(model,path.join(output,'口语运行/models',modelName));
+const runtimeSource=JSON.parse(await fs.readFile(path.join(output,'口语运行/runtime-source.json'),'utf8'));
+runtimeSource.modelIncluded=true;runtimeSource.modelPath='models/'+modelName;
+await fs.writeFile(path.join(output,'口语运行/runtime-source.json'),JSON.stringify(runtimeSource,null,2));
 await fs.rm(path.join(output,'server.ps1'),{force:true});
 await fs.rm(path.join(output,'口语运行/extra-audio-manifest.json'),{force:true});
 const previousWeb=await fs.lstat(web).catch(error=>{if(error.code!=='ENOENT')throw error;return null;});
@@ -34,8 +44,17 @@ await fs.writeFile(path.join(app,startName),launch,'utf8');
 await fs.writeFile(path.join(app,'启动启航法语.bat'),launch,'utf8');
 // Package an explicit allowlist, so unrelated files or exported learning backups
 // accidentally placed alongside the program can never enter the share archive.
-const archiveFiles={};
-async function addFile(relative){archiveFiles[appName+'/'+relative.replaceAll('\\','/')]=new Uint8Array(await fs.readFile(path.join(output,relative)));}
+const archive=path.join(app,`${appName}_分享版.zip`),stream=createWriteStream(archive+'.part');
+let streamError;stream.on('error',error=>{streamError=error;});
+const zipper=new Zip((error,bytes,final)=>{if(error)throw error;stream.write(bytes);if(final)stream.end();});
+let count=0;
+async function addFile(relative){
+ const entry=new ZipDeflate(appName+'/'+relative.replaceAll('\\','/'),{level:1});zipper.add(entry);count++;
+ for await(const bytes of createReadStream(path.join(output,relative),{highWaterMark:256*1024})){
+  if(streamError)throw streamError;entry.push(bytes,false);if(stream.writableNeedDrain)await once(stream,'drain');
+ }
+ entry.push(new Uint8Array(),true);
+}
 async function addWeb(directory='网页'){
   for(const entry of await fs.readdir(path.join(output,directory),{withFileTypes:true})){
     const relative=path.join(directory,entry.name);
@@ -46,7 +65,8 @@ async function addWeb(directory='网页'){
 await addWeb();
 await addWeb('口语运行');
 for(const name of [startName,'使用说明.txt','使用教程.html','SOURCES.md','LICENSE','COPYRIGHT'])await addFile(name);
-const archive=path.join(app,`${appName}_分享版.zip`);
-await fs.writeFile(archive,zipSync(archiveFiles,{level:6}));
+const completed=once(stream,'finish');zipper.end();await completed;if(streamError)throw streamError;
+await fs.rename(archive+'.part',archive);
+if((await fs.stat(archive)).size>=2*1024*1024*1024)throw Error('完整包超过 GitHub 单资产限制，请拆分发行，不能静默去掉模型。');
 console.log('分享版已生成：'+output);
-console.log(`分享包已生成：${archive}（${Object.keys(archiveFiles).length} 个文件）`);
+console.log(`完整分享包已生成：${archive}（${count} 个文件，含法语识别模型）`);
