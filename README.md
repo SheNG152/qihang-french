@@ -4,12 +4,12 @@
 
 ## 下载测试版
 
-[打开测试版下载页](https://github.com/zyh307/qihang-french/releases/tag/v2.2.0)
+[打开测试版下载页](https://github.com/zyh307/qihang-french/releases/tag/v2.2.1)
 
 | 设备 | 下载文件 | 打开方式 |
 |---|---|---|
-| Windows | [Windows ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.0/QihangFrench-Windows-v2.2.0.zip) | 完整解压，双击“启动启航法语.bat” |
-| 安卓 | [APK](https://github.com/zyh307/qihang-french/releases/download/v2.2.0/QihangFrench-Android-v2.2.0.apk) | 下载后安装 |
+| Windows | [Windows ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.1/QihangFrench-Windows-v2.2.1.zip) | 完整解压，双击“启动启航法语.bat” |
+| 安卓 | [APK](https://github.com/zyh307/qihang-french/releases/download/v2.2.1/QihangFrench-Android-v2.2.1.apk) | 下载后安装 |
 | 口语练习，两端通用 | [ggml-model-q5_0.bin](https://github.com/zyh307/qihang-french/releases/download/v2.1.1-beta.1/ggml-model-q5_0.bin) | 设置 → 口语 → 导入本地模型 |
 | 非课内单词和例句语音，两端通用 | [语音包 ZIP](https://github.com/zyh307/qihang-french/releases/download/v2.2.0/QihangFrench-ExtraAudio-v1.zip) | 设置 → 语音 → 下载语音包，或导入本地语音包 |
 
