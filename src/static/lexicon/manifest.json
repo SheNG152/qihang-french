@@ -22,7 +22,7 @@
     "translatedExamples": 5399,
     "authoredExamples": 760
   },
-  "sha256": "2f62e2c51a9b198658438851c9ea9be4e7a4a9e87a9c69bcb76506aea087c7a1",
+  "sha256": "e9f88bffe6484f7a0196487484ca68705cc452819397faae2f5e008911c50eff",
   "inputs": {
     "zh-simp.jsonl": "42082dd36a33515102325e3e0f709d85997348ee8b2c20f66a5482533c30d478",
     "zh-trad.jsonl": "53cac0a16dcc9ac0eb0150aaa3125ce30158973f291e17781bf091b0c1ae85af",
@@ -56,7 +56,7 @@
     "reviewedPrimarySenses": 51
   },
   "contextualPrimaryMeanings": {
-    "matched": 1939,
+    "matched": 2045,
     "method": "Existing Chinese example matches a distinct dictionary sense; user overrides take priority."
   }
 }

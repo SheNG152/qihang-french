@@ -1,10 +1,10 @@
 import contextualMeanings from '../lexicon/contextual-primary-meanings.json' with {type:'json'};
 function shortSense(value){
- return String(value||'').replace(/^:Template:[^ ]+\s*/,'').replace(/^(?:[a-z]+\.)+\s*/i,'').replace(/［[^］]*］|【[^】]*】|\[[^\]]*\]|〈[^〉]*〉|（[^）]*）|\([^)]*\)/g,'').split(/(?:adv|adj|n|v|loc|prép|art)\./i)[0].split(/[；;\n]/)[0].trim();
+ return String(value||'').replace(/^:Template:[^ ]+\s*/,'').replace(/^(?:(?:n|v|adj|adv|prép|prep|art|loc|pron|conj|interj|num|m|f|inv|pl|sg|intr|tr|interr|exclam)\.\s*|et\s+|[1-9]\.\s*)+/iu,'').replace(/［[^］]*］|【[^】]*】|\[[^\]]*\]|〈[^〉]*〉|（[^）]*）|\([^)]*\)/g,'').split(/(?:adv|adj|n|v|loc|prép|art)\./i)[0].split(/[；;\n]/)[0].trim();
 }
-export function primaryMeaning(word){return shortSense(word?.primaryMeaning||word?.meanings?.[0]||'');}
+export function primaryMeaning(word){return shortSense(word?.primaryMeaning)||(word?.meanings||[]).map(shortSense).find(Boolean)||String(word?.meanings?.[0]||'').trim();}
 export function primaryMeaningOptions(word){
- return [...new Set([word?.primaryMeaning,...(word?.meanings||[])].filter(Boolean).flatMap(value=>shortSense(value).split(/[，,]/)).map(value=>value.trim()).filter(Boolean))];
+ return [...new Set([word?.primaryMeaning,...(word?.meanings||[])].filter(Boolean).flatMap(value=>String(value).split(/[；;\n]/)).flatMap(value=>shortSense(value).split(/[，,]/)).map(value=>value.trim()).filter(Boolean))];
 }
 export function applyMeaningCorrections(data){
  for(const p of data.library)for(const w of p.words){
