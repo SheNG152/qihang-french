@@ -7,6 +7,8 @@ import {zipSync,strToU8} from 'fflate';
 import {normalizeXlsx,masterRowsToLesson,unpack} from '../src/domain/importer.js';
 import {initialState,installLesson,normalize} from '../src/domain/learning.js';
 import {wordAudioEntries,displayForm} from '../src/domain/word-display.js';
+import {curriculumAdditions} from '../src/domain/curriculum-additions.js';
+import {dictionaryEntry,spokenKey} from '../src/domain/quick-import.js';
 import {vocabularyCorrections} from '../src/domain/vocabulary-corrections.js';
 
 const app=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -69,6 +71,23 @@ for(const id of ids){
     pkg.curriculumRevision=1;
   }
   installLesson(state,pkg);
+}
+const dictionary=JSON.parse(await fs.readFile(path.join(app,'src/static/lexicon/french.json'),'utf8')).entries;
+const speechIndex=JSON.parse(await fs.readFile(path.join(app,'src/static/lexicon/audio/index.json'),'utf8')).entries;
+const usedIds=new Set(state.library.flatMap(p=>p.words.map(w=>w.id)));let nextSerial=1;
+for(const extra of curriculumAdditions){
+ const pkg=state.library.find(p=>p.lesson.id===extra.lesson);if(!pkg)throw Error('补充词汇课次不存在：'+extra.lesson);
+ if(pkg.words.some(w=>w.pos==='v.'&&w.forms.some(f=>normalize(f.text)===normalize(extra.word))))continue;
+ const row=dictionary.find(w=>w.word===extra.word&&w.pos==='v.');if(!row)throw Error('补充词汇资料缺失：'+extra.word);
+ const word=dictionaryEntry(row);
+ while(usedIds.has(`w${String(nextSerial).padStart(6,'0')}`))nextSerial++;
+ word.id=`w${String(nextSerial++).padStart(6,'0')}`;usedIds.add(word.id);
+ word.order=Math.max(0,...pkg.words.map(w=>w.order))+1;word.meanings=[extra.meaning];word.primaryMeaning=extra.meaning;
+ word.curriculumAddition='inspire1-verbs-20261103';
+ const form=word.forms[0];form.id=word.id+'-base';form.gender=null;form.source=`Inspire 1 · ${extra.lesson}`;
+ form.example={fr:extra.fr,zh:extra.zh,source:'启航法语 · 例句',authored:true,audioKey:spokenKey(extra.fr)};
+ for(const text of [extra.word,extra.fr])if(!speechIndex[createHash('sha256').update(text).digest('hex')])throw Error('补充词汇录音缺失：'+text);
+ pkg.words.push(word);names.add(extra.lesson+'-'+extra.word);sentenceNames.add(extra.lesson+'-'+extra.word+'-example');
 }
 const id=createHash('sha256').update(JSON.stringify(state.library)).update([...audio.keys()].join('')).digest('hex');
 const manifest={schema:1,id,library:state.library,audio:[...audio.keys()],stats:{lessons:ids.length,words:state.library.reduce((sum,p)=>sum+p.words.length,0),recordings:names.size,exampleRecordings:sentenceNames.size,missing}};

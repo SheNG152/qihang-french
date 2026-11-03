@@ -15,6 +15,6 @@ export function applyMeaningCorrections(data){
    for(const f of w.forms){f.gender='m';if(!f.audioKey||f.audioKey.startsWith('tts:'))f.audioKey='tts:'+encodeURIComponent('un roman');}
   }
   if(key==='combien'&&!w.meanings.includes('多久'))w.meanings=['多久','多少','多么',...w.meanings];
-  if(!w.primaryMeaningChosen&&contextualMeanings[key]&&(w.lexiconWord||key==='roman'||key==='combien'))w.primaryMeaning=contextualMeanings[key];
+  if(!w.primaryMeaningChosen&&!w.curriculumAddition&&contextualMeanings[key]&&(w.lexiconWord||key==='roman'||key==='combien'))w.primaryMeaning=contextualMeanings[key];
  }
 }

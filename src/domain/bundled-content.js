@@ -27,6 +27,18 @@ export function mergeBundledLessons(data,bundle){
         }
         existing.curriculumRevision=source.curriculumRevision;
       }
+      // Append curriculum additions without replacing custom entries, progress
+      // or the frozen question queue of an unfinished practice.
+      if(existing.bundled){
+        let added=false;
+        for(const original of source.words.filter(w=>w.curriculumAddition)){
+          if(existing.words.some(w=>w.pos===original.pos&&w.forms.some(f=>original.forms.some(fresh=>normalize(f.text)===normalize(fresh.text)))))continue;
+          const word=clone(original),oldId=word.id;word.id=nextId();
+          for(const form of word.forms)form.id=word.id+form.id.slice(oldId.length);
+          word.order=Math.max(0,...existing.words.map(w=>w.order))+1;existing.words.push(word);data.reservedWordIds=[...new Set([...(data.reservedWordIds||[]),word.id])];added=true;
+        }
+        if(added){existing.lesson.version++;if(data.lessonCompletions)delete data.lessonCompletions[packageKey(existing)];installed++;}
+      }
       // Upgrade recordings only for matching original entries. Preserve custom
       // imports, all word/form identifiers, notebooks and unfinished sessions.
       for(const original of source.words){
