@@ -1,8 +1,8 @@
 <template>
  <view class="oral-mode-local">
-  <view class="oral-local-bar"><Bi zh="DELF A1 口语" fr="Expression orale" small /><button class="oral-settings-button" hover-class="none" @click="emit('settings')"><Icon name="settings" /><Bi zh="设置" fr="Réglages" small /></button></view>
+  <view class="oral-local-bar"><Bi zh="DELF A1–B2 口语" fr="Expression orale" small /><button class="oral-settings-button" hover-class="none" @click="emit('settings')"><Icon name="settings" /><Bi zh="设置" fr="Réglages" small /></button></view>
   <view v-if="!prepared" class="oral-local-setup"><OralSetup auto-enter @status="receiveStatus" @notice="emit('notice',$event)" @ready="enter" /></view>
-  <iframe v-if="prepared" ref="frame" class="oral-local-frame" :src="frameURL" title="DELF A1 口语练习 / Expression orale" allow="microphone; autoplay" referrerpolicy="no-referrer" />
+  <iframe v-if="prepared" ref="frame" class="oral-local-frame" :src="frameURL" title="DELF A1–B2 口语练习 / Expression orale" allow="microphone; autoplay" referrerpolicy="no-referrer" />
  </view>
 </template>
 <script setup>
@@ -17,7 +17,7 @@ async function receive(event){if(event.origin!==location.origin||event.source!==
  if(data?.type==='qihang-oral-error')emit('notice',data.message);
  if(data?.type==='qihang-oral-native-state')refresh();
  if(data?.type==='qihang-oral-link'&&data.url?.startsWith('https://'))window.QihangNative?.openExternalLink?window.QihangNative.openExternalLink(data.url):window.open(data.url,'_blank','noopener,noreferrer');
- if(data?.type==='qihang-oral-export-archive'&&/^A1-[a-z0-9-]+\.zip$/i.test(data.name)&&typeof data.data==='string'&&data.data.length<110*1024*1024){try{const bytes=Uint8Array.from(atob(data.data),c=>c.charCodeAt(0));await download(data.name,bytes,'application/zip');}catch(e){emit('notice',e.message);}}
+ if(data?.type==='qihang-oral-export-archive'&&/^[AB][12]-[a-z0-9-]+\.zip$/i.test(data.name)&&typeof data.data==='string'&&data.data.length<110*1024*1024){try{const bytes=Uint8Array.from(atob(data.data),c=>c.charCodeAt(0));await download(data.name,bytes,'application/zip');}catch(e){emit('notice',e.message);}}
 }
 onMounted(()=>{emit('home',true);refresh();timer=setInterval(refresh,2000);window.addEventListener('message',receive);});onUnmounted(()=>{alive=false;clearInterval(timer);window.removeEventListener('message',receive);});
 </script>

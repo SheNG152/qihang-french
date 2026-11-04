@@ -6,8 +6,12 @@ import {performance} from 'node:perf_hooks';
 
 const source=await fs.readFile(new URL('../../src/oral/local-client.js',import.meta.url),'utf8');
 const bank=JSON.parse(await fs.readFile(new URL('../../src/oral/bank-full.json',import.meta.url),'utf8'));
+const delfSource=await fs.readFile(new URL('../../src/oral/delf-exam.js',import.meta.url),'utf8');
+const delfCards=JSON.parse(await fs.readFile(new URL('../../src/oral/delf-cards.json',import.meta.url),'utf8'));
 async function fixture(jobs,options={}){
  const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[];
+ let clock=Date.now();
+ class ExamDate extends Date {static now(){return clock;}}
  let cursor=0,recording=0,recognizedAt=0,failedSaves=options.failedSaves||0;const recognitionArgs=[];
  const call=async(method,args={})=>{
   if(method==='status')return{model:{ready:true},recognizer:{ready:options.prepared!==false},provider:{status:'connected',hasTask:false}};
@@ -26,15 +30,15 @@ async function fixture(jobs,options={}){
   return{};
  };
  const window={QihangShortAudioExperiment:options.shortAudioExperiment===true};window.parent={postMessage(){}};
- const context=vm.createContext({window,parent:window.parent,document:{hidden:false,addEventListener(){}},location:{origin:'http://test.local',href:'http://test.local/static/oral/index.html'},fetch:async()=>({json:async()=>bank}),URL,Blob,setTimeout,clearTimeout,performance,crypto:webcrypto,structuredClone,btoa,atob,console});
+ const context=vm.createContext({window,parent:window.parent,document:{hidden:false,addEventListener(){}},location:{origin:'http://test.local',href:'http://test.local/static/oral/index.html'},fetch:async path=>({json:async()=>path==='delf-cards.json'?delfCards:bank}),Date:ExamDate,URL,Blob,setTimeout,clearTimeout,performance,crypto:webcrypto,structuredClone,btoa,atob,console});
  const module=new vm.SourceTextModule(source,{context,identifier:'local-client.js'});
- await module.link(()=>new vm.SyntheticModule(['oralCall'],function(){this.setExport('oralCall',call);},{context}));
+ await module.link(name=>name==='./delf-exam.js'?new vm.SourceTextModule(delfSource,{context}):new vm.SyntheticModule(['oralCall'],function(){this.setExport('oralCall',call);},{context}));
  await module.evaluate();
  const channel=window.QihangOralClient.createSocket();channel.onmessage=e=>{if(typeof e.data==='string')messages.push(JSON.parse(e.data));};
  async function until(condition){const end=performance.now()+5000;while(!condition()){assert.ok(performance.now()<end,'test condition timed out');await new Promise(r=>setTimeout(r,5));}}
- async function command(action,expected='ack'){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro'}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,expected,reply.message);}
+ async function command(action,expected='ack',values={}){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro',...values}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,expected,reply.message);}
  await until(()=>channel.readyState===1);if(!options.skipStart){await command('start');await until(()=>!channel.inFlight);}
- return{channel,messages,polls,sent,sessions,until,command,recognitionArgs,client:window.QihangOralClient};
+ return{advanceClock(seconds){clock+=seconds*1000;},channel,messages,polls,sent,sessions,until,command,recognitionArgs,client:window.QihangOralClient};
 }
 
 let passed=0;
@@ -93,5 +97,61 @@ let passed=0;
   }finally{t.channel.close();}
  }
  passed++;
+}
+for(const level of ['A2','B1','B2']){
+ const t=await fixture([{state:'done',text:'Je pense que le sujet mérite un débat.'}],{skipStart:true});
+ const s=()=>t.channel.session;
+ const command=(name,values)=>t.command(name,'ack',values);
+ const expire=async seconds=>{t.advanceClock(seconds);await command('clock');await t.until(()=>!t.channel.inFlight);};
+ const choose=async part=>{const [a,b]=s().drawn[part];assert.notEqual(a.id,b.id);await command('choose_card',{part,id:b.id});};
+ try{
+  await command('start',{part:'full',mode:'simulation',level});
+  assert.equal(s().phase,'selecting');
+  assert.equal(t.sent.length,0);
+  if(level==='B1')await t.command('choose_card','error',{part:'interaction',id:s().drawn.interaction[0].id});
+  await t.command('commit_choices','error');
+  for(const part of {A2:['monologue','interaction'],B1:['opinion'],B2:['presentation']}[level])await choose(part);
+  await command('commit_choices');
+  assert.equal(s().phase,'preparation');
+  assert.equal(s().prep_until-Date.now()/1000<=(level==='B2'?1800:600),true);
+  await t.command('next','error');
+  await t.command('record_start','error');
+  await expire(level==='B2'?1799:599);
+  assert.equal(s().phase,'preparation');
+  await expire(1);
+  assert.equal(s().phase,'active');
+  if(level==='B2'){
+   assert.equal(t.sent.length,0,'Examiner stays silent during presentation');
+   await command('record_start');
+   await expire(420);
+   assert.equal(s().stage_index,0,'Time expiry must preserve the in-progress recording');
+   await command('record_stop');await t.until(()=>!t.channel.recognizingRow);
+   assert.equal(t.sent.length,0,'Do not send presentation as an interactive turn');
+   await expire(0);
+   assert.equal(t.sent.at(-1).task.stage,'debate');
+   assert.equal(t.sent.at(-1).task.card.id,s().chosen.presentation.id);
+   assert.equal(t.sent.at(-1).task.recent_dialogue[0].text,'Je pense que le sujet mérite un débat.');
+   await expire(780);
+   assert.ok(s().ended);
+   assert.equal(t.sent.at(-1).task.mode,'evaluation');
+   assert.equal(t.sent.at(-1).task.learner_rows[0].stage,'presentation');
+  }else{
+   assert.equal(t.sent.at(-1).task.stage,'intro');
+   await expire(level==='A2'?90:180);
+   if(level==='B1'){
+    assert.equal(s().phase,'selecting');
+    await choose('interaction');await command('commit_choices');
+    assert.equal(s().phase,'active');await expire(240);
+    assert.equal(s().stages[s().stage_index],'opinion');
+   }else assert.equal(s().stages[s().stage_index],'monologue');
+   await command('record_start');await command('record_stop');
+   await t.until(()=>!t.channel.recognizingRow&&!t.channel.inFlight);
+   assert.equal(t.sent.at(-1).task.card.id,s().chosen[s().stages[s().stage_index]].id);
+   if(level==='A2')await expire(120);
+   await expire(level==='A2'?210:420);
+   assert.ok(s().ended);
+  }
+  passed++;
+ }finally{clearTimeout(t.channel.evalDeadline);t.channel.close();}
 }
 console.log(`Local client: ${passed} groups passed; isolated native bridge, no personal data.`);
