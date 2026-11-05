@@ -39,6 +39,7 @@ export function chooseCard(s, part, id) {
   s.chosen[part]=card;
 }
 export function openPart(s, now) {
+  delete s.finish_round;
   s.phase='active';
   s.stage_started=now;
   const duration=timing(s.level,currentPart(s))[1];
@@ -68,8 +69,7 @@ export function advancePart(s, now) {
 export function recordDeadline(s, now) {
   const part=currentPart(s);
   const cap=(!s.presented[part]&&speechCaps[part])||120;
-  const room=examClock(s);
-  return room?Math.min(room,now+cap):now+cap;
+  return now+cap;
 }
 export function examProgress(s, now) {
   const part=currentPart(s);
@@ -84,9 +84,9 @@ export function examTask(s, turnId, evaluation, rows) {
   const relevant=message=>message.stage===part||part==='debate'&&message.stage==='presentation';
   const history=s.messages.filter(m=>(evaluation||relevant(m))&&(m.role==='assistant'||rows.includes(m)));
   const instruction=evaluation?
-    '停止对话。用中文按实际有发言的环节提供结构化反馈。A2 重点看是否说清事实、原因并完成情景任务；B1 看观点组织、例子、协商与回应；B2 看问题提炼、论据、让步与反驳。分别说明任务、互动（纯独白可标不适用）、词汇、语法。只逐字引用同一环节中 learner_rows 的原句，未完成环节注明证据有限。不要从转写评发音、语速或停顿，不给官方分数。调用 self.french_exam.submit_evaluation。':
+    '停止对话。用中文按实际有发言的环节提供结构化反馈。A2 重点看是否说清事实、原因并完成情景任务；B1 看观点组织、例子、协商与回应；B2 看问题提炼、论据、让步与反驳。分别说明任务、互动（纯独白可标不适用）、词汇、语法。只逐字引用同一环节中 learner_rows 的原句，未完成环节注明证据有限。不要从转写评发音、语速或停顿，不给官方分数。调用 self.french_exam.submit_evaluation 提交文字报告，然后用中文语音简要讲解本次优点、一个改进和下一步练习。':
     (s.mode==='simulation'?'全程只说法语。不纠错、不提示、不提供答案。':'默认说法语；考生明确请求帮助时可以给简短提示。')+
-    '当前级别 '+s.level+'。只执行当前环节。一次只问一个问题或给一个简短回应，等考生发言。计时和环节切换由应用管理。' + parts[part].examiner;
+    '当前级别 '+s.level+'。只执行当前环节。一次只问一个问题或给一个简短回应，等考生发言。计时和环节切换由应用管理。' + parts[part].examiner+(s.mode==='simulation'&&s.stage_until<=Date.now()/1000?' 时间已到。回应考生本轮发言后自然收尾，不再提出新问题，不开启新话题。':'');
   return {turn_id:turnId,level:s.level,mode:evaluation?'evaluation':s.mode,stage:part,instruction,
     card:evaluation?undefined:currentCard(s),exam_cards:evaluation?s.chosen:undefined,
     recent_dialogue:(evaluation?history:history.slice(-16)).map(m=>({role:m.role,stage:m.stage,text:m.confirmed_text||m.text})),

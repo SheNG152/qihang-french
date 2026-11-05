@@ -24,6 +24,7 @@ async function fixture(jobs,options={}){
   if(method==='job'){polls.push(performance.now()-recognizedAt);return structuredClone(jobs.length>1?jobs.shift():jobs[0]);}
   if(method==='send'){
    sent.push(structuredClone(args));
+   if(options.manualReplies)return{submitted:true};
    for(const event of [{type:'task_read',turn:args.task.turn_id},{type:'sentence',text:'Bonjour !'},{type:'turn_end',hasAudio:false}])nativeEvents.push({...event,seq:++cursor});
    return{submitted:true};
   }
@@ -38,7 +39,7 @@ async function fixture(jobs,options={}){
  async function until(condition){const end=performance.now()+5000;while(!condition()){assert.ok(performance.now()<end,'test condition timed out');await new Promise(r=>setTimeout(r,5));}}
  async function command(action,expected='ack',values={}){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro',...values}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,expected,reply.message);}
  await until(()=>channel.readyState===1);if(!options.skipStart){await command('start');await until(()=>!channel.inFlight);}
- return{advanceClock(seconds){clock+=seconds*1000;},channel,messages,polls,sent,sessions,until,command,recognitionArgs,client:window.QihangOralClient};
+ return{pushNative(event){nativeEvents.push({...event,seq:++cursor});},advanceClock(seconds){clock+=seconds*1000;},channel,messages,polls,sent,sessions,until,command,recognitionArgs,client:window.QihangOralClient};
 }
 
 let passed=0;
@@ -154,4 +155,58 @@ for(const level of ['A2','B1','B2']){
   passed++;
  }finally{clearTimeout(t.channel.evalDeadline);t.channel.close();}
 }
+
+for(const level of ['A2','B1','B2']){
+ const t=await fixture([],{skipStart:true});
+ try{
+  await t.command('start','ack',{level,part:'full',mode:'simulation'});
+  const s=t.channel.session;
+  for(const part of {A2:['monologue','interaction'],B1:['opinion'],B2:['presentation']}[level])
+   await t.command('choose_card','ack',{part,id:s.drawn[part][0].id});
+  await t.command('commit_choices');
+  assert.equal(s.phase,'preparation');
+  await t.command('skip_preparation');
+  assert.equal(s.phase,'active');
+  assert.ok(s.events.some(e=>e.type==='preparation_skipped'));
+  await t.until(()=>!t.channel.inFlight);
+  if(level!=='B2'){
+   const optionsRow={id:'closing-row',role:'user',stage:'intro',confirmed_text:'Bonjour',confirmation_status:'automatic'};
+   s.messages.push(optionsRow);
+   t.channel.inFlight={turn:{turn_id:'held-turn'},row:optionsRow.id};
+   t.advanceClock(200);
+   await t.command('clock');
+   assert.equal(s.stage_index,0,'Must wait for the examiner reply');
+   await t.channel.event({type:'turn_end'});
+   await t.command('clock','ack',{playback_busy:true});
+   assert.equal(s.stage_index,0,'Must also wait for queued audio playback');
+   await t.command('clock');
+   assert.equal(s.stage_index,1);
+  }
+  passed++;
+ }finally{t.channel.close();}
+}
+{
+ const options={};
+ const t=await fixture([{state:'done',text:'Je suis étudiant.'}],options);
+ try{
+  await t.command('record_start');await t.command('record_stop');
+  await t.until(()=>!t.channel.recognizingRow&&!t.channel.inFlight);
+  options.manualReplies=true;
+  await t.command('end');
+  await t.until(()=>t.channel.evaluation);
+  const s=t.channel.session,turn=s.evaluation.request_id;
+  t.pushNative({type:'evaluation',request_id:turn,result:{summary:'中文文字评价',stages:[]}});
+  await t.until(()=>s.evaluation.status==='ready');
+  assert.ok(t.channel.evaluation,'Keep evaluation routing alive until its speech ends');
+  t.pushNative({type:'audio',turn,pcm:btoa('\0'.repeat(40)),rate:24000});
+  t.pushNative({type:'reply_recording',turn,audio:'evaluation-recording'});
+  t.pushNative({type:'turn_end',turn});
+  await t.until(()=>!t.channel.evaluation);
+  assert.equal(s.evaluation.audio,'evaluation-recording');
+  assert.equal(s.evaluation.voice_status,'ready');
+  assert.equal(t.sessions.get(s.id).evaluation.audio,'evaluation-recording');
+  passed++;
+ }finally{clearTimeout(t.channel.evalDeadline);t.channel.close();}
+}
+
 console.log(`Local client: ${passed} groups passed; isolated native bridge, no personal data.`);

@@ -24,7 +24,7 @@ function task(s,evaluation=false){const part=stage(s),rows=s.messages.filter(acc
  (s.mode==='simulation'?'模拟考试：只用简单法语，不即时纠错，不提供答案。':'陪练：默认简单法语，考生明确要求时可用中文简短提示。')+'一次只问一个问题或给一个简短回应，然后等待。'+
  (part==='intro'?(p.closing?'本轮问答已完成，请回应后收尾，不再提问。':(s.intro_plan_version===2?'你提问，考生回答。本轮顺序是先姓名、再年龄，然后才进入其他主题；不得跳题。每次只问一个问题。只围绕intro_plan当前这条信息提问，可以自然改写，不要另问下一主题。若当前topic已经是其他主题，说明基础问题已回答，不要再回头问姓名年龄。':'你提问，考生回答，保留本次已有题目顺序。')+'避免重复已回答的信息。当前问题：'+s.intro_questions[index].question):part==='exchange'?'考生是提问者，你简短回答，禁止反问Et vous。你是Camille，住在Lyon，是法语教师，喜欢阅读和游泳，有一个姐姐。请求重复时只重复或简化。':s.scene.facts+' 按题卡扮演角色，严格遵守价格、时间和任务。')+
  (p.closing?' 先回应最新发言，再说Merci, cette partie est terminée，不再提问，不自行进入下一环节。':'');
- return {turn_id:id(),level:'A1',mode:evaluation?'evaluation':s.mode,stage:part,instruction:evaluation?bank.evaluationInstruction:instruction,keyword:s.keywords[s.keyword_index],keyword_cards:s.keywords.map((word,index)=>({index,word,done:s.exchange_done.includes(index)})),scene:s.scene,progress:p,intro_plan:{question:s.intro_questions[index].question,topic:s.intro_questions[index].topic,index,order_version:s.intro_plan_version||1,questions:s.intro_questions},candidate_question:question(rows.at(-1)?.confirmed_text||''),recent_dialogue:s.messages.filter(m=>m.role==='assistant'||accepted(m)).slice(-48).map(m=>({role:m.role,text:m.confirmed_text||m.text})),learner_rows:rows.map(m=>({id:m.id,stage:m.stage,text:m.confirmed_text})),stage_evidence:Object.fromEntries(s.stages.map(st=>[st,{learner_turns:rows.filter(m=>m.stage===st).length,flow_completed:!!s.stage_completion[st]}])),completed_stages:Object.keys(s.stage_completion),transcript_only:evaluation};
+ return {turn_id:id(),level:'A1',mode:evaluation?'evaluation':s.mode,stage:part,instruction:evaluation?bank.evaluationInstruction+' 提交文字报告后，再用中文语音简要说明优点、一项改进和下一步练习。':instruction,keyword:s.keywords[s.keyword_index],keyword_cards:s.keywords.map((word,index)=>({index,word,done:s.exchange_done.includes(index)})),scene:s.scene,progress:p,intro_plan:{question:s.intro_questions[index].question,topic:s.intro_questions[index].topic,index,order_version:s.intro_plan_version||1,questions:s.intro_questions},candidate_question:question(rows.at(-1)?.confirmed_text||''),recent_dialogue:s.messages.filter(m=>m.role==='assistant'||accepted(m)).slice(-48).map(m=>({role:m.role,text:m.confirmed_text||m.text})),learner_rows:rows.map(m=>({id:m.id,stage:m.stage,text:m.confirmed_text})),stage_evidence:Object.fromEntries(s.stages.map(st=>[st,{learner_turns:rows.filter(m=>m.stage===st).length,flow_completed:!!s.stage_completion[st]}])),completed_stages:Object.keys(s.stage_completion),transcript_only:evaluation};
 }
 async function save(s){s.updated=now();await call('session.save',{session:decorate(s)});}
 function create(values){
@@ -116,10 +116,23 @@ class LocalChannel {
   }else await this.openStage();
  }
  async examAction(s,a){
+  if(a.action==='skip_preparation'){
+   if(s.phase!=='preparation')throw Error('当前不在准备阶段。');
+   s.events.push({type:'preparation_skipped',at:now()});
+   openPart(s,now());await this.openStage();return true;
+  }
   if(a.action==='choose_card'){chooseCard(s,a.part,a.id);await this.update();return true;}
   if(a.action==='commit_choices'){commitChoices(s,now());await this.openStage();return true;}
   if(a.action==='clock'){
-   if(!examClock(s)||now()<examClock(s)||this.recording||this.recognizingRow)return true;
+   if(!examClock(s)||now()<examClock(s))return true;
+   if(s.phase==='active'){
+    if(!s.finish_round){
+     const last=[...s.messages].reverse().find(m=>m.stage===stage(s)&&m.role==='assistant');
+     s.finish_round={at:now(),answer_due:!this.recording&&!this.recognizingRow&&(this.inFlight?!this.inFlight.row:!!last&&question(last.text))};
+     await this.update();
+    }
+    if(this.recording||this.recognizingRow||this.inFlight||a.playback_busy||s.finish_round.answer_due)return true;
+   }
    if(s.phase==='preparation'){openPart(s,now());await this.openStage();}
    else await this.advanceExam();
    return true;
@@ -130,7 +143,7 @@ class LocalChannel {
   }
   if(a.action==='resume'){
    if(s.phase!=='active'||this.recording||this.recognizingRow||this.inFlight)return true;
-   if(examClock(s)&&now()>=examClock(s)){await this.advanceExam();return true;}
+   if(examClock(s)&&now()>=examClock(s)){await this.examAction(s,{action:'clock'});return true;}
    if(['intro','debate'].includes(stage(s))||s.messages.some(m=>m.stage===stage(s)&&accepted(m))&&stage(s)!=='presentation'){
     await this.control();
    }else this.state('idle','轮到你了 / À vous.');
@@ -145,7 +158,7 @@ class LocalChannel {
   if(isAdvanced(s)&&await this.examAction(s,a))return;
   if(this.recognizingRow&&['prepare_record','record_start','next','keyword','select_keyword','resume'].includes(a.action))throw Error('正在识别，请等待或点停止 / Attendez la transcription ou arrêtez-la.');
   if(a.action==='prepare_record'){
-   if(s.phase!=='active'||progress(s).completed||isAdvanced(s)&&examClock(s)&&now()>=examClock(s))throw Error('请先开始或切换练习环节 / Choisissez une partie active.');
+   if(s.phase!=='active'||progress(s).completed||isAdvanced(s)&&examClock(s)&&now()>=examClock(s)&&!s.finish_round?.answer_due)throw Error('请先开始或切换练习环节 / Choisissez une partie active.');
    if(s.awaiting_confirmation||this.recording)throw Error('请先完成当前发言 / Terminez le tour actuel.');
    const status=await call('status');if(!status.model.ready||['recognizing','cancelling'].includes(status.recording))throw Error(status.recording==='cancelling'?'上一段识别正在停止，请稍候 / Arrêt de la transcription…':'请等待识别模型就绪 / Attendez le modèle.');
    const pending=this.inFlight;if(pending||status.provider.busy){this.inFlight=null;this.connectionSession=null;await call('cancel');s.events.push({type:'reply_interrupted_by_learner',at:now(),turn:pending?.turn.turn_id});}
@@ -153,7 +166,7 @@ class LocalChannel {
    await this.connectExaminer(s);await this.update();this.state('idle','可以开始说话 / Vous pouvez parler.');return;
   }
   if(a.action==='record_start'){
-   if(isAdvanced(s)&&(s.phase!=='active'||examClock(s)&&now()>=examClock(s)))throw Error('本环节已到时 / Temps écoulé.');
+   if(isAdvanced(s)&&(s.phase!=='active'||examClock(s)&&now()>=examClock(s)&&!s.finish_round?.answer_due))throw Error('本环节已到时 / Temps écoulé.');
    if(s.awaiting_confirmation||this.inFlight)throw Error('请先完成当前发言 / Terminez le tour actuel.');const result=await call('record.begin',{session:s.id,stage:stage(s)});this.recording=result.audio;if(isAdvanced(s))this.emit('record_deadline',{until:recordDeadline(s,now())});this.state('recording','正在录音 / Enregistrement…');return;}
   if(a.action==='record_stop'){const recording=await call('record.end');this.recording=null;const row={id:recording.row||id(),native_recording:true,role:'user',stage:stage(s),at:now(),audio:recording.audio,seconds:recording.duration,text:'',original_asr:'',recognition_status:'pending',confirmation_status:'pending',card_index:s.keyword_index};s.messages.push(row);if(isAdvanced(s)&&s.mode==='simulation'&&['monologue','opinion'].includes(stage(s))&&!s.presented[stage(s)])s.solo_processing_at=now();await this.update();this.state('recognizing','正在本机识别 / Reconnaissance sur cet appareil…');this.recognize(row).catch(e=>this.emit('error',{message:e.message}));return;}
   if(a.action==='confirm_transcript')throw Error('识别文字自动发送 / Envoi automatique.');
@@ -188,22 +201,23 @@ class LocalChannel {
    const advanced=isAdvanced(session), part=stage(session);
    this.releaseSoloClock(session);
    if(result?.state==='done'&&result.text?.trim()){
-    if(advanced)session.presented[part]=true;
+    if(advanced){session.presented[part]=true;if(session.finish_round)session.finish_round.answer_due=false;}
     row.text=row.original_asr=row.confirmed_text=result.text.trim();row.recognition_status='done';row.confirmation_status='automatic';row.submission_source='local_asr';row.submitted_at=now();
     row.recognition={engine:'whisper.cpp',native_library:result.nativeLibrary||'baseline',segments:result.segments||1,audio_context:result.audioContext||1500,short_audio_requested:!!result.shortAudioRequested,model:result.model||'whisper-large-v3-french-q5_0',elapsed_ms:result.elapsedMs,model_load_ms:result.modelLoadMs,inference_ms:result.inferenceMs,encoder_ms:result.encoderMs,decoder_ms:result.decoderMs,threads:result.threads,backend:result.backend};await this.update();
-    if(advanced&&(part==='presentation'||examClock(session)&&now()>=examClock(session))){
+    if(advanced&&part==='presentation'){
      this.state('idle',part==='presentation'?'陈述已保存 / Exposé enregistré.':'本环节时间已到 / Temps écoulé.');
      return;
     }
     try{await this.control();}catch(error){row.delivery_error=error.message;await this.update();this.emit('notice',{message:error.message});}
    }else{
+    if(advanced&&session.finish_round)session.finish_round.answer_due=true;
     row.recognition_status=result?.state==='cancelled'?'cancelled':'failed';row.confirmation_status='not_sent';row.recognition_error=result?.error||'未识别出文字，请重新录音 / Réenregistrez votre réponse.';
     await this.update();this.state('stopped',row.recognition_error);this.emit('notice',{message:row.recognition_error});
    }
   });
   await this.queue;
  }
- async evaluate(s){if(!s.messages.some(accepted)){s.evaluation={status:'error',message:'本次没有有效发言，无法生成评价 / Aucune réponse disponible.'};await save(s);return;}if(this.inFlight||this.evaluation?.evaluation?.status==='pending')throw Error('请先等考官结束 / Attendez la fin du tour.');const t=task(s,true);s.evaluation={status:'pending',request_id:t.turn_id};this.evaluation=s;await save(s);try{await call('send',{task:t,text:'请读取本次评价任务，调用工具提交中文点评、表达改写和练习建议。'});}catch(e){s.evaluation={status:'error',message:e.message};this.evaluation=null;await save(s);throw e;}this.evalDeadline=setTimeout(async()=>{if(s.evaluation.status==='pending'){s.evaluation={status:'error',message:'未收到结构化点评，请检查考官配置后重试 / Évaluation non reçue.'};if(this.evaluation===s)this.evaluation=null;await save(s);}},95000);}
+ async evaluate(s){if(!s.messages.some(accepted)){s.evaluation={status:'error',message:'本次没有有效发言，无法生成评价 / Aucune réponse disponible.'};await save(s);return;}if(this.inFlight||this.evaluation)throw Error('请先等考官结束 / Attendez la fin du tour.');const t=task(s,true);s.evaluation={status:'pending',voice_status:'pending',request_id:t.turn_id};this.evaluation=s;await save(s);try{await call('send',{task:t,text:'请读取本次评价任务，调用工具提交中文点评、表达改写和练习建议。'});}catch(e){s.evaluation={status:'error',message:e.message};this.evaluation=null;await save(s);throw e;}this.evalDeadline=setTimeout(async()=>{if(this.evaluation===s){s.evaluation={...s.evaluation,status:s.evaluation.status==='ready'?'ready':'error',voice_status:s.evaluation.audio?'ready':'missing',message:'未收到结构化点评，请检查考官配置后重试 / Évaluation non reçue.'};if(this.evaluation===s)this.evaluation=null;await save(s);}},95000);}
  async loop(){let failures=0;while(!this.closed){
   try{
    const batch=await call('events',{after:this.cursor});if(this.closed)return;failures=0;
@@ -211,7 +225,7 @@ class LocalChannel {
     this.cursor=e.seq;if(e.type==='notice'){this.emit('notice',{message:e.message});continue;}
     if(e.type==='task_read'&&this.inFlight?.turn.turn_id===e.turn&&this.session){this.session.events.push({type:'task_read',at:now(),turn:e.turn});this.state('waiting','题卡已同步，等待考官回复 / Tâche reçue, réponse en cours…');}
     if(e.type==='error'){this.connectionSession=null;if(this.session){this.session.events.push({type:'service_error',at:now(),message:e.message});await save(this.session);}}
-    if(isAdvanced(this.session)&&e.turn&&['audio','sentence','speaking','turn_end'].includes(e.type)&&e.turn!==this.inFlight?.turn.turn_id)continue;
+    if(isAdvanced(this.session)&&e.turn&&['audio','sentence','speaking','turn_end'].includes(e.type)&&e.turn!==this.inFlight?.turn.turn_id&&e.turn!==this.evaluation?.evaluation.request_id)continue;
     if(e.type==='turn_end'&&e.cancelled){await this.cancelled();continue;}await this.event(e);
    }
    this.cursor=batch.cursor;
@@ -221,7 +235,15 @@ class LocalChannel {
  async cancelled(){
   if(this.inFlight&&this.session){this.session.events.push({type:'request_interrupted',at:now(),turn:this.inFlight.turn.turn_id});this.inFlight=null;await this.update();this.state('stopped','内容已保留，点击继续 / Séance conservée.');}
  }
- async event(e){const s=this.session;if(e.type==='provider'){if(e.status!=='connected'&&this.inFlight&&s){s.events.push({type:'connection_interrupted',at:now(),turn:this.inFlight.turn.turn_id});this.inFlight=null;await this.update();this.state('stopped','连接中断，已有内容保留 / Séance conservée.');}parent.postMessage({type:'qihang-oral-native-state'},location.origin);return;}if(e.type==='audio'){if(this.evaluation||isAdvanced(s)&&(!this.inFlight||s.phase!=='active'))return;const bytes=unbase64(e.pcm);if(this.lastRate!==e.rate){this.lastRate=e.rate;this.emit('audio_format',{rate:e.rate,epoch:this.audioEpoch});}const out=new Uint8Array(bytes.length+4);new DataView(out.buffer).setUint32(0,this.audioEpoch,true);out.set(bytes,4);this.onmessage?.({data:out.buffer});return;}if(e.type==='sentence'&&s&&!this.evaluation&&(!isAdvanced(s)||this.inFlight&&s.phase==='active')){s.messages.push({id:id(),role:'assistant',text:e.text,stage:stage(s),at:now(),request_id:this.inFlight?.turn.turn_id});await this.update();}if(e.type==='reply_recording'){const target=this.evaluation||s;if(target){const row=[...target.messages].reverse().find(m=>m.role==='assistant'&&m.request_id===e.turn);if(row){row.audio=e.audio;await save(target);}}}if(e.type==='speaking')this.state('speaking','考官正在说话 / L’examinateur parle…');if(e.type==='turn_end'&&s){if(this.inFlight){const row=s.messages.find(m=>m.id===this.inFlight.row);if(row&&!row.reply_delivered){row.reply_delivered=true;if(stage(s)==='exchange'&&question(row.confirmed_text)){if(!s.exchange_done.includes(row.card_index))s.exchange_done.push(row.card_index);const next=s.keywords.findIndex((_,i)=>!s.exchange_done.includes(i));if(next>=0)s.keyword_index=next;}}const p=progress(s);if(p.closing)s.stage_completion[stage(s)]={at:now(),reason:p.reason};this.inFlight=null;await this.update();}this.state(s.progress?.completed?'stage_complete':'idle','轮到你了 / À vous.');}if(e.type==='evaluation'&&this.evaluation&&this.evaluation.evaluation.request_id===e.request_id){clearTimeout(this.evalDeadline);this.evaluation.evaluation={status:'ready',report:e.result,created:now()};await save(this.evaluation);this.evaluation=null;}if(e.type==='error'){if(this.evaluation?.evaluation?.status==='pending'){this.evaluation.evaluation={status:'error',message:e.message};await save(this.evaluation);this.evaluation=null;clearTimeout(this.evalDeadline);}if(this.inFlight&&s){s.events.push({type:'request_interrupted',at:now(),turn:this.inFlight.turn.turn_id});this.inFlight=null;await this.update();}this.state('stopped',e.message||'已有内容保留，可重新连接 / Séance conservée.');this.emit('notice',{message:e.message});}}
+ async event(e){const s=this.session;if(e.type==='provider'){if(e.status!=='connected'&&this.inFlight&&s){s.events.push({type:'connection_interrupted',at:now(),turn:this.inFlight.turn.turn_id});this.inFlight=null;await this.update();this.state('stopped','连接中断，已有内容保留 / Séance conservée.');}parent.postMessage({type:'qihang-oral-native-state'},location.origin);return;}if(e.type==='audio'){if(!this.evaluation&&isAdvanced(s)&&(!this.inFlight||s.phase!=='active'))return;const bytes=unbase64(e.pcm);if(this.lastRate!==e.rate){this.lastRate=e.rate;this.emit('audio_format',{rate:e.rate,epoch:this.audioEpoch});}const out=new Uint8Array(bytes.length+4);new DataView(out.buffer).setUint32(0,this.audioEpoch,true);out.set(bytes,4);this.onmessage?.({data:out.buffer});return;}if(e.type==='sentence'&&s&&!this.evaluation&&(!isAdvanced(s)||this.inFlight&&s.phase==='active')){s.messages.push({id:id(),role:'assistant',text:e.text,stage:stage(s),at:now(),request_id:this.inFlight?.turn.turn_id});await this.update();}if(e.type==='reply_recording'){const target=this.evaluation||s;if(target?.evaluation?.request_id===e.turn){
+ target.evaluation.audio=e.audio;target.evaluation.voice_status='ready';await save(target);
+ }else if(target){const row=[...target.messages].reverse().find(m=>m.role==='assistant'&&m.request_id===e.turn);if(row){row.audio=e.audio;await save(target);}}}if(e.type==='speaking')this.state('speaking','考官正在说话 / L’examinateur parle…');if(e.type==='turn_end'&&this.evaluation){
+ const target=this.evaluation;
+ if(target.evaluation.status==='pending')target.evaluation={...target.evaluation,status:'error',message:'未收到文字评价，请重试。'};
+ if(!target.evaluation.audio)target.evaluation.voice_status='missing';
+ await save(target);this.evaluation=null;clearTimeout(this.evalDeadline);
+ }
+ if(e.type==='turn_end'&&s){if(this.inFlight){const row=s.messages.find(m=>m.id===this.inFlight.row);if(row&&!row.reply_delivered){row.reply_delivered=true;if(stage(s)==='exchange'&&question(row.confirmed_text)){if(!s.exchange_done.includes(row.card_index))s.exchange_done.push(row.card_index);const next=s.keywords.findIndex((_,i)=>!s.exchange_done.includes(i));if(next>=0)s.keyword_index=next;}}const p=progress(s);if(p.closing)s.stage_completion[stage(s)]={at:now(),reason:p.reason};this.inFlight=null;await this.update();}this.state(s.progress?.completed?'stage_complete':'idle','轮到你了 / À vous.');}if(e.type==='evaluation'&&this.evaluation&&this.evaluation.evaluation.request_id===e.request_id){this.evaluation.evaluation={...this.evaluation.evaluation,status:'ready',report:e.result,created:now()};await save(this.evaluation);}if(e.type==='error'){if(this.evaluation){this.evaluation.evaluation={...this.evaluation.evaluation,status:this.evaluation.evaluation.status==='ready'?'ready':'error',voice_status:this.evaluation.evaluation.audio?'ready':'missing',message:e.message};await save(this.evaluation);this.evaluation=null;clearTimeout(this.evalDeadline);}if(this.inFlight&&s){s.events.push({type:'request_interrupted',at:now(),turn:this.inFlight.turn.turn_id});this.inFlight=null;await this.update();}this.state('stopped',e.message||'已有内容保留，可重新连接 / Séance conservée.');this.emit('notice',{message:e.message});}}
 }
 export function base64(bytes){let s='';for(let i=0;i<bytes.length;i+=32768)s+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(s);}
 export function unbase64(text){return Uint8Array.from(atob(text),c=>c.charCodeAt(0));}
