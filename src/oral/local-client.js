@@ -1,7 +1,7 @@
 /* Local exam state and transport adapter for the existing oral interface.
  * No remote ASR, shared device identity, server URL or auto-resend of an uncertain turn. */
 import {oralCall as call} from './native-bridge.js';
-import {advancePart,chooseCard,commitChoices,createExam,examClock,examProgress,examTask,isAdvanced,openPart,parts,recordDeadline} from './delf-exam.js';
+import {advancePart,chooseCard,commitChoices,createExam,examClock,examProgress,examTask,isAdvanced,openingCue,openPart,parts,recordDeadline} from './delf-exam.js';
 const [bank,delfCards]=await Promise.all(['bank-full.json','delf-cards.json'].map(path=>fetch(path).then(r=>r.json())));
 const now=()=>Date.now()/1000,id=()=>crypto.randomUUID();
 let activeChannel=null,shortAudio=window.QihangShortAudioExperiment===true;
@@ -110,14 +110,11 @@ class LocalChannel {
    if(s.phase==='selecting'){this.state('idle','抽题后直接进入互动 / Choisissez un sujet.');return;}
    if(s.phase==='preparation'){this.state('idle','请准备选定的题目 / Préparez les sujets choisis.');return;}
    if(stage(s)==='intro'||stage(s)==='debate'){await this.control();return;}
-   const opening=s.level==='A2'&&stage(s)==='interaction'
-     ? '你可以先打招呼 / Vous pouvez commencer par saluer l’examinateur.'
-     : '轮到你开始 / À vous de commencer.';
-   this.state('idle',opening);
+   this.state('idle',openingCue(stage(s)));
    return;
   }
   if(stage(s)==='intro'){await this.control();return;}
-  try{await this.connectExaminer(s);await this.update();this.state('idle',stage(s)==='exchange'?'轮到你提问 / À vous de poser une question.':'可以先打招呼 / Vous pouvez saluer l’examinateur.');}
+  try{await this.connectExaminer(s);await this.update();this.state('idle',openingCue(stage(s)));}
   catch(e){this.connectionSession=null;this.state('stopped',e.message);throw e;}
  }
  releaseSoloClock(s){

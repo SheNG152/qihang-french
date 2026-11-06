@@ -11,6 +11,17 @@ export const parts = {
   presentation: {name:'独白陈述', fr:'Monologue suivi', hint:'用 5–7 分钟阐明问题、立场和论据。陈述中考官保持安静。', examiner:'独白阶段不发言。'},
   debate: {name:'辩论', fr:'Débat avec l’examinateur', hint:'用刚才同一篇材料，回应反方观点并捍卫自己的立场。', examiner:'根据考生刚才的独白和本环节发言提出具体反例、质疑或追问。每轮只挑战一个论点，留出回应空间。'},
 };
+const greetingCue = '你可以先打招呼 / Vous pouvez commencer par saluer l’examinateur.';
+const openingCues = {
+  exchange: '你可以先用当前词卡提问 / Vous pouvez poser une question avec le mot de la carte.',
+  roleplay: greetingCue,
+  monologue: '你可以开始独白 / Vous pouvez commencer votre monologue.',
+  interaction: greetingCue,
+  opinion: '你可以先陈述自己的观点 / Vous pouvez commencer par présenter votre point de vue.',
+  presentation: '你可以开始独白陈述 / Vous pouvez commencer votre exposé.',
+};
+export const openingCue = part => openingCues[part];
+
 const limits = {
   A2: {intro:[90,90,'约 1 分 30 秒'], monologue:[120,120,'约 2 分钟'], interaction:[180,210,'3–4 分钟']},
   B1: {intro:[120,180,'2–3 分钟'], interaction:[180,240,'3–4 分钟'], opinion:[300,420,'5–7 分钟']},
