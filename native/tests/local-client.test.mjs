@@ -9,7 +9,7 @@ const bank=JSON.parse(await fs.readFile(new URL('../../src/oral/bank-full.json',
 const delfSource=await fs.readFile(new URL('../../src/oral/delf-exam.js',import.meta.url),'utf8');
 const delfCards=JSON.parse(await fs.readFile(new URL('../../src/oral/delf-cards.json',import.meta.url),'utf8'));
 async function fixture(jobs,options={}){
- const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[];
+ const sessions=new Map(),nativeEvents=[],sent=[],polls=[],messages=[],audioFrames=[];
  let clock=Date.now();
  class ExamDate extends Date {static now(){return clock;}}
  let cursor=0,recording=0,recognizedAt=0,failedSaves=options.failedSaves||0;const recognitionArgs=[];
@@ -35,11 +35,11 @@ async function fixture(jobs,options={}){
  const module=new vm.SourceTextModule(source,{context,identifier:'local-client.js'});
  await module.link(name=>name==='./delf-exam.js'?new vm.SourceTextModule(delfSource,{context}):new vm.SyntheticModule(['oralCall'],function(){this.setExport('oralCall',call);},{context}));
  await module.evaluate();
- const channel=window.QihangOralClient.createSocket();channel.onmessage=e=>{if(typeof e.data==='string')messages.push(JSON.parse(e.data));};
+ const channel=window.QihangOralClient.createSocket();channel.onmessage=e=>{if(typeof e.data==='string')messages.push(JSON.parse(e.data));else audioFrames.push(e.data);};
  async function until(condition){const end=performance.now()+5000;while(!condition()){assert.ok(performance.now()<end,'test condition timed out');await new Promise(r=>setTimeout(r,5));}}
  async function command(action,expected='ack',values={}){const request=webcrypto.randomUUID();channel.send(JSON.stringify({action,request,mode:'practice',part:'intro',...values}));await until(()=>messages.some(m=>m.request===request));const reply=messages.find(m=>m.request===request);assert.equal(reply.type,expected,reply.message);}
  await until(()=>channel.readyState===1);if(!options.skipStart){await command('start');await until(()=>!channel.inFlight);}
- return{pushNative(event){nativeEvents.push({...event,seq:++cursor});},advanceClock(seconds){clock+=seconds*1000;},channel,messages,polls,sent,sessions,until,command,recognitionArgs,client:window.QihangOralClient};
+ return{pushNative(event){nativeEvents.push({...event,seq:++cursor});},advanceClock(seconds){clock+=seconds*1000;},channel,messages,audioFrames,polls,sent,sessions,until,command,recognitionArgs,client:window.QihangOralClient};
 }
 
 let passed=0;
@@ -209,4 +209,48 @@ for(const level of ['A2','B1','B2']){
  }finally{clearTimeout(t.channel.evalDeadline);t.channel.close();}
 }
 
+{
+ const t=await fixture([{state:'done',text:'Je lis.'}],{manualReplies:true,skipStart:true});
+ try{
+  await t.command('start');
+  const s=t.channel.session,turn=t.sent[0].task.turn_id;
+  const first="Et qu'est-",second='ce que vous faites pendant votre temps libre ?';
+  t.pushNative({type:'sentence',turn,text:first});
+  t.pushNative({type:'audio',turn,rate:24000,pcm:btoa('AB')});
+  await t.until(()=>t.channel.heldReply?.size===2);
+  assert.equal(t.audioFrames.length,0,'Do not play an unfinished phrase by itself');
+  t.pushNative({type:'sentence',turn,text:second});
+  t.pushNative({type:'audio',turn,rate:24000,pcm:btoa('CD')});
+  t.pushNative({type:'reply_recording',turn,audio:'examiner-complete'});
+  t.pushNative({type:'turn_end',turn});
+  await t.until(()=>!t.channel.inFlight);
+  assert.equal(s.messages.length,1);
+  assert.equal(s.messages[0].text,first+second);
+  assert.equal(s.messages[0].audio,'examiner-complete');
+  assert.equal(t.audioFrames.length,1);
+  assert.equal(Buffer.from(t.audioFrames[0]).subarray(4).toString('ascii'),'ABCD');
+
+  const old=[
+   {...s.messages[0],text:first,audio:null},
+   {...s.messages[0],text:second},
+   {...s.messages[0],text:'Très bien.',request_id:'next-turn'},
+  ];
+  const displayed=t.client.displayMessages(old);
+  assert.equal(old.length,3);
+  assert.equal(displayed.length,2);
+  assert.equal(displayed[0].text,first+second);
+  assert.equal(displayed[0].audio,'examiner-complete');
+
+  await t.command('record_start');await t.command('record_stop');
+  await t.until(()=>t.sent.length===2);
+  const next=t.sent[1].task.turn_id;
+  t.pushNative({type:'sentence',turn:next,text:'Très bien.'});
+  t.pushNative({type:'audio',turn:next,rate:24000,pcm:btoa('EF')});
+  await t.until(()=>t.audioFrames.length===2);
+  assert.ok(t.channel.inFlight,'Complete sentences still stream before turn end');
+  t.pushNative({type:'turn_end',turn:next});
+  await t.until(()=>!t.channel.inFlight);
+  passed++;
+ }finally{t.channel.close();}
+}
 console.log(`Local client: ${passed} groups passed; isolated native bridge, no personal data.`);
