@@ -110,7 +110,10 @@ class LocalChannel {
    if(s.phase==='selecting'){this.state('idle','抽题后直接进入互动 / Choisissez un sujet.');return;}
    if(s.phase==='preparation'){this.state('idle','请准备选定的题目 / Préparez les sujets choisis.');return;}
    if(stage(s)==='intro'||stage(s)==='debate'){await this.control();return;}
-   this.state('idle','轮到你开始 / À vous de commencer.');
+   const opening=s.level==='A2'&&stage(s)==='interaction'
+     ? '你可以先打招呼 / Vous pouvez commencer par saluer l’examinateur.'
+     : '轮到你开始 / À vous de commencer.';
+   this.state('idle',opening);
    return;
   }
   if(stage(s)==='intro'){await this.control();return;}

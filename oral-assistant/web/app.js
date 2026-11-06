@@ -209,7 +209,7 @@ if(window.QihangShortAudioExperiment&&window.QihangOralClient?.local){
 }
 function transcript(target, session, audio=false) {
   target.replaceChildren();
-  if(!session.messages.length) {const current=session.stages[session.stage_index];target.append(node('div',session.phase==='preparation'?'准备好后，开始和考官交流。':current==='exchange'?'轮到你提问 · À vous de poser une question.':current==='roleplay'?'可以先打招呼 · Vous pouvez commencer.':'考官即将和你打招呼…','empty-dialogue'));return;}
+  if(!session.messages.length) {const current=session.stages[session.stage_index];target.append(node('div',session.phase==='preparation'?'准备好后，开始和考官交流。':current==='exchange'?'轮到你提问 · À vous de poser une question.':current==='roleplay'?'可以先打招呼 · Vous pouvez commencer.':session.level==='A2'&&current==='interaction'?'按题卡角色开始对话。':'考官即将和你打招呼…','empty-dialogue'));return;}
   const messages=window.QihangOralClient?.displayMessages?.(session.messages)||session.messages;
   for(const row of messages) {
     const box=node('div',undefined,'bubble'+(row.role==='user'?' user':''));
