@@ -11,6 +11,7 @@ from aiohttp import web
 
 from daily_practice_config import ModeSettings, SlotRules, rule_settings
 from daily_practice_summary import note, select_review, slot_results, speech_intervals
+from game_practice import adventure_request, tag
 from practice_records import Mode, PracticeJournal, Verdict, record, update_clock
 from recording_window import RecordingWindow, SAMPLE_BYTES, SAMPLE_RATE, receive_window
 from scripts.validate_daily_practice import validate
@@ -198,9 +199,14 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
 
     async def start(request):
         body = await request.json()
+        game, previous = adventure_request(store, body, "slot")
+        if previous:
+            return view(previous)
         lesson, fingerprint = content()
         if body.get("lesson") != lesson["lesson_id"] or not confirmed(lesson, fingerprint):
             raise ValueError("请先确认已听清两段原声")
+        if game:
+            lesson = {**lesson, "frames":lesson["frames"][:1]}
         review = body.get("review")
         if review is not None:
             lesson, existing = select_review(store, lesson, "frames", review)
@@ -212,6 +218,7 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
                    "frame_index":0, "tasks":tasks_for(frame),
                    "clips":[], "rows":[], "log_ids":[], "revision":0, "active_ms":0, "speech_seconds":0,
                    "window_seconds":settings.window_seconds, "rules":asdict(settings.rules)}
+        tag(session, game)
         if review:
             session["review_item"] = review["item"]
         store.save(session)

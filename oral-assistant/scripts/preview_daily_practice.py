@@ -63,7 +63,8 @@ async def serve(args, data):
     await worker.setup()
     try:
         await web.TCPSite(worker, "127.0.0.1", args.speech_port).start()
-        app = make_app(data, args.port, cookie_name=f"oral_daily_preview_{args.port}")
+        app = make_app(data, args.port, cookie_name=f"oral_daily_preview_{args.port}",
+                       game_private_assets=ROOT.parent / "assets-private" if args.game_private_assets else None)
         app["french_asr"].endpoint = f"http://127.0.0.1:{args.speech_port}"
         app["french_asr"].token = token
         runner = web.AppRunner(app, access_log=None)
@@ -91,6 +92,7 @@ def main():
     parser.add_argument("--disable-a", action="store_true")
     parser.add_argument("--disable-b", action="store_true")
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--game-private-assets", action="store_true", help="仅在本机读取可用的游戏素材")
     parser.add_argument("--temporary-data", action="store_true")
     args = parser.parse_args()
     try:

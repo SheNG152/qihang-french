@@ -38,6 +38,7 @@ async function finish() {
   } catch (err) {
     if (recording === current) error.value = err.message
   } finally {
+    current.close()
     if (recording === current) {
       recording = null
       request = null

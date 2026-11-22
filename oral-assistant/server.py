@@ -569,7 +569,8 @@ class Bridge:
             self.save()
 
 
-def make_app(data_dir, port=8127, provider_factory=Hosted, examples_dir=None, *, cookie_name='oral_local'):
+def make_app(data_dir, port=8127, provider_factory=Hosted, examples_dir=None, *, cookie_name='oral_local',
+             game_private_assets=None):
     cookie = secrets.token_urlsafe(32)
     origins = {f'http://127.0.0.1:{port}', f'http://localhost:{port}'}
     app_client = AppClient(data_dir)
@@ -642,9 +643,9 @@ def make_app(data_dir, port=8127, provider_factory=Hosted, examples_dir=None, *,
 
     async def asset(request):
         name = request.match_info['name']
-        if name in ('desktop.js', 'desktop.css'):
+        if name in ('desktop.js', 'desktop.css', 'opening-comic.png'):
             return web.FileResponse(ROOT / '.desktop' / name)
-        if name not in ('app.js', 'style.css', 'capture.js'):
+        if name not in ('app.js', 'style.css', 'capture.js', 'practice-audio-gate.js'):
             raise web.HTTPNotFound()
         return web.FileResponse(ROOT / 'web' / name)
 
@@ -796,6 +797,10 @@ def make_app(data_dir, port=8127, provider_factory=Hosted, examples_dir=None, *,
     install_lecture(app, data_dir)
     from daily_practice import install as install_daily_practice
     install_daily_practice(app, data_dir)
+    from game_private_art import install as install_game_art
+    install_game_art(app, game_private_assets, app_client.allowed)
+    from game_private_radio import install as install_game_radio
+    install_game_radio(app, game_private_assets, app_client.allowed)
     return app
 
 

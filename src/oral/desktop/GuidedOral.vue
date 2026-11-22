@@ -1,10 +1,16 @@
 <script setup>
-import {computed, onMounted, onBeforeUnmount, ref} from 'vue'
+import {computed, onMounted, onBeforeUnmount, ref, shallowRef} from 'vue'
 import ReadingShelf from './ReadingShelf.vue'
 import FluencyDemo from './FluencyDemo.vue'
 import SlotDemo from './SlotDemo.vue'
 import PracticeSkills from './PracticeSkills.vue'
 import WordLine from './WordLine.vue'
+import GameMode from '../../game/GameMode.vue'
+import {createRadioPlayer} from '../../game/radioPlayer.js'
+import {loadSave as loadGameSave} from '../../game/save.js'
+import {beginAdventure, makePracticeRequest, matchesRun, onPracticeEnter, onPracticeExit, pendingAdventure, portalTitle,
+  recoverAdventure, settleAdventure} from '../../game/practiceBridge.js'
+import {acquirePracticeLease, canPlayPracticeAudio, registerPlayer} from '../../../oral-assistant/web/practice-audio-gate.js'
 import {openMicrophone} from './microphone.js'
 
 const base='/api/lecture', scopeKey='qihang-oral-scope-v2'
@@ -19,6 +25,16 @@ const dailyModes=[
 ]
 const examSkills={focus:['听题理解','临场应答','组织表达'],support:['词形准确']}
 const view=ref('home'), packs=ref([]), selected=ref(''), queue=ref([]), s=ref(null)
+const gameAvailable=!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+const gameCharacter=ref(gameAvailable&&loadGameSave().save?.character.id)
+const gamePractice=ref(null), gameMapOpen=ref(false), gameReceipt=ref('')
+let gameOpening=false, gameSettling=false
+const gameRadio=shallowRef(null)
+let gameAudioLease, normalAudioLease, unwatchAudio
+const normalPractice=ref(null)
+function focusPracticeCards(){
+  normalPractice.value?.querySelector('button')?.focus()
+}
 const dailyNotes=ref([]), dailyReview=ref(null), todayRows=ref([])
 const dailySettings=ref({})
 const dailyCards=computed(()=>dailyModes.filter(mode=>dailySettings.value[mode.id]))
@@ -29,7 +45,7 @@ const inProgress=ref({}), records=ref({}), batch=ref([]), batchSize=ref(0), noti
 const chunkIndex=ref(0)
 let chunkTimer
 let epoch=0, player, audioURL, recorder, pointer, sessionReady, tick, lastTime=0, closeTimer, feedbackTimer, sending=false
-const pack=computed(()=>packs.value.find(p=>p.id===selected.value))
+const pack=computed(()=>gamePractice.value&&s.value?.text||packs.value.find(p=>p.id===selected.value))
 const lines=computed(()=>s.value?.text.sentences||pack.value?.sentences||[])
 const key=computed(()=>s.value?.queue[0]||lines.value[0]?.id)
 const full=computed(()=>s.value?.phase==='full')
@@ -76,6 +92,7 @@ function position(state){
   return (state.reviewRound?'复练第 ':'第 ')+(total-state.queue.length+1)+' / '+total+' 句'
 }
 function remember(state){
+  if(state.game)return true
   if(state.origin==='notebook'){
     const remaining=batch.value.map(({textId,sentenceId})=>({textId,sentenceId}))
     if(state.phase==='ended'&&!remaining.length){
@@ -142,16 +159,118 @@ function clean(){
   loading.value=false;sending=false;sessionReady=null;heard.value=false;error.value=''
 }
 function nav(where,push=true){
+  if (where==='adventure') gameRadio.value ??= createRadioPlayer()
+  if (where!=='adventure' && !gamePractice.value && view.value==='adventure') gameRadio.value?.cancelPractice()
+  if (!['adventure','read','offer','report','fluency','slot'].includes(where) && gameAudioLease) leaveGamePracticeAudio()
+  if (!['read','offer','report','fluency','slot'].includes(where)) leaveNormalPracticeAudio()
   clean();dailyReview.value=null;view.value=where
+  if(!['read','fluency','slot'].includes(where))gamePractice.value=null
+  gameMapOpen.value=false
+  gameReceipt.value=''
   if(push&&history.state?.atelier!==where){
     const url=new URL(location.href)
     if(dailyCards.value.some(mode=>mode.id===where))url.searchParams.set('practice',where)
     else url.searchParams.delete('practice')
+    if(where==='adventure'||gamePractice.value)url.searchParams.set('game','1')
+    else url.searchParams.delete('game')
+    if(gamePractice.value)url.searchParams.set('gameRun',gamePractice.value.runId)
+    else url.searchParams.delete('gameRun')
     url.searchParams.delete('reviewSession')
     history.pushState({atelier:where},'',url)
   }
   window.scrollTo(0,0)
   if(where==='games')loadToday()
+}
+function leaveNormalPracticeAudio(){normalAudioLease?.();normalAudioLease=null}
+async function enterNormalPracticeAudio(){
+  if(normalAudioLease)return true
+  const v=epoch
+  try {
+    const release=await acquirePracticeLease()
+    if(v!==epoch){release();return false}
+    if(normalAudioLease)release()
+    else normalAudioLease=release
+    return true
+  }catch(err){if(v===epoch)error.value=err.message;return false}
+}
+function leaveGamePracticeAudio(returning=false){
+  const release=gameAudioLease;gameAudioLease=null
+  void onPracticeExit(gameRadio.value,release,returning)
+}
+function returnGame(message='',push=true){
+  nav('adventure',push)
+  gameMapOpen.value=true
+  gameReceipt.value=message
+  leaveGamePracticeAudio(true)
+}
+async function openGamePractice(run,push=true){
+  if(run.mode!=='lecture'&&!dailySettings.value[run.mode]){
+    returnGame('这个黑洞的练习暂未启用。')
+    return
+  }
+  leaveNormalPracticeAudio()
+  const previous=epoch
+  if (!gameAudioLease) {
+    try {
+      const release=await onPracticeEnter(gameRadio.value)
+      if (previous!==epoch) { release(); return }
+      gameAudioLease ??= release
+      if (gameAudioLease!==release) release()
+    } catch (err) {
+      if (previous===epoch) { leaveGamePracticeAudio(true);error.value=err.message }
+      return
+    }
+  }
+  gamePractice.value=run
+  s.value=null;batch.value=[];batchSize.value=0
+  nav(run.mode==='lecture'?'read':run.mode,push)
+  if(!push)history.replaceState({atelier:view.value},'','')
+  if(run.mode!=='lecture')return
+  const v=epoch
+  loading.value=true
+  try{
+    let state=await recoverAdventure(api,base,run)
+    if(v!==epoch)return
+    if(!state){
+      const {texts}=await api(base+'?layout=guided')
+      if(v!==epoch)return
+      const lesson=texts.find(text=>text.id==='inspire1-u5-l16-p078-integral')||
+        texts.find(text=>text.featured)||texts[0]
+      if(!lesson)throw Error('没有可播放的课文，请安装课文后再来。')
+      state=await api(base,apiPost({...run,text:lesson.id,layout:'guided'}))
+    }
+    if(v!==epoch)return
+    if(!matchesRun(state,run))throw Error('服务没有返回本次冒险的记录。')
+    s.value=state;present()
+  }catch(err){if(v===epoch)error.value=err.message}
+  finally{if(v===epoch)loading.value=false}
+}
+async function startGamePractice(nodeId){
+  if(gameOpening)return
+  const v=epoch
+  gameOpening=true
+  try{
+    const {mode}=makePracticeRequest(nodeId)
+    if(mode!=='lecture'&&!dailySettings.value[mode])throw Error('这个黑洞的练习暂未启用。')
+    const run=await beginAdventure(nodeId)
+    if(v===epoch)await openGamePractice(run)
+  }catch(err){if(v===epoch)error.value=err.message}
+  finally{gameOpening=false}
+}
+async function finishGamePractice(state){
+  const run=gamePractice.value
+  if(!run||gameSettling)return
+  gameSettling=true
+  try{
+    const award=await settleAdventure(state,run)
+    if(gamePractice.value?.runId!==run.runId)return
+    const name=portalTitle(run.nodeId,[run.nodeId])
+    const message=award.coins ? `获得 ${award.coins} 金币${award.unlocked ? ' · 解锁「'+name+'」' : ''}` :
+      award.reason==='no-pass' ? '这轮暂无独立通过，冒险可以再试。' :
+      award.reason==='daily-limit' ? '冒险完成。这个黑洞今天的金币已领取。' : '这轮冒险已结算。'
+    returnGame(message)
+  }catch(err){if(gamePractice.value?.runId===run.runId)error.value=err.message}
+  finally{gameSettling=false}
 }
 async function loadToday(){
   const client=window.QihangOralClient
@@ -166,8 +285,13 @@ async function loadToday(){
     if(v===epoch)todayRows.value=labels.filter(item=>modes[item.id]).map(item=>({...item,...modes[item.id]}))
   }catch{if(v===epoch)todayRows.value=[]}
 }
-function practiceDaily(item){
-  nav(item.mode)
+async function openDailyMode(mode,push=true){
+  if(!await enterNormalPracticeAudio())return false
+  nav(mode,push)
+  return true
+}
+async function practiceDaily(item){
+  if(!await openDailyMode(item.mode))return
   dailyReview.value=item
 }
 function rememberDailyReview(id){
@@ -195,6 +319,7 @@ async function recover(v){
   if(v===epoch && state?.layout==='guided' && state.phase!=='ended' && state.origin!=='notebook')s.value=state
 }
 async function openLesson(id){
+  if(!await enterNormalPracticeAudio())return
   nav('read');selected.value=id;put(scopeKey,id);s.value=null
   const v=epoch;loading.value=true
   try{await recover(v);if(v===epoch && !s.value)await ensure();if(v===epoch)present()}
@@ -225,12 +350,14 @@ async function nextNote(){
   }catch(e){if(v===epoch){await shelf('notebook');error.value=e.message}}
   finally{if(v===epoch)loading.value=false}
 }
-function practice(items){
+async function practice(items){
+  if(!await enterNormalPracticeAudio())return
   nav('read');s.value=null;batch.value=[...items];batchSize.value=items.length;notice.value='';nextNote()
 }
 async function resumeNotebook(){
   const mark=notebookBookmark.value
   if(!mark)return
+  if(!await enterNormalPracticeAudio())return
   nav('read');s.value=null;const v=epoch;loading.value=true
   try{
     const state=await api(base+'/'+mark.id)
@@ -253,11 +380,11 @@ function present(){
   if(stage.value==='listen'&&view.value==='read') play(1)
 }
 async function play(rate){
-  if(!s.value||mic.value||stage.value==='blind')return
+  if(!s.value||mic.value||stage.value==='blind'||!canPlayPracticeAudio())return
   stopSound();error.value='';const audio=new Audio();player=audio;sound.value='正在准备原声…'
   try{
     const blob=await (await response(base+'/'+s.value.id+'/clip/'+key.value)).blob()
-    if(player!==audio)return
+    if(player!==audio||!canPlayPracticeAudio())return
     audioURL=URL.createObjectURL(blob);audio.src=audioURL;audio.playbackRate=rate
     audio.onended=()=>{sound.value='';heard.value=true}
     audio.onerror=()=>{sound.value='';error.value='原声未能播放，点「重播原声」再试。'}
@@ -329,6 +456,7 @@ const canSave=computed(()=>s.value&&['read','offer'].includes(view.value)&&s.val
 const exitBusy=computed(()=>loading.value||!!mic.value)
 async function saveExit(){
   if(!canSave.value||exitBusy.value)return
+  if(gamePractice.value){returnGame('本轮进度已保存，从原黑洞可以继续。');return}
   const state=s.value, notebook=state.origin==='notebook'
   if(!remember(state)&&notebook){error.value='无法保存本轮复习位置，请允许浏览器使用本地存储后重试。';return}
   notice.value=notebook?'复习进度已保存。':('第 '+state.text.lesson+' 课进度已保存 · '+position(state))
@@ -338,18 +466,29 @@ function beforeUnload(e){
   if(mic.value){e.preventDefault();e.returnValue=''}
 }
 function back(){
-  if(dailyMode.value)dailyReview.value?shelf('notebook'):nav('games')
+  if(gamePractice.value)returnGame('从原黑洞可以继续这轮冒险。')
+  else if(view.value==='adventure')nav('games')
+  else if(dailyMode.value)dailyReview.value?shelf('notebook'):nav('games')
   else if(['scope','notebook','read','offer','report'].includes(view.value)){
     if(view.value==='scope')nav('games')
     else shelf(view.value==='read'&&batchSize.value?'notebook':'scope')
   }else nav('home')
 }
 function pop(e){
+  const params=new URLSearchParams(location.search)
+  if(gameAvailable&&params.get('game')==='1'){
+    const run=pendingAdventure(params.get('gameRun'))
+    if(run)openGamePractice(run,false)
+    else returnGame('',false)
+    return
+  }
+  if (gamePractice.value || gameAudioLease) leaveGamePracticeAudio()
+  gamePractice.value=null
   const route=e.state?.atelier
   if(route==='scope'||route==='notebook'||route==='read'||route==='report')shelf(route==='notebook'?'notebook':'scope',false)
+  else if(dailyCards.value.some(mode=>mode.id===route))openDailyMode(route,false).then(entered=>{if(entered)restoreDailyReview()})
   else{
-    nav(route==='games'||dailyCards.value.some(mode=>mode.id===route)?route:'home',false)
-    restoreDailyReview()
+    nav(route==='games'||(route==='adventure'&&gameAvailable)?route:'home',false)
   }
 }
 function blur(){if(['open','live'].includes(mic.value))stopMic()}
@@ -397,24 +536,34 @@ const stats=computed(()=>{const data=Object.values(report.value?.lines||{});retu
   ['独立通过',data.filter(r=>r.passKind==='independent').length],['辅助通过',data.filter(r=>r.passKind==='assisted').length],
   ['待巩固',report.value?.due.length],['首读准确率',pct(report.value?.accuracy)]]})
 function exam(){location.assign(window.QihangOralClient?'index.html?from=atelier':'/?from=atelier')}
-onMounted(()=>{history.replaceState({atelier:'home'},'','');window.addEventListener('popstate',pop);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',clean);tick=setInterval(clock,400)
+function pagehide(){clean();leaveNormalPracticeAudio();if(gamePractice.value||gameAudioLease)leaveGamePracticeAudio()}
+onMounted(()=>{unwatchAudio=registerPlayer(stopSound);history.replaceState({atelier:'home'},'','');window.addEventListener('popstate',pop);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide);tick=setInterval(clock,400)
  window.addEventListener('beforeunload',beforeUnload)
  const params=new URLSearchParams(location.search)
- dailyCatalog().then(()=>{
+ const enterGame=gameAvailable&&params.get('game')==='1'
+ dailyCatalog().then(async()=>{
+   if(enterGame){
+     const run=pendingAdventure(params.get('gameRun'))
+     if(run&&view.value==='adventure')openGamePractice(run,false)
+     return
+   }
    const mode=params.get('practice')
-   if(dailyCards.value.some(card=>card.id===mode)){
-     nav(mode,false);history.replaceState({atelier:mode},'','');restoreDailyReview()
+   if(!enterGame&&dailyCards.value.some(card=>card.id===mode)){
+     if(await openDailyMode(mode,false)){history.replaceState({atelier:mode},'','');restoreDailyReview()}
    }
  })
- if(params.has('read'))scope()
+ if(enterGame){
+   nav('adventure',false);history.replaceState({atelier:'adventure'},'','')
+ }
+ else if(params.has('read'))scope()
  else if(params.has('daily')){
    nav('games',false);history.replaceState({atelier:'games'},'','')
  }})
-onBeforeUnmount(()=>{clearInterval(tick);clean();window.removeEventListener('popstate',pop);window.removeEventListener('blur',blur);window.removeEventListener('beforeunload',beforeUnload);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',clean)})
+onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();unwatchAudio?.();window.removeEventListener('popstate',pop);window.removeEventListener('blur',blur);window.removeEventListener('beforeunload',beforeUnload);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide)})
 </script>
 <template><main class="desk guided">
-<header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">保存并退出</button><button v-else-if="view!=='games'" class="back" @click="back">← {{dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||dailyMode?'日常练习':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
-<p class="alert" role="alert" v-if="error">{{error}} <button v-if="['scope','notebook'].includes(view)" @click="shelf(view,false)">重试</button></p>
+<header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">{{gamePractice?'保存并回地图':'保存并退出'}}</button><button v-else-if="view!=='games'" class="back" @click="back">← {{gamePractice?'返回地图':dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||view==='adventure'||dailyMode?'日常练习':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
+<p class="alert" role="alert" v-if="error">{{error}} <button v-if="['scope','notebook'].includes(view)" @click="shelf(view,false)">重试</button><button v-else-if="gamePractice?.mode==='lecture'&&!s" @click="openGamePractice(gamePractice,false)">重试</button></p>
 <section v-if="view==='home'" class="landing"><p class="overline">Atelier de français</p><h1>口语练习室</h1><div class="mode-grid">
 <button class="mode daily" @click="nav('games')"><span class="card-fr">Pratique</span><span class="bars" aria-hidden="true"><i v-for="(h,i) in [25,45,68,43,80,96,72,47,68,40,24]" :key="i" :style="{'--bar':h+'%'}"/></span><strong>日常练习</strong><span class="card-foot">跟着课本，练好每一句。<b>↗</b></span></button>
 <button class="mode exam exam-practice" aria-labelledby="exam-title" aria-describedby="exam-skills exam-summary" @click="exam">
@@ -424,11 +573,20 @@ onBeforeUnmount(()=>{clearInterval(tick);clean();window.removeEventListener('pop
   <span id="exam-summary" class="card-foot">听考官提问，练习问答和情景互动。<b aria-hidden="true">↗</b></span>
 </button></div></section>
 <section v-else-if="view==='games'" class="landing"><p class="overline">Pratique</p><h1>日常练习</h1>
+  <div v-if="gameAvailable" class="practice-launches">
+    <button class="game-launch normal-launch" @click="focusPracticeCards">
+      <span><strong>正常开始</strong><small>直接选择练习</small></span><b aria-hidden="true">↓</b>
+    </button>
+    <button class="game-launch" @click="nav('adventure')">
+      <span><strong>游戏模式</strong><small>{{ gameCharacter ? gameCharacter+' · 继续冒险' : '首次进入 · 创建角色' }}</small></span>
+      <b aria-hidden="true">↗</b>
+    </button>
+  </div>
   <p class="skill-key">口语训练侧重 · 外圈主练 · 内圈兼练</p>
-  <div class="games daily-grid">
+  <div ref="normalPractice" class="games daily-grid">
     <button v-for="mode in practiceCards" :key="mode.id" class="game live radar-card"
       :aria-labelledby="mode.id+'-title'" :aria-describedby="mode.id+'-skills '+mode.id+'-summary'"
-      @click="mode.id==='lecture'?scope():nav(mode.id)">
+      @click="mode.id==='lecture'?scope():openDailyMode(mode.id)">
       <span lang="fr">{{ mode.french }}</span><strong :id="mode.id+'-title'">{{ mode.title }}</strong>
       <PracticeSkills :id="mode.id+'-skills'" :focus="mode.focus" :support="mode.support"/>
       <small :id="mode.id+'-summary'">{{ mode.description }}</small><b class="go" aria-hidden="true">↗</b>
@@ -445,10 +603,12 @@ onBeforeUnmount(()=>{clearInterval(tick);clean();window.removeEventListener('pop
     </ul>
   </section>
 </section>
-<FluencyDemo v-else-if="dailyMode?.id==='fluency'" :request="response" :review="dailyReview"
-  @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
-<SlotDemo v-else-if="dailyMode?.id==='slot'" :request="response" :review="dailyReview"
-  @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
+<GameMode v-else-if="view==='adventure'" :auto-enter="gameMapOpen" :return-message="gameReceipt" :radio="gameRadio"
+  @adventure="startGamePractice" @leave="nav('games')" @created="id=>gameCharacter=id"/>
+<FluencyDemo v-else-if="dailyMode?.id==='fluency'" :request="response" :review="dailyReview" :adventure="gamePractice"
+  @game-end="finishGamePractice" @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
+<SlotDemo v-else-if="dailyMode?.id==='slot'" :request="response" :review="dailyReview" :adventure="gamePractice"
+  @game-end="finishGamePractice" @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
 <template v-else-if="view==='scope'||view==='notebook'"><p v-if="loading" class="muted" role="status">正在读取朗读记录…</p>
 <ReadingShelf v-else :key="view" :packs="packs" :lessons="records" :selected="get(scopeKey)" :in-progress="inProgress" :positions="positions" :resume-notes="!!notebookBookmark" :queue="queue" :daily-notes="dailyNotes" :daily-modes="dailyCards" :notebook="view==='notebook'" :notice="notice"
   @open="openLesson" @report="lastReport" @notebook="notice='';shelf('notebook')" @resume="resumeNotebook" @practice="practice" @practice-daily="practiceDaily" @export="exportLibrary"/></template>
@@ -468,11 +628,17 @@ onBeforeUnmount(()=>{clearInterval(tick);clean();window.removeEventListener('pop
 <section v-else-if="view==='report'&&report" class="landing narrow"><p class="overline">Bilan · {{s.text.title.fr}}</p><h1>本课朗读报告</h1><div class="metrics"><div v-for="[label,value] in stats" :key="label"><small>{{label}}</small><strong>{{value}}</strong></div></div>
 <p class="muted">有效首读 {{report.valid}} / {{lines.length}} 句 · 首读覆盖率 {{pct(report.coverage)}} · 本轮独立连击 {{report.best}} 句</p><p v-if="report.words.length">重点词　{{report.words.map(([w])=>w).join(' · ')}}</p>
 <ol class="list"><li v-for="l in lines" :key="l.id"><strong>{{l.fr}}</strong><span>{{report.lines[l.id]?.status==='passed'?(report.lines[l.id].passKind==='independent'?'独立通过':'辅助通过'):report.lines[l.id]?'待巩固':'本轮未练'}} · 首读 {{pct(report.first[l.id]?.accuracy)}}</span></li></ol>
-<div class="actions"><button class="speak" @click="scope()">换一课</button><button v-if="s.phase==='ended'" class="secondary" :disabled="loading" @click="action('full')">整段连读</button><button class="text-link" @click="download">导出记录</button></div></section>
+<div class="actions"><button v-if="gamePractice" class="speak" @click="finishGamePractice(s)">结算并返回地图</button>
+<template v-else><button class="speak" @click="scope()">换一课</button><button v-if="s.phase==='ended'" class="secondary" :disabled="loading" @click="action('full')">整段连读</button></template><button class="text-link" @click="download">导出记录</button></div></section>
 </main></template>
 <style scoped>
 .today-practice{margin-top:28px}.today-practice ul{list-style:none;padding:0;margin:0}.today-practice li{display:flex;flex-wrap:wrap;gap:8px 18px;padding:9px 0;border-bottom:1px solid var(--line)}.today-practice strong{min-width:120px}.today-practice span{color:var(--sub)}
 .skill-key{font-size:13px;line-height:1.5;color:var(--sub);margin:10px 0 0}
+.practice-launches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0 18px}
+.game-launch{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px 18px;border:1px solid #c2d1b5;border-radius:12px;background:#e9efdc;color:#224b38;text-align:left}
+.normal-launch{background:#fffdf6}
+.game-launch strong{font-size:19px;margin-right:14px}.game-launch small{color:#405743}.game-launch>b{font-size:19px}
+@media(max-width:550px){.practice-launches{grid-template-columns:1fr;gap:8px}}
 .daily-grid{margin-top:16px;grid-template-columns:repeat(3,minmax(0,1fr))}
 .daily-grid .radar-card{background:#f2f7ef;padding:18px 15px;min-width:0}
 .radar-card>span[lang]{margin:0;padding-right:35px;font-size:14px;line-height:1.35}

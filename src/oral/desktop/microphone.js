@@ -1,9 +1,12 @@
+import {enterCapture} from '../../../oral-assistant/web/practice-audio-gate.js'
+
 // Own the stream for a single press, including permission prompts and cancellation.
 export function openMicrophone({onSamples, withCue = false} = {}) {
   let closed = false, stream, ctx, worklet, finished, flush, samples = 0, received, endCue
   const chunks = []
   const frames = []
-  function close() {
+  const audioGate = enterCapture()
+  function closeStream() {
     closed = true
     stream?.getTracks().forEach(t => t.stop())
     worklet?.disconnect()
@@ -12,7 +15,10 @@ export function openMicrophone({onSamples, withCue = false} = {}) {
     received?.(false)
     endCue?.(null)
   }
+  function close() { closeStream(); audioGate.leave() }
   const ready = (async () => {
+    await audioGate.ready
+    if (closed) return
     stream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}})
     if (closed) { close(); return }
     ctx = new AudioContext({sampleRate:16000})
@@ -103,7 +109,7 @@ export function openMicrophone({onSamples, withCue = false} = {}) {
       if (!worklet) return null
       await checkpoint()
       return closed ? null : new Blob(chunks, {type:'application/octet-stream'})
-    } finally { close() }
+    } finally { closeStream() }
   }
   return {ready, close, finish, checkpoint, slice, cue}
 }

@@ -1,9 +1,11 @@
 <script setup>
+import {canPlayPracticeAudio, registerPlayer} from '../../../oral-assistant/web/practice-audio-gate.js'
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue'
 import {openRecordingWindow} from './recording-window.js'
+import {recoverAdventure} from '../../game/practiceBridge.js'
 
-const props = defineProps({request: {type: Function, required: true}, review:Object})
-const emit = defineEmits(['return-notebook', 'review-session'])
+const props = defineProps({request: {type: Function, required: true}, review:Object, adventure:Object})
+const emit = defineEmits(['return-notebook', 'review-session', 'game-end'])
 const base = '/api/daily-practice/fluency'
 const hints = [
   '按自己的速度，把这些小块连起来说一遍。',
@@ -24,11 +26,13 @@ const statusLabels = {pass:'通过', retry:'再试一次', release:'带提示完
 const catalog = ref(null), session = ref(null), error = ref(''), busy = ref('loading')
 const earlyHint = ref(false), playing = ref(false)
 const chain = computed(() => session.value?.lesson.chains[session.value.position])
-const chainsCount = computed(() => (session.value?.lesson ?? catalog.value?.lesson)?.chains.length ?? 0)
+const chainsCount = computed(() => session.value?.lesson.chains.length ??
+  Math.min(catalog.value?.lesson.chains.length ?? 0, props.adventure ? 3 : Infinity))
 const stage = computed(() => session.value?.stage)
 const hintLevel = computed(() => Math.max(session.value?.level ?? 0, earlyHint.value ? 1 : 0))
 const groups = computed(() => hintLevel.value === 2 ? chain.value?.short_groups : chain.value?.groups)
-const decisions = computed(() => session.value?.outcomes.filter(row => row.verdict === 'pass').length || 0)
+const decisions = computed(() => session.value?.outcomes.filter(row =>
+  row.verdict === 'pass' && (!props.adventure || row.level === 0)).length || 0)
 const feedback = computed(() => session.value?.last)
 const url = () => base + '/' + session.value.id
 const actionUrl = action => url() + '/' + session.value.revision + '/' + action
@@ -65,7 +69,10 @@ function useSession(next) {
 async function load() {
   try {
     catalog.value = await json(base)
-    if (props.review?.sessionId) useSession(await json(base + '/' + props.review.sessionId))
+    if (props.adventure) {
+      const state = await recoverAdventure(json, base, props.adventure)
+      if (state) useSession(state)
+    } else if (props.review?.sessionId) useSession(await json(base + '/' + props.review.sessionId))
     else if (props.review) await start(props.review)
     else if (catalog.value.recent?.phase === 'active') {
       useSession(await json(base + '/' + catalog.value.recent.id))
@@ -78,7 +85,7 @@ async function start(review = null) {
   error.value = ''
   try {
     const next = await json(base, {method:'POST',headers:writeHeaders('application/json'),
-      body:JSON.stringify({lesson:catalog.value.lesson.lesson_id,
+      body:JSON.stringify({...props.adventure, lesson:catalog.value.lesson.lesson_id,
         review:review ? {item:review.unitId,version:review.contentRevision} : null})})
     useSession(next)
     if (review && !disposed) emit('review-session', next.id)
@@ -110,14 +117,14 @@ function stopPlayer() {
   playing.value = false
 }
 async function listen() {
-  if (playing.value || busy.value) return
+  if (playing.value || busy.value || !canPlayPracticeAudio()) return
   playing.value = true
   error.value = ''
   try {
     const key = hintLevel.value === 2 ? 'short_demo_wav' : 'demo_wav'
     const response = await props.request(base + '/audio/' + encodeURIComponent(chain.value[key]))
     const blob = await response.blob()
-    if (disposed) return
+    if (disposed || !playing.value || !canPlayPracticeAudio()) return
     audioUrl = URL.createObjectURL(blob)
     player = new Audio(audioUrl)
     player.playbackRate = .8
@@ -176,6 +183,7 @@ async function finish(timedOut = false) {
     }))
   } catch (err) { error.value = err.message }
   finally {
+    current.close()
     if (recorder === current) { recorder = null; busy.value = '' }
   }
 }
@@ -196,11 +204,14 @@ function leave() {
   recorder = null
   stopPlayer()
 }
+let unregisterAudio
 onMounted(() => {
+  unregisterAudio = registerPlayer(stopPlayer)
   window.addEventListener('pagehide', leave)
   load()
 })
 onBeforeUnmount(() => {
+  unregisterAudio?.()
   disposed = true
   window.removeEventListener('pagehide', leave)
   leave()
@@ -212,14 +223,14 @@ onBeforeUnmount(() => {
     <p class="overline">Enchaîner au rythme</p>
     <h1>接拍串说</h1>
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
-    <button v-if="session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
+    <button v-if="!adventure && session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
       class="secondary" :disabled="!!busy || playing" @click="start()">开始新版练习</button>
     <template v-if="!session && catalog">
       <p class="muted">{{ catalog.lesson.label }} · {{ chainsCount }} 条节奏链</p>
       <h2>{{ catalog.lesson.title.zh }}</h2>
       <p>每条可以先逐块热身，再连起来说。热身计入开口时间，整条连说才会给判定。</p>
       <button class="speak" :disabled="!!busy" @click="start()">开始练习</button>
-      <button v-if="catalog.recent?.phase === 'ended'" class="secondary" @click="previousReport">查看上次结果</button>
+      <button v-if="!adventure && catalog.recent?.phase === 'ended'" class="secondary" @click="previousReport">查看上次结果</button>
     </template>
     <p v-else-if="!catalog && busy" role="status">正在加载试点课次…</p>
     <template v-else-if="stage === 'report'">
@@ -238,7 +249,8 @@ onBeforeUnmount(() => {
       </ul>
       <p v-else>这一轮没有待练条目。</p>
       <div class="actions">
-        <button v-if="session.review_item" class="speak" @click="emit('return-notebook')">返回需练习本</button>
+        <button v-if="adventure" class="speak" @click="emit('game-end', session)">结算并返回地图</button>
+        <button v-else-if="session.review_item" class="speak" @click="emit('return-notebook')">返回需练习本</button>
         <button v-else class="speak" :disabled="!!busy" @click="start()">再练一轮</button>
         <button class="secondary" @click="downloadLog">下载判定日志</button>
       </div>

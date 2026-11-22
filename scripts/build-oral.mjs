@@ -6,7 +6,7 @@ const output=path.join(root,'src/static/oral');await fs.mkdir(output,{recursive:
 await fs.cp(path.join(root,'native/licenses'),path.join(output,'licenses'),{recursive:true});
 await fs.copyFile(path.join(root,'LICENSE'),path.join(output,'licenses/Qihang-GPL-3.0.txt'));
 await fs.copyFile(path.join(root,'COPYRIGHT'),path.join(output,'licenses/Qihang-COPYRIGHT.txt'));
-for(const name of ['app.js','capture.js','style.css','bank.json'])await fs.copyFile(path.join(root,'oral-assistant/web',name),path.join(output,name));
+for(const name of ['app.js','capture.js','style.css','bank.json','practice-audio-gate.js'])await fs.copyFile(path.join(root,'oral-assistant/web',name),path.join(output,name));
 for(const name of ['local-client.js','native-bridge.js','bank-full.json','delf-exam.js','delf-cards.json','browser-client.js'])await fs.copyFile(path.join(root,'src/oral',name),path.join(output,name));
 await fs.writeFile(path.join(output,'browser-store.js'),(await fs.readFile(path.join(root,'src/oral/browser-store.js'),'utf8')).replace("'../platform/browser-database.js'","'./browser-database.js'"));
 await fs.copyFile(path.join(root,'src/platform/browser-database.js'),path.join(output,'browser-database.js'));

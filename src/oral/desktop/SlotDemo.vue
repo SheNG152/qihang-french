@@ -1,17 +1,23 @@
 <script setup>
+import {canPlayPracticeAudio, enterCapture, registerPlayer} from '../../../oral-assistant/web/practice-audio-gate.js'
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue'
 import {openRecordingWindow, pcmWave} from './recording-window.js'
+import {recoverAdventure} from '../../game/practiceBridge.js'
 
-const props = defineProps({request:{type:Function, required:true}, review:Object})
-const emit = defineEmits(['return-notebook', 'review-session'])
+const props = defineProps({request:{type:Function, required:true}, review:Object, adventure:Object})
+const emit = defineEmits(['return-notebook', 'review-session', 'game-end'])
 const base = '/api/daily-practice/slot'
 const catalog = ref(null), session = ref(null), heardClips = ref([]), playing = ref('')
 const busy = ref('loading'), error = ref(''), showHelp = ref(false)
 const takes = ref(new Map())
 const frame = computed(() => session.value?.frame || catalog.value?.lesson.frames[0])
-const frames = computed(() => (session.value?.lesson ?? catalog.value?.lesson)?.frames ?? [])
+const frames = computed(() => session.value?.lesson.frames ??
+  (catalog.value?.lesson.frames ?? []).slice(0, props.adventure ? 1 : undefined))
 const frameNumber = computed(() => (session.value?.frame_index ?? 0) + 1)
 const cardCount = computed(() => frames.value.reduce((count, group) => count + group.prompts.length, 0))
+const independentPasses = computed(() => new Set(session.value?.rows.filter(row =>
+  row.verdict === 'pass' && row.level === 0 && !row.supplement)
+  .map(row => row.frame_id + '/' + row.prompt.id)).size)
 const dueFrames = computed(() => {
   const summary = session.value?.summary
   const ids = summary?.due_frames ?? (summary?.needs_practice ? [frame.value.id] : [])
@@ -96,7 +102,11 @@ async function load() {
   try {
     catalog.value = await json(base)
     const recent = catalog.value.recent
-    if (props.review?.sessionId) {
+    if (props.adventure) {
+      const state = await recoverAdventure(json, base, props.adventure)
+      if (state) accept(state)
+      if (!disposed && state?.stage === 'pending') await grade()
+    } else if (props.review?.sessionId) {
       accept(await json(base + '/' + props.review.sessionId))
       if (session.value.stage === 'pending') await grade()
     } else if (props.review) await start(props.review)
@@ -114,6 +124,7 @@ function stopAudio() {
   playing.value = ''
 }
 async function playClip(clip, rate, onEnded) {
+  if (!canPlayPracticeAudio()) return
   playerUrl = URL.createObjectURL(clip)
   player = new Audio(playerUrl)
   player.playbackRate = rate
@@ -122,13 +133,13 @@ async function playClip(clip, rate, onEnded) {
   await player.play()
 }
 async function listen(candidate, audition = false) {
-  if (busy.value || playing.value) return
+  if (busy.value || playing.value || !canPlayPracticeAudio()) return
   playing.value = candidate.id
   error.value = ''
   try {
     const response = await props.request(base + '/audio/' + encodeURIComponent(candidate.demo_wav))
     const clip = await response.blob()
-    if (disposed) return
+    if (disposed || playing.value !== candidate.id || !canPlayPracticeAudio()) return
     await playClip(clip, audition ? 1 : .75, () => {
       if (audition && !heardClips.value.includes(candidate.id)) heardClips.value.push(candidate.id)
     })
@@ -150,7 +161,7 @@ async function start(review = null) {
   busy.value = 'opening'
   error.value = ''
   try {
-    const next = await json(base, options({lesson:catalog.value.lesson.lesson_id,
+    const next = await json(base, options({...props.adventure, lesson:catalog.value.lesson.lesson_id,
       review:review ? {item:review.unitId,version:review.contentRevision} : null}))
     stopAudio()
     takes.value.clear()
@@ -238,7 +249,6 @@ async function submitCard(capped = false) {
     accept(next)
     if (disposed || current !== recorder) return
     if (session.value.stage === 'pending') {
-      closeRecorder()
       await grade()
     } else if (task.value.level === 2) {
       closeRecorder()
@@ -255,9 +265,14 @@ async function submitCard(capped = false) {
 async function grade() {
   busy.value = 'recognizing'
   error.value = ''
-  try { accept(await json(endpoint('grade'), options({}))) }
+  const gate = enterCapture()
+  closeRecorder()
+  try {
+    await gate.ready
+    if (!disposed) accept(await json(endpoint('grade'), options({})))
+  }
   catch (err) { error.value = err.message }
-  finally { busy.value = '' }
+  finally { gate.leave(); busy.value = '' }
 }
 async function advance(action) {
   busy.value = 'saving'
@@ -274,7 +289,7 @@ function takeKey(row) {
   return (row.frame_id ?? frame.value.id) + ':' + row.prompt.id + ':' + row.level + ':' + Number(!!row.supplement)
 }
 async function playTake(row) {
-  if (busy.value || playing.value) return
+  if (busy.value || playing.value || !canPlayPracticeAudio()) return
   const key = takeKey(row)
   const pcm = takes.value.get(key)
   if (!pcm) return
@@ -304,8 +319,9 @@ async function downloadLog() {
   } catch (err) { error.value = err.message }
 }
 function leave() { checkpoint(); closeRecorder(); stopAudio(); takes.value.clear() }
-onMounted(() => { window.addEventListener('pagehide', leave); load() })
-onBeforeUnmount(() => { disposed = true; window.removeEventListener('pagehide', leave); leave() })
+let unregisterAudio
+onMounted(() => { unregisterAudio = registerPlayer(stopAudio); window.addEventListener('pagehide', leave); load() })
+onBeforeUnmount(() => { disposed = true; unregisterAudio?.(); window.removeEventListener('pagehide', leave); leave() })
 </script>
 
 <template>
@@ -313,7 +329,7 @@ onBeforeUnmount(() => { disposed = true; window.removeEventListener('pagehide', 
     <p class="overline">À l’indice, je change un mot</p>
     <h1>看提示换一格</h1>
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
-    <button v-if="session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
+    <button v-if="!adventure && session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
       class="secondary" :disabled="!!busy || !!playing" @click="start()">开始新版练习</button>
     <template v-if="catalog && !session">
       <p class="muted">{{ catalog.lesson.label }} · {{ frames.length }} 个句框 · {{ cardCount }} 张提示卡</p>
@@ -331,7 +347,7 @@ onBeforeUnmount(() => { disposed = true; window.removeEventListener('pagehide', 
       <button v-if="!catalog.audition_confirmed" class="speak" :disabled="heardClips.length !== 2 || !!busy || !!playing"
         @click="confirmAudition">两段都听清了</button>
       <button v-else class="speak" :disabled="!!busy" @click="start()">开始练习</button>
-      <button v-if="catalog.audition_confirmed && catalog.recent?.phase === 'ended'" class="secondary"
+      <button v-if="!adventure && catalog.audition_confirmed && catalog.recent?.phase === 'ended'" class="secondary"
         :disabled="!!busy" @click="previousReport">查看上次结果</button>
     </template>
     <template v-else-if="session?.stage === 'record' && task">
@@ -404,14 +420,16 @@ onBeforeUnmount(() => { disposed = true; window.removeEventListener('pagehide', 
       <div class="metrics">
         <div><small>开口率</small><strong>{{ Math.floor(session.summary.speech_ratio * 100) }}%</strong></div>
         <div><small>实际发声</small><strong>{{ session.summary.speech_seconds.toFixed(1) }} 秒</strong></div>
-        <div><small>普通通过</small><strong>{{ session.summary.passes }} / {{ cardCount }}</strong></div>
+        <div><small>{{ adventure ? '独立通过' : '普通通过' }}</small>
+          <strong>{{ adventure ? independentPasses : session.summary.passes }} / {{ cardCount }}</strong></div>
       </div>
       <p>{{ session.summary.effective ? '完整有效轮' : '已保存为短练' }} · {{ session.summary.needs_practice ? '待练词形对' : '这轮没有待练词形对' }}</p>
       <p v-for="group in dueFrames" :key="group.id" lang="fr">
         {{ group.template.replace('{slot}', '…') }} · {{ group.candidates.map(item => item.form).join(' / ') }}
       </p>
       <div class="actions">
-        <button v-if="session.review_item" class="speak" @click="emit('return-notebook')">返回需练习本</button>
+        <button v-if="adventure" class="speak" @click="emit('game-end', session)">结算并返回地图</button>
+        <button v-else-if="session.review_item" class="speak" @click="emit('return-notebook')">返回需练习本</button>
         <button v-else class="speak" :disabled="!!busy" @click="start()">再练一轮</button>
         <button class="secondary" @click="downloadLog">下载判定日志</button>
       </div>

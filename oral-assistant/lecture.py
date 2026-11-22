@@ -16,6 +16,7 @@ from lecture_alignment import compare
 import lecture_desktop
 import guided_reading
 import reading_library
+from game_practice import adventure_request, tag
 from practice_records import Mode, Verdict, record as practice_record
 from store import Store
 
@@ -95,13 +96,21 @@ def install(app, data_dir, media=MEDIA):
 
     async def start(req):
         body = await req.json()
+        game, previous = adventure_request(store, body, "lecture")
+        if game and body.get("layout") != "guided":
+            raise ValueError("朗读冒险需要使用引导练习")
+        if previous:
+            return result(previous)
         packs = catalog(media, playable=body.get("layout") == "guided")
         pack = packs.get(body.get("text"))
         if not pack:
             raise ValueError("找不到课文资料")
+        if game:
+            pack = {**pack, "sentences":pack["sentences"][:3]}
         session = {"schema":1,"id":uuid4().hex,"created":time.time(),"phase":"listen","mode":"lecture",
                    "part":pack["id"],"text":pack,"queue":[x["id"] for x in pack["sentences"]],
                    "attempts":[],"skipped":[],"revision":0}
+        tag(session, game)
         if body.get("review"):
             previous = store.load(body["review"])
             if previous["part"] != pack["id"] or not report(previous)["wrong"]:

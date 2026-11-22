@@ -108,7 +108,7 @@ class TrialGate:
         if session_path:
             if not self.owns(guest, session_path[1]):
                 raise web.HTTPNotFound()
-        elif path not in ('/', '/api/bootstrap', '/api/provider', '/api/bind') and not re.fullmatch(r'/assets/(app.js|capture.js|style.css)|/examples/(intro|exchange|roleplay)\.(mp4|jpg)',path):
+        elif path not in ('/', '/api/bootstrap', '/api/provider', '/api/bind') and not re.fullmatch(r'/assets/(app.js|capture.js|style.css|practice-audio-gate.js)|/examples/(intro|exchange|roleplay)\.(mp4|jpg)',path):
             raise web.HTTPNotFound()
         if path == '/api/bind':
             async with self.http.get(self.upstream+'/api/provider') as remote:

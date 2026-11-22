@@ -93,6 +93,8 @@ def notebook(root, packs):
     for mode in packs:
         journal = PracticeJournal(root / mode / "decisions")
         for session in sessions(root / mode):
+            if session.get("game"):
+                continue
             for row in dispositions(mode, session, journal):
                 events.append((row["ts"], session["created"], mode, session, row))
     entries = {}

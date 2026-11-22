@@ -1,4 +1,5 @@
 <script setup>
+import {canPlayPracticeAudio, registerPlayer} from '../../../oral-assistant/web/practice-audio-gate.js'
 import {ref, computed, onMounted, onBeforeUnmount, nextTick, watch} from 'vue'
 import WordLine from './WordLine.vue'
 import {openMicrophone} from './microphone.js'
@@ -132,13 +133,13 @@ function scheduleNext() {
   },2400)
 }
 async function play(rate) {
-  if (mic.value || phase.value !== 'review') return
+  if (mic.value || phase.value !== 'review' || !canPlayPracticeAudio()) return
   silence(); error.value = ''
   const epoch = version, id = step.value, audio = new Audio()
   player = audio; sound.value = '加载原声'
   try {
     const blob = await (await request(apiRoot+'/'+session.value.id+'/clip/'+id)).blob()
-    if (epoch !== version || player !== audio) return
+    if (epoch !== version || player !== audio || !canPlayPracticeAudio()) return
     blobURL = URL.createObjectURL(blob); audio.src = blobURL; audio.playbackRate = rate
     audio.onended = () => { heardClip.value = true; sound.value = '' }
     audio.onerror = () => { sound.value = ''; error.value = '原声未能播放，请点重播。' }
@@ -178,7 +179,7 @@ async function release() {
     if ((phase.value==='review' && result.report.streaks[step.value]>=2) ||
         (phase.value==='full' && feedback.value?.status==='pass')) scheduleNext()
   } catch(e) { if (epoch === version) error.value = e.message }
-  finally { if (epoch === version) { capture = null; mic.value=''; toggled=false; pointer=undefined } }
+  finally { c.close(); if (epoch === version) { capture = null; mic.value=''; toggled=false; pointer=undefined } }
 }
 function down(e) {
   if (e.button !== 0 || micBlocked.value || mic.value) return
@@ -194,8 +195,9 @@ function up(e) {
 function accessibleClick(e) { if (e.detail === 0) { if (toggled) release(); else { toggled=true; press() } } }
 function lostFocus() { if (mic.value==='recording' || mic.value==='opening') cancelMic() }
 function leave() { move('home') }
-onMounted(() => { window.addEventListener('blur',lostFocus); window.addEventListener('pagehide',leave); load() })
-onBeforeUnmount(() => { leave(); window.removeEventListener('blur',lostFocus); window.removeEventListener('pagehide',leave) })
+let unregisterAudio
+onMounted(() => { unregisterAudio=registerPlayer(silence); window.addEventListener('blur',lostFocus); window.addEventListener('pagehide',leave); load() })
+onBeforeUnmount(() => { unregisterAudio?.(); leave(); window.removeEventListener('blur',lostFocus); window.removeEventListener('pagehide',leave) })
 const pct = n => Math.round(n*100)+'%'
 const scored = computed(() => lines.value.map(l=>report.value?.scores[l.id]).filter(Boolean))
 function mean(key) { return scored.value.length ? pct(scored.value.reduce((n,s)=>n+s[key],0)/scored.value.length) : '—' }

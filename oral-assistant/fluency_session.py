@@ -10,6 +10,7 @@ from aiohttp import web
 from daily_practice_config import FluencyRules, ModeSettings, rule_settings
 from daily_practice_summary import note, select_review, speech_intervals
 from fluency_rules import score
+from game_practice import adventure_request, tag
 from practice_records import Mode, PracticeJournal, Verdict, record, update_clock
 from recording_window import SAMPLE_RATE, receive_window
 from store import Store
@@ -62,10 +63,15 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
                                   "window_seconds": settings.window_seconds})
 
     async def start(request):
-        content = pack()
         body = await request.json()
+        game, previous = adventure_request(store, body, "fluency")
+        if previous:
+            return view(previous)
+        content = pack()
         if body.get("lesson") != content["lesson_id"]:
             raise ValueError("未知节奏链课次")
+        if game:
+            content = {**content, "chains":content["chains"][:3]}
         review = body.get("review")
         if review is not None:
             content, existing = select_review(store, content, "chains", review)
@@ -77,6 +83,7 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
                    "log_ids": [], "reliable_retries": 0, "active_ms": 0, "speech_seconds": 0,
                    "window_seconds": settings.window_seconds, "release_seconds": settings.release_seconds,
                    "rules": asdict(settings.rules)}
+        tag(session, game)
         if review:
             session["review_item"] = review["item"]
         store.save(session)
@@ -168,6 +175,8 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         due = verdict == Verdict.RELEASE or (verdict != Verdict.PASS and session["reliable_retries"] >= 2)
         at = time.time()
         session["outcomes"].append({"item": chain["id"], **session["last"], "needs_practice": due, "at":at})
+        if session.get("game"):
+            session["outcomes"][-1].update(retries=session["reliable_retries"], level=session["level"])
         if due or verdict == Verdict.PASS:
             session.setdefault("notebook_outcomes", []).append(note(
                 Mode.FLUENCY, chain["id"], verdict, "queued" if due else "cleared", session["last"]["rule"], ts=at))
