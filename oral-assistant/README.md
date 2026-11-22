@@ -47,6 +47,10 @@ py -3.12 -m venv .venv
 
 macOS / Linux使用 `python3.12 -m venv .venv` 与 `.venv/bin/python` 执行同样的安装、模型下载和 `launch.py` 命令；本次公开导出在Windows自测，不承诺其他系统的GPU配置已验证。
 
+### 桌面日常口语
+
+从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，启动本机口语服务，再打开 [日常练习](http://127.0.0.1:8127/?desktop=1&daily=1)。入口卡展示发音、节奏、词形、听题、应答及组织表达的训练侧重。课文、接拍串说和看提示换一格的素材安装和功能开关见 [日常口语与需练习本](DAILY_PRACTICE.md)。
+
 ### 模型与下载
 
 - 模型：[bofenghuang/whisper-large-v3-french](https://huggingface.co/bofenghuang/whisper-large-v3-french)，固定提交 `90a7cd1fea9cd69f80f5a0fc49738418dba96083`，CTranslate2格式，固定法语识别。

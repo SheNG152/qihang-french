@@ -39,3 +39,6 @@ __pycache__/
 *.bin
 测试证据/
 test-results/
+qihang-daily-test-*/
+*.jsonl
+content/

@@ -125,6 +125,8 @@ class TrialGate:
                 data = json.loads(body)
                 if path == '/api/bootstrap':
                     data['provider'] = clean_provider(data['provider'])
+                    data.get('capabilities', {}).pop('unit_practice', None)
+                    data.get('capabilities', {}).pop('lecture', None)
                     data['sessions'] = [s for s in data['sessions'] if self.owns(guest,s['id'])]
                 else:
                     data = clean_provider(data)

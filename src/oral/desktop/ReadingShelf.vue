@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, ref} from 'vue'
-const props=defineProps({packs:Array, lessons:Object, inProgress:Object, positions:Object, resumeNotes:Boolean, queue:Array, selected:String, notebook:Boolean, notice:String})
-const emit=defineEmits(['open','report','notebook','practice','resume','export'])
+const props=defineProps({packs:Array, lessons:Object, inProgress:Object, positions:Object, resumeNotes:Boolean, queue:Array, selected:String, notebook:Boolean, notice:String,dailyNotes:Array,dailyModes:Array})
+const emit=defineEmits(['open','report','notebook','practice','practice-daily','resume','export'])
 const tab=ref('daily'), shelf=ref(null)
 const grouped=computed(()=>{
   const groups=new Map()
@@ -14,6 +14,7 @@ const grouped=computed(()=>{
   return groups
 })
 const dueGroups=computed(()=>props.packs.map(pack=>({pack,items:props.queue.filter(r=>r.textId===pack.id)})).filter(g=>g.items.length))
+const notesForTab=computed(()=>props.dailyNotes.filter(item=>item.mode===tab.value))
 const date=n=>new Date(n*1000).toLocaleDateString('zh-CN')
 const pct=n=>n==null?'—':Math.round(n*100)+'%'
 function progressWidth(id){
@@ -30,7 +31,7 @@ onMounted(async()=>{
 <template>
 <section ref="shelf" class="library landing narrow">
   <header class="lib-heading"><div><p class="overline">{{notebook?'Carnet de lecture':'Lecture'}}</p><h1>{{notebook?'需练习本':'读课文'}}</h1></div>
-    <button v-if="!notebook" class="secondary booklet" @click="emit('notebook')">需练习本 <b>{{queue.length}}</b> ↗</button>
+    <button v-if="!notebook" class="secondary booklet" @click="emit('notebook')">需练习本 <b>{{queue.length+dailyNotes.length}}</b> ↗</button>
     <button v-else class="text-link" @click="emit('export')">导出朗读记录 ↓</button>
   </header>
   <p v-if="notice" class="notice" role="status">{{notice}}</p>
@@ -54,8 +55,18 @@ onMounted(async()=>{
     </section>
   </template>
   <template v-else>
-    <div class="sections"><button v-for="[id,title] in [['daily','日常'],['exam','考试']]" :aria-pressed="tab===id" :key="id" @click="tab=id">{{title}}</button></div>
+    <div class="sections"><button v-for="[id,title] in [['daily','日常'],...dailyModes.map(mode=>[mode.id,mode.title]),['exam','考试']]" :aria-pressed="tab===id" :key="id" @click="tab=id">{{title}}</button></div>
     <section v-if="tab==='exam'" class="quiet"><h2>考试复习 <small>待开发</small></h2><p>计划收录 DELF 口语复盘中，你主动选来重练的表达。</p></section>
+    <template v-else-if="tab!=='daily'">
+      <div v-if="!notesForTab.length" class="quiet"><strong>当前没有待练条目</strong></div>
+      <button v-for="item in notesForTab" :key="[item.lessonId,item.unitId,item.contentRevision].join(':')"
+        class="note-row" :disabled="item.oldVersion" @click="emit('practice-daily',item)">
+        <span><strong lang="fr">{{item.title}}</strong>
+          <small v-if="item.forms.length" lang="fr">{{item.forms.join(' / ')}}</small>
+          <small>{{item.lessonLabel}} · {{date(item.lastAttemptAt)}}</small></span>
+        <b>{{item.oldVersion?'旧版本':'去复练 →'}}</b>
+      </button>
+    </template>
     <template v-else><div class="lib-heading"><h2>课文朗读 <small>{{queue.length}} 句</small></h2>
       <button v-if="resumeNotes" class="speak batch" @click="emit('resume')">继续上次复习</button>
       <button v-else-if="queue.length" class="speak batch" @click="emit('practice',queue.slice(0,5))">练最久未练的 {{Math.min(queue.length,5)}} 句</button></div>

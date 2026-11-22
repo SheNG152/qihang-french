@@ -1,4 +1,17 @@
 'use strict';
+if (new URLSearchParams(location.search).get('from') === 'atelier') {
+  const back = document.createElement('button');
+  back.className = 'nav';
+  back.textContent = '← 模式选择';
+  back.onclick = () => location.assign(window.QihangOralClient ? 'desktop.html' : '/?desktop=1');
+  document.querySelector('header nav').prepend(back);
+  for (const dialog of document.querySelectorAll('dialog')) {
+    const exit = back.cloneNode(true);
+    exit.type = 'button';
+    exit.onclick = back.onclick;
+    dialog.prepend(exit);
+  }
+}
 const $ = id => document.getElementById(id);
 const S = {boot: null, socket: null, session: null, review: null, state: 'idle', pending: new Map(),
   epoch: 0, rate: 24000, context: null, sources: new Set(), playUntil: 0, audioBacklog: [], audioBacklogBytes: 0, audioRecovering: false,
@@ -39,6 +52,8 @@ function providerView(data) {
 }
 async function refresh() {
   S.boot = await api('/api/bootstrap');providerView(S.boot.provider);
+  const practiceEntry = $('openPractice');
+  if (practiceEntry) practiceEntry.parentElement.hidden = !!window.QihangOralClient || !S.boot.capabilities?.lecture;
   if(S.boot.bank)$('bankInfo').textContent=`${S.boot.bank.intro_questions}个问句 · ${S.boot.bank.keywords}张词卡 · ${S.boot.bank.scenes}个情景 · 参考公开样题编写`;
   $('recognitionChoice').hidden=window.QihangOralClient?.local||!S.boot.capabilities?.confirm_transcript;
   const configured=!!S.boot.capabilities?.independent_fr && !!S.boot.french_asr?.configured;
@@ -650,3 +665,300 @@ if(window.QihangOralClient)document.addEventListener('visibilitychange',()=>{if(
 if(window.QihangOralClient)window.addEventListener('message',event=>{if(event.source===parent&&event.origin===location.origin&&event.data?.type==='qihang-oral-suspend'){stopCapture(false);S.socket?.close();stopPlayback();}});
 
 if(window.QihangOralClient?.local){const providerTimer=setInterval(()=>{if(!document.hidden)api('/api/provider').then(data=>{if(S.boot)S.boot.provider=data;providerView(data);}).catch(()=>{});},2500);window.addEventListener('pagehide',()=>clearInterval(providerTimer));}
+
+/* Unit practice has its own navigation, recorder and storage protocol. */
+(() => {
+  const dialog = $('unitDialog'), body = $('unitBody'), status = $('unitStatus');
+  const prefix = '/api/unit-practice';
+  let packs, session, stream, context, autoStop, worklet, parts, stopButton, flush;
+  let generation = 0, busy = false;
+  let reading = false, player = null, playerURL = '';
+  const card = () => session.cards[session.rows.length];
+  const endpoint = () => prefix + '/' + session.id + '/' + card().id;
+
+  function clear() {
+    if (player) { player.pause(); player = null; }
+    if (playerURL) { URL.revokeObjectURL(playerURL); playerURL = ''; }
+    body.replaceChildren();
+    status.textContent = '';
+  }
+  function line(tag, text) {
+    const element = node(tag, text);
+    body.append(element);
+    return element;
+  }
+  async function act(fn) {
+    if (busy) return;
+    busy = true;
+    const epoch = generation;
+    body.inert = true;
+    try { await fn(); }
+    catch (error) { if (epoch === generation) status.textContent = error.message; }
+    finally { if (epoch === generation) { busy = false; body.inert = false; } }
+  }
+  function button(text, fn) {
+    const element = line('button', text);
+    element.className = 'button outline';
+    element.onclick = () => act(fn);
+    return element;
+  }
+  async function loadMenu() {
+    const epoch = generation;
+    clear();
+    const data = await api(prefix);
+    if (epoch !== generation) return;
+    packs = data.units;
+    for (const pack of packs) button('Unité ' + pack.unit + ' · ' + pack.theme.fr + ' · ' + pack.theme.zh, async () => {
+      session = await api(prefix, {unit:pack.id});
+      if (epoch === generation) renderCard();
+    });
+    for (const item of data.history) button(new Date(item.created*1000).toLocaleString() + ' · ' + item.part +
+        (item.phase === 'ended' ? ' · 查看复盘' : ' · 继续'), async () => {
+      session = await api(prefix + '/' + item.id);
+      if (epoch === generation) renderCard();
+    });
+  }
+  function report(row) {
+    const labels = {pass:'已完成任务',borderline:'部分完成',retry:'建议再试一次'};
+    line('h4', labels[row.status]);
+    line('p', row.confirmed);
+    line('p', '已表达：' + (row.hit.join('、') || '待核对'));
+    line('p', '可以补充：' + (row.missing.join('、') || '本卡要点齐全'));
+    line('p', '可以这样说：' + row.model);
+  }
+  function renderCard() {
+    clear();
+    const task = card();
+    if (!task) {
+      line('h3', '本轮复盘 · Bilan');
+      session.rows.forEach(report);
+      const template = session.retell || packs.find(p => p.id === session.part)?.retell;
+      if (template) line('p', '串起来再说一次：' + template);
+      const attempts = [...(session.previous_attempts || []), ...session.rows];
+      if (attempts.every(a => Number.isFinite(a.speech_seconds)) && session.ended > session.created) {
+        const spoken = attempts.reduce((sum, a) => sum + a.speech_seconds, 0);
+        line('p', '识别语段约 ' + Math.round(spoken) + ' 秒，占本轮用时约 ' +
+          Math.round(100 * spoken / (session.ended - session.created)) + '%（含等待）。');
+      }
+      button('选择单元', loadMenu);
+      return;
+    }
+    line('h3', (session.rows.length + 1) + ' / ' + session.cards.length + ' · ' + task.prompt);
+    line('p', '用一到两句法语完成任务。');
+    const pack = packs.find(p => p.id === session.part);
+    if (pack) {
+      const notes = line('details');
+      notes.append(node('summary','查看本单元词汇与句型'), node('p', pack.vocabulary.join(' · ')),
+        node('p', pack.targets.join('　')));
+    }
+    const hint = button('不会说 · 给我提示', () => {
+      const hints = [task.hint, task.starter, task.model];
+      const step = Number(hint.dataset.step || 0);
+      line('p', hints[step]);
+      hint.dataset.step = step + 1;
+      hint.disabled = step === 2;
+    });
+    button(session.draft ? '重新录音' : '开始说话', record);
+    if (session.draft) {
+      const draft = session.draft;
+      if (/je (ne )?sais pas|不会/i.test(draft.text)) {
+        line('p', '先跟着这个开头说，只补一个地点或时间：' + task.starter);
+      }
+      line('p', draft.error || (draft.uncertain ? '识别待核对。请回听并改成你实际说的话。' : '请确认这是你实际说的话。'));
+      const player = line('audio');
+      player.controls = true;
+      const audioPath = prefix + '/' + session.id + '/audio/' + draft.audio;
+      if (window.QihangOralClient) setRecording(player, audioPath);
+      else player.src = audioPath;
+      const field = line('textarea');
+      field.setAttribute('aria-label','我实际说的法语');
+      field.value = draft.text;
+      field.maxLength = 1500;
+      button('确认文字并查看反馈', async () => {
+        const epoch = generation;
+        const updated = await api(endpoint() + '/confirm', {audio:draft.audio,text:field.value});
+        if (epoch !== generation) return;
+        session = updated;
+        clear();
+        const row = session.rows.at(-1);
+        report(row);
+        if (row.status !== 'pass') button('跟着示范再试一次', async () => {
+          const updated = await api(prefix + '/' + session.id + '/' + row.card + '/repeat', {audio:row.audio});
+          if (epoch === generation) { session = updated; renderCard(); }
+        });
+        button(card() ? '下一张卡' : '查看复盘', renderCard);
+      });
+    }
+  }
+
+  function release() {
+    clearTimeout(autoStop);
+    stream?.getTracks().forEach(track => track.stop());
+    stream = null;
+    worklet?.disconnect();
+    worklet = null;
+    context?.close().catch(() => {});
+    context = null;
+  }
+  async function record() {
+    const epoch = generation;
+    let mic;
+    try {
+      mic = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+      if (epoch !== generation) { mic.getTracks().forEach(track => track.stop()); return; }
+      stream = mic;
+      context = new AudioContext({sampleRate:16000});
+      if (context.sampleRate !== 16000) throw Error('当前设备无法提供 16 kHz 录音');
+      await context.resume();
+      await context.audioWorklet.addModule(window.QihangOralClient?.workletURL || '/assets/capture.js');
+      if (epoch !== generation) return;
+      worklet = new AudioWorkletNode(context, 'oral-capture');
+      parts = [];
+      worklet.port.onmessage = ({data}) => {
+        if (epoch !== generation) return;
+        if (data.flushed) { flush?.(); return; }
+        parts.push(Int16Array.from(data, v => Math.round(Math.max(-1, Math.min(1,v)) * (v < 0 ? 32768 : 32767))));
+      };
+      context.createMediaStreamSource(stream).connect(worklet).connect(context.destination);
+      clear();
+      line('h3',reading ? readingLine().fr : card().prompt);
+      stopButton = button('我说完了', stop);
+      status.textContent = '正在录音…';
+      autoStop = setTimeout(() => stopButton.click(), reading && session.phase === 'full' ? 179000 : 59000);
+    } catch (error) {
+      if (generation === epoch) { release(); if (reading) renderReading(); else renderCard(); }
+      throw error;
+    }
+  }
+  async function stop() {
+    const epoch = generation, path = (reading ? readingPath() : endpoint()) + '/record';
+    clearTimeout(autoStop);
+    await new Promise(resolve => {
+      const timer = setTimeout(resolve, 350);
+      flush = () => { clearTimeout(timer); resolve(); };
+      worklet.port.postMessage('flush');
+    });
+    if (epoch !== generation) return;
+    release();
+    flush = null;
+    const pcm = new Blob(parts, {type:'application/octet-stream'});
+    parts = [];
+    clear();
+    const retry = async () => {
+      status.textContent = '本机正在识别…';
+      const options = {method:'POST',headers:{'X-Oral-Client':'web'},body:pcm};
+      const response = await (window.QihangOralClient ? window.QihangOralClient.fetch(path,options) : fetch(path,options));
+      const result = await response.json();
+      if (epoch !== generation) return;
+      if (!response.ok) throw Error(result.error || '识别失败，可重试');
+      if (reading) { session = result; renderReading(); return; }
+      session.draft = result;
+      renderCard();
+    };
+    button('重试提交本段录音', retry);
+    button('重新录音', record);
+    await retry();
+  }
+
+  const lectureAPI = '/api/lecture';
+  const readingPath = () => lectureAPI + '/' + session.id + '/' + session.revision;
+  function readingLine() {
+    const lines = session.text.sentences;
+    return lines.find(s => s.id === session.queue[0]) || {id:'full',fr:lines.map(s=>s.fr).join(' '),zh:''};
+  }
+  async function selectReading(path, payload) {
+    const epoch = generation;
+    const next = await api(path, payload);
+    if (epoch === generation) { session = next; renderReading(); }
+  }
+  async function readingMenu() {
+    clear();
+    const epoch = generation, data = await api(lectureAPI);
+    if (epoch !== generation) return;
+    if (!data.texts.length) line('p','尚未安装本机课文包。请在服务的 .media/lecture 目录放入课文 JSON 与对应 WAV。');
+    for (const pack of data.texts) button('U' + pack.unit + ' · L' + pack.lesson + ' · ' + pack.title.zh,
+      () => selectReading(lectureAPI,{text:pack.id}));
+    if (data.history.length) line('h3','我的朗读');
+    for (const item of data.history) button(new Date(item.created*1000).toLocaleString() + ' · ' + item.part +
+      (item.phase === 'ended' ? ' · 报告与错句本' : ' · 继续朗读'), () => selectReading(lectureAPI+'/'+item.id));
+  }
+  async function binary(path) {
+    const response = await (window.QihangOralClient ? window.QihangOralClient.fetch(path) : fetch(path));
+    if (!response.ok) throw Error('原声或记录不可用，请检查本机课文包');
+    return response.blob();
+  }
+  function renderReading() {
+    clear();
+    const base = lectureAPI + '/' + session.id, task = readingLine(), pack = session.text;
+    line('h3','U'+pack.unit+' · L'+pack.lesson+' · '+pack.title.fr);
+    if (session.phase === 'ended') {
+      const r = session.report;
+      line('h4','本课朗读报告 · '+r.recorded+'/'+pack.sentences.length+' 句已录音');
+      for (const s of pack.sentences) {
+        const score=r.scores[s.id];
+        line('p',s.fr+'　'+(score ? '准确率 '+Math.round(100*score.accuracy)+'% · 覆盖率 '+Math.round(100*score.coverage)+'%' : '尚无可评分结果'));
+      }
+      line('p','常漏词：'+(r.missing.map(([w,n])=>w+' ×'+n).join('、') || '暂无'));
+      line('p',r.scores.full?'整段连读准确率：'+Math.round(100*r.scores.full.accuracy)+'%':'整段连读：尚无可评分结果');
+      line('p','建议重读：'+(pack.sentences.filter(s=>r.wrong.includes(s.id)).map(s=>s.fr).join(' / ') || '暂无'));
+      if (r.wrong.length) button('重练本轮错句',()=>selectReading(lectureAPI,{text:pack.id,review:session.id}));
+      button('导出朗读记录 ZIP',async()=>{
+        const blob=await binary(base+'/export'), url=URL.createObjectURL(blob);
+        const link=document.createElement('a');link.href=url;link.download='lecture-'+session.id+'.zip';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+      });
+      button('选择课文',readingMenu);
+      return;
+    }
+    const intro=session.phase === 'listen', full=session.phase === 'full';
+    const step=intro || full ? 'full' : task.id;
+    line('p',intro?'听整段原声':full?'看原文，整段连读':session.phase==='review'?'错句重读':'逐句跟读');
+    line('h4',intro ? pack.sentences.map(s=>s.fr).join(' ') : task.fr);
+    if (!intro && task.zh) line('p',task.zh);
+    if (task.difficult?.length && !intro) line('p','留意：'+task.difficult.join(' · '));
+    const latest=session.attempts.at(-1);
+    const feedback=latest?.revision===session.revision && latest.step===step ? latest.result : null;
+    if (feedback) {
+      const edits=feedback.edits;
+      const ok=edits.filter(e=>e.op==='match').map(e=>e.ref);
+      const names={missing:'可能漏读',extra:'多读',replace:'听成',order:'词序'};
+      line('p',feedback.status==='uncertain'?'哪里对了：本次收音待确认。':'哪里对了：'+(ok.join(' ')||'暂未对上原句')+'。');
+      line('p',feedback.status==='uncertain'?'哪里需核对：靠近麦克风，再读一次；这次不计分。':
+        '哪里需核对：'+(edits.filter(e=>e.op!=='match').map(e=>names[e.op]+'［'+(e.ref||e.heard)+(e.ref&&e.heard?' → '+e.heard:'')+'］').join('；')||'与原句一致。'));
+      line('p','再读示范：'+task.fr);
+    }
+    const audio=line('audio');player=audio;audio.controls=true;
+    const play=async rate=>{
+      if (!audio.src) {
+        const blob=await binary(base+'/clip/'+step);
+        if (player!==audio) return;
+        playerURL=URL.createObjectURL(blob);audio.src=playerURL;
+      }
+      audio.currentTime=0;audio.playbackRate=rate;await audio.play();
+    };
+    button('播放原声',()=>play(pack.rate.normal));
+    button('慢速重播',()=>play(pack.rate.slow));
+    const advance=action=>selectReading(readingPath()+'/advance',{action});
+    if (intro) button('进入逐句跟读',()=>advance('next'));
+    else {
+      const mic=button(feedback?'重新跟读':'跟读这一段',()=>{audio.pause();return record();});
+      mic.disabled=!feedback;
+      audio.onended=()=>{mic.disabled=false;};
+      if (feedback && feedback.status!=='uncertain') button(full?'查看报告':'下一步',()=>advance('next'));
+      button('跳过本步',()=>advance('skip'));
+    }
+    if (!feedback) play(pack.rate.normal).catch(()=>{if(player===audio)status.textContent='请点「播放原声」重试，或跳过本步。';});
+  }
+  $('openLecture').onclick=()=>{
+    reading=true;$('unitTitle').textContent='读课文 · Lecture';dialog.showModal();act(readingMenu);
+  };
+  $('openUnit').onclick = () => {
+    reading = false;
+    dialog.showModal();
+    act(loadMenu);
+  };
+  $('unitClose').onclick = () => dialog.close();
+  function leave() { generation++; busy=false; body.inert=false; release(); clear(); }
+  dialog.addEventListener('close', leave);
+  window.addEventListener('pagehide', leave);
+})();

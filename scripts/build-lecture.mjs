@@ -15,7 +15,7 @@ await build({
     rollupOptions: {output: {assetFileNames: 'desktop.[ext]'}},
   },
 });
-await writeFile(path.join(outDir, 'index.html'), `<!doctype html>
+await writeFile(path.join(outDir, 'desktop.html'), `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>读课文 · 启航法语</title><link rel="stylesheet" href="/assets/desktop.css"></head>
+<title>口语练习室 · 启航法语</title><link rel="stylesheet" href="/assets/desktop.css"></head>
 <body><div id="atelier"></div><script type="module" src="/assets/desktop.js"></script></body></html>`);

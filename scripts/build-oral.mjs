@@ -19,4 +19,5 @@ html=html.replace('陪练 · 可以请求帮助','陪练 · Pratique').replace('
 html=html.replace('A1 · 开发原型','DELF A1–B2').replace(/电脑网页原型[^<]+/,'').replace('<title>Parlons · 法语口语练习</title>','<title>启航法语 · 口语练习</title>');
 await fs.writeFile(path.join(output,'index.html'),html,'utf8');
 await fs.rm(path.join(output,'client.js'),{force:true});
+await import('./build-lecture.mjs');
 console.log('口语模式资源已生成');

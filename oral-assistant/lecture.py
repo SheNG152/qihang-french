@@ -16,6 +16,7 @@ from lecture_alignment import compare
 import lecture_desktop
 import guided_reading
 import reading_library
+from practice_records import Mode, Verdict, record as practice_record
 from store import Store
 
 MEDIA = Path(__file__).parent/".media/lecture"
@@ -216,6 +217,12 @@ def install(app, data_dir, media=MEDIA):
                 if latest["revision"] != s["revision"]:
                     path.unlink(missing_ok=True)
                     return result(latest)
+                verdict = {"pass": Verdict.PASS, "retry": Verdict.RETRY}.get(
+                    feedback["status"], Verdict.UNDETERMINED)
+                row["practice"] = practice_record(Mode.LECTURE, f'{s["part"]}/{key}', verdict, {
+                    "rule": f'lecture.{feedback["status"]}', "audio_seconds": row["seconds"],
+                    "accuracy": feedback["accuracy"], "coverage": feedback["coverage"],
+                }, ts=row["at"])
                 guided_reading.record(s,row,attempt_id)
             else:
                 s["attempts"].append(row)

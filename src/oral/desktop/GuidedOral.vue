@@ -1,11 +1,29 @@
 <script setup>
 import {computed, onMounted, onBeforeUnmount, ref} from 'vue'
 import ReadingShelf from './ReadingShelf.vue'
+import FluencyDemo from './FluencyDemo.vue'
+import SlotDemo from './SlotDemo.vue'
+import PracticeSkills from './PracticeSkills.vue'
 import WordLine from './WordLine.vue'
 import {openMicrophone} from './microphone.js'
 
 const base='/api/lecture', scopeKey='qihang-oral-scope-v2'
+const dailyBase='/api/daily-practice'
+const lectureCard={id:'lecture',title:'读课文',french:'Lecture',description:'逐句读课文，听原声，把容易读错的词读清楚。',
+  focus:['发音清晰'],support:['停顿节奏']}
+const dailyModes=[
+  {id:'fluency',title:'接拍串说',french:'Enchaîner au rythme',description:'把几段短话接起来，练习哪里停、哪里连着说。',
+    focus:['停顿节奏'],support:['发音清晰']},
+  {id:'slot',title:'看提示换一格',french:'À l’indice, je change un mot',description:'看提示选对词形，再把整句话说出来。',
+    focus:['词形准确'],support:['临场应答']},
+]
+const examSkills={focus:['听题理解','临场应答','组织表达'],support:['词形准确']}
 const view=ref('home'), packs=ref([]), selected=ref(''), queue=ref([]), s=ref(null)
+const dailyNotes=ref([]), dailyReview=ref(null), todayRows=ref([])
+const dailySettings=ref({})
+const dailyCards=computed(()=>dailyModes.filter(mode=>dailySettings.value[mode.id]))
+const practiceCards=computed(()=>[lectureCard,...dailyCards.value])
+const dailyMode=computed(()=>dailyCards.value.find(mode=>view.value===mode.id))
 const loading=ref(false), error=ref(''), mic=ref(''), sound=ref(''), heard=ref(false), elapsed=ref(0), celebration=ref(null)
 const inProgress=ref({}), records=ref({}), batch=ref([]), batchSize=ref(0), notice=ref('')
 const chunkIndex=ref(0)
@@ -80,10 +98,20 @@ async function response(path,options){
   return res
 }
 async function api(path,options){return (await response(path,options)).json()}
+async function dailyCatalog(){
+  const client=window.QihangOralClient
+  if(client){
+    await client.ready
+    if(!client.localService())return
+  }
+  try{dailySettings.value=(await api(dailyBase)).modes||{}}
+  catch{dailySettings.value={}}
+}
 async function catalog(){
-  const data=await api(base+'?layout=guided')
+  const [data, notes]=await Promise.all([api(base+'?layout=guided'),api(dailyBase+'/notebook').catch(()=>({items:[]}))])
   if(!Array.isArray(data.reviewQueue))throw Error('请打开本版桌面预览。')
   packs.value=data.texts; queue.value=data.reviewQueue;records.value=data.lessons||{};inProgress.value=data.inProgress||{}
+  dailyNotes.value=notes.items
   positions.value={}
   for(const [part,id] of Object.entries(inProgress.value)){
     const mark=get(bookmarkKey(part))
@@ -114,9 +142,44 @@ function clean(){
   loading.value=false;sending=false;sessionReady=null;heard.value=false;error.value=''
 }
 function nav(where,push=true){
-  clean();view.value=where
-  if(push&&history.state?.atelier!==where) history.pushState({atelier:where},'','')
+  clean();dailyReview.value=null;view.value=where
+  if(push&&history.state?.atelier!==where){
+    const url=new URL(location.href)
+    if(dailyCards.value.some(mode=>mode.id===where))url.searchParams.set('practice',where)
+    else url.searchParams.delete('practice')
+    url.searchParams.delete('reviewSession')
+    history.pushState({atelier:where},'',url)
+  }
   window.scrollTo(0,0)
+  if(where==='games')loadToday()
+}
+async function loadToday(){
+  const client=window.QihangOralClient
+  const v=epoch
+  if(client){await client.ready;if(!client.localService())return}
+  const now=new Date()
+  const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/1000
+  const end=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime()/1000
+  try{
+    const {modes}=await api(dailyBase+'/today?'+new URLSearchParams({start,end}))
+    const labels=[{id:'lecture',title:'读课文'},...dailyModes,{id:'exam',title:'考试模拟'}]
+    if(v===epoch)todayRows.value=labels.filter(item=>modes[item.id]).map(item=>({...item,...modes[item.id]}))
+  }catch{if(v===epoch)todayRows.value=[]}
+}
+function practiceDaily(item){
+  nav(item.mode)
+  dailyReview.value=item
+}
+function rememberDailyReview(id){
+  if(!dailyReview.value)return
+  dailyReview.value={...dailyReview.value,sessionId:id}
+  const url=new URL(location.href)
+  url.searchParams.set('reviewSession',id)
+  history.replaceState({atelier:view.value},'',url)
+}
+function restoreDailyReview(){
+  const id=new URLSearchParams(location.search).get('reviewSession')
+  if(id&&dailyMode.value)dailyReview.value={sessionId:id}
 }
 async function shelf(where='scope',push=true){
   nav(where,push);s.value=null;batch.value=[];batchSize.value=0
@@ -275,7 +338,8 @@ function beforeUnload(e){
   if(mic.value){e.preventDefault();e.returnValue=''}
 }
 function back(){
-  if(['scope','notebook','read','offer','report'].includes(view.value)){
+  if(dailyMode.value)dailyReview.value?shelf('notebook'):nav('games')
+  else if(['scope','notebook','read','offer','report'].includes(view.value)){
     if(view.value==='scope')nav('games')
     else shelf(view.value==='read'&&batchSize.value?'notebook':'scope')
   }else nav('home')
@@ -283,7 +347,10 @@ function back(){
 function pop(e){
   const route=e.state?.atelier
   if(route==='scope'||route==='notebook'||route==='read'||route==='report')shelf(route==='notebook'?'notebook':'scope',false)
-  else nav(route==='games'?'games':'home',false)
+  else{
+    nav(route==='games'||dailyCards.value.some(mode=>mode.id===route)?route:'home',false)
+    restoreDailyReview()
+  }
 }
 function blur(){if(['open','live'].includes(mic.value))stopMic()}
 async function lastReport(p){
@@ -332,19 +399,59 @@ const stats=computed(()=>{const data=Object.values(report.value?.lines||{});retu
 function exam(){location.assign(window.QihangOralClient?'index.html?from=atelier':'/?from=atelier')}
 onMounted(()=>{history.replaceState({atelier:'home'},'','');window.addEventListener('popstate',pop);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',clean);tick=setInterval(clock,400)
  window.addEventListener('beforeunload',beforeUnload)
- if(new URLSearchParams(location.search).has('read'))scope()})
+ const params=new URLSearchParams(location.search)
+ dailyCatalog().then(()=>{
+   const mode=params.get('practice')
+   if(dailyCards.value.some(card=>card.id===mode)){
+     nav(mode,false);history.replaceState({atelier:mode},'','');restoreDailyReview()
+   }
+ })
+ if(params.has('read'))scope()
+ else if(params.has('daily')){
+   nav('games',false);history.replaceState({atelier:'games'},'','')
+ }})
 onBeforeUnmount(()=>{clearInterval(tick);clean();window.removeEventListener('popstate',pop);window.removeEventListener('blur',blur);window.removeEventListener('beforeunload',beforeUnload);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',clean)})
 </script>
 <template><main class="desk guided">
-<header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">保存并退出</button><button v-else-if="view!=='games'" class="back" @click="back">← {{view==='scope'?'日常练习':view==='read'&&batchSize?'需练习本':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
+<header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">保存并退出</button><button v-else-if="view!=='games'" class="back" @click="back">← {{dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||dailyMode?'日常练习':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
 <p class="alert" role="alert" v-if="error">{{error}} <button v-if="['scope','notebook'].includes(view)" @click="shelf(view,false)">重试</button></p>
 <section v-if="view==='home'" class="landing"><p class="overline">Atelier de français</p><h1>口语练习室</h1><div class="mode-grid">
 <button class="mode daily" @click="nav('games')"><span class="card-fr">Pratique</span><span class="bars" aria-hidden="true"><i v-for="(h,i) in [25,45,68,43,80,96,72,47,68,40,24]" :key="i" :style="{'--bar':h+'%'}"/></span><strong>日常练习</strong><span class="card-foot">跟着课本，练好每一句。<b>↗</b></span></button>
-<button class="mode exam" @click="exam"><span class="card-fr">Examen</span><span class="exam-label">DELF A1</span><strong>考试模拟</strong><span class="card-foot">进入考场，完成三项口试。<b>↗</b></span></button></div></section>
-<section v-else-if="view==='games'" class="landing"><p class="overline">Pratique</p><h1>日常练习</h1><div class="games paire"><button class="game live" @click="scope()"><i class="glyph">Aa</i><em>已上线</em><span>Lecture</span><strong>读课文</strong><small>选一课，看着原文开口。</small></button><article class="game future"><i class="glyph">···</i><em>待开发</em><span>À venir</span><strong>其他模式</strong><small>更多听说练习正在筹备中。</small></article></div></section>
+<button class="mode exam exam-practice" aria-labelledby="exam-title" aria-describedby="exam-skills exam-summary" @click="exam">
+  <span class="card-fr" lang="fr">Examen</span><span class="exam-label">DELF A1</span><strong id="exam-title">考试模拟</strong>
+  <PracticeSkills id="exam-skills" v-bind="examSkills"/>
+  <span class="skill-key">外圈主练 · 内圈兼练</span>
+  <span id="exam-summary" class="card-foot">听考官提问，练习问答和情景互动。<b aria-hidden="true">↗</b></span>
+</button></div></section>
+<section v-else-if="view==='games'" class="landing"><p class="overline">Pratique</p><h1>日常练习</h1>
+  <p class="skill-key">口语训练侧重 · 外圈主练 · 内圈兼练</p>
+  <div class="games daily-grid">
+    <button v-for="mode in practiceCards" :key="mode.id" class="game live radar-card"
+      :aria-labelledby="mode.id+'-title'" :aria-describedby="mode.id+'-skills '+mode.id+'-summary'"
+      @click="mode.id==='lecture'?scope():nav(mode.id)">
+      <span lang="fr">{{ mode.french }}</span><strong :id="mode.id+'-title'">{{ mode.title }}</strong>
+      <PracticeSkills :id="mode.id+'-skills'" :focus="mode.focus" :support="mode.support"/>
+      <small :id="mode.id+'-summary'">{{ mode.description }}</small><b class="go" aria-hidden="true">↗</b>
+    </button>
+  </div>
+  <section v-if="todayRows.length" class="today-practice">
+    <h2>今日练习</h2>
+    <ul>
+      <li v-for="row in todayRows" :key="row.id">
+        <strong>{{row.title}}</strong>
+        <span>完成 {{row.completed}} 轮<template v-if="row.short"> · 短练 {{row.short}} 轮</template></span>
+        <span>开口 {{row.speech_seconds === null ? '未记录' : (row.speech_seconds / 60).toFixed(1) + ' 分钟'}}</span>
+      </li>
+    </ul>
+  </section>
+</section>
+<FluencyDemo v-else-if="dailyMode?.id==='fluency'" :request="response" :review="dailyReview"
+  @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
+<SlotDemo v-else-if="dailyMode?.id==='slot'" :request="response" :review="dailyReview"
+  @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
 <template v-else-if="view==='scope'||view==='notebook'"><p v-if="loading" class="muted" role="status">正在读取朗读记录…</p>
-<ReadingShelf v-else :key="view" :packs="packs" :lessons="records" :selected="get(scopeKey)" :in-progress="inProgress" :positions="positions" :resume-notes="!!notebookBookmark" :queue="queue" :notebook="view==='notebook'" :notice="notice"
-  @open="openLesson" @report="lastReport" @notebook="notice='';shelf('notebook')" @resume="resumeNotebook" @practice="practice" @export="exportLibrary"/></template>
+<ReadingShelf v-else :key="view" :packs="packs" :lessons="records" :selected="get(scopeKey)" :in-progress="inProgress" :positions="positions" :resume-notes="!!notebookBookmark" :queue="queue" :daily-notes="dailyNotes" :daily-modes="dailyCards" :notebook="view==='notebook'" :notice="notice"
+  @open="openLesson" @report="lastReport" @notebook="notice='';shelf('notebook')" @resume="resumeNotebook" @practice="practice" @practice-daily="practiceDaily" @export="exportLibrary"/></template>
 <section v-else-if="isReader" class="reader"><p v-if="!s" class="muted">正在准备课文…</p>
 <template v-if="pack&&s"><div class="track-head"><span>{{pack.title.zh}} · {{pack.title.fr}}</span><span v-if="progress.full">整段连读</span><span v-else-if="!progress.remaining&&!celebration">本轮已读完 · 待练 0 句</span><span v-else>{{s?.reviewRound?'复练':'本轮'}}第 {{progress.position}} / {{progress.total}} 句 · 待练 {{progress.remaining}} 句</span></div>
 <div class="track" role="progressbar" aria-label="本轮已完成" :aria-valuenow="progress.completed" :aria-valuemax="progress.total" aria-valuemin="0"><i :style="{transform:'scaleX('+progress.completed/progress.total+')'}"/></div>
@@ -364,5 +471,20 @@ onBeforeUnmount(()=>{clearInterval(tick);clean();window.removeEventListener('pop
 <div class="actions"><button class="speak" @click="scope()">换一课</button><button v-if="s.phase==='ended'" class="secondary" :disabled="loading" @click="action('full')">整段连读</button><button class="text-link" @click="download">导出记录</button></div></section>
 </main></template>
 <style scoped>
-.paire{grid-template-columns:1fr 1fr}.future{border:1px dashed #afc4b5;background:#f1f5ef}.scope-intro,.warm{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.scope-intro{padding:5px 0 22px}.scope-intro h1{font-size:30px}.warm{background:#e7efe5;border-radius:12px;padding:0 14px;margin-top:14px}.chunks{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.chunks span{background:#e6efe4;border-radius:8px;padding:7px 11px;font:18px Georgia,serif}.guided .sentence-box{padding:clamp(24px,5vh,50px) 0 14px}.game.live em{color:#28583d}.controls>.text-link{display:block;margin:auto}.scope-intro .scope select{max-width:240px}
+.today-practice{margin-top:28px}.today-practice ul{list-style:none;padding:0;margin:0}.today-practice li{display:flex;flex-wrap:wrap;gap:8px 18px;padding:9px 0;border-bottom:1px solid var(--line)}.today-practice strong{min-width:120px}.today-practice span{color:var(--sub)}
+.skill-key{font-size:13px;line-height:1.5;color:var(--sub);margin:10px 0 0}
+.daily-grid{margin-top:16px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.daily-grid .radar-card{background:#f2f7ef;padding:18px 15px;min-width:0}
+.radar-card>span[lang]{margin:0;padding-right:35px;font-size:14px;line-height:1.35}
+.radar-card>strong{margin:5px 0 10px;line-height:1.25;padding-right:30px}
+.radar-card .practice-skills{margin:0 0 11px;background:#fcfdfb;border:1px solid #dce8da;border-radius:12px}
+.radar-card small{font-size:14px}
+.radar-card .go{right:14px;top:16px}
+.exam-practice{--skill-ink:#384960}
+.exam-practice>strong{margin-top:4px}
+.exam-practice .practice-skills{margin-top:8px;background:#f9fbfe;border:1px solid #dce5ee;border-radius:12px}
+.exam-practice .skill-key{align-self:center;margin:6px 0 8px}
+@media(max-width:880px){.daily-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.daily-grid{grid-template-columns:1fr}}
+.scope-intro,.warm{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.scope-intro{padding:5px 0 22px}.scope-intro h1{font-size:30px}.warm{background:#e7efe5;border-radius:12px;padding:0 14px;margin-top:14px}.chunks{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.chunks span{background:#e6efe4;border-radius:8px;padding:7px 11px;font:18px Georgia,serif}.guided .sentence-box{padding:clamp(24px,5vh,50px) 0 14px}.game.live em{color:#28583d}.controls>.text-link{display:block;margin:auto}.scope-intro .scope select{max-width:240px}
 </style>
