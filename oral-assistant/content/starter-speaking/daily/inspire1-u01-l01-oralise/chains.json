@@ -1,0 +1,91 @@
+{
+  "lesson_id": "inspire1-u01-l01-oralise",
+  "version": 1,
+  "label": "Inspire 1 · Leçon 1 学生用书逐题改编",
+  "title": {
+    "fr": "Saluer",
+    "zh": "打招呼与课堂物品（原题改编）"
+  },
+  "chains": [
+    {
+      "id": "l01-act01",
+      "groups": [
+        "J’écoute les personnes",
+        "et je reconnais le français",
+        "dans la conversation."
+      ],
+      "short_groups": [
+        "J’écoute les personnes",
+        "et je reconnais le français"
+      ],
+      "pause_after_words": [
+        4,
+        9
+      ],
+      "demo_wav": "l01-act01.wav",
+      "short_demo_wav": "l01-act01-short.wav",
+      "source": "Inspire 1 学生用书 · PDF 第 14 页 · Leçon 1 Activité 1 · Piste 002 · 口语改编",
+      "cue": "听辨哪段说的是法语，并用一句话报告辨认结果。"
+    },
+    {
+      "id": "l01-act02",
+      "groups": [
+        "Bonsoir, comment allez-vous ?",
+        "Je vais très bien, merci.",
+        "Et vous ?"
+      ],
+      "short_groups": [
+        "Bonsoir, comment allez-vous ?",
+        "Je vais très bien, merci."
+      ],
+      "pause_after_words": [
+        4,
+        9
+      ],
+      "demo_wav": "l01-act02.wav",
+      "short_demo_wav": "l01-act02-short.wav",
+      "source": "Inspire 1 学生用书 · PDF 第 14 页 · Leçon 1 Activité 2 · Piste 003–004 · 口语改编",
+      "cue": "练习在见面时礼貌问好，再用合适的语气回答。"
+    },
+    {
+      "id": "l01-act03",
+      "groups": [
+        "Bonjour à tous, je me présente.",
+        "Je suis Camille,",
+        "une nouvelle élève."
+      ],
+      "short_groups": [
+        "Bonjour à tous, je me présente.",
+        "Je suis Camille,"
+      ],
+      "pause_after_words": [
+        6,
+        9
+      ],
+      "demo_wav": "l01-act03.wav",
+      "short_demo_wav": "l01-act03-short.wav",
+      "source": "Inspire 1 学生用书 · PDF 第 15 页 · Leçon 1 Activité 3 · Piste 005 · 口语改编",
+      "cue": "向小组问好，并接着介绍自己。"
+    },
+    {
+      "id": "l01-act04",
+      "groups": [
+        "Dans notre classe",
+        "voici le tableau",
+        "et deux livres sur la table."
+      ],
+      "short_groups": [
+        "Dans notre classe",
+        "voici le tableau"
+      ],
+      "pause_after_words": [
+        3,
+        6
+      ],
+      "demo_wav": "l01-act04.wav",
+      "short_demo_wav": "l01-act04-short.wav",
+      "source": "Inspire 1 学生用书 · PDF 第 15 页 · Leçon 1 Activité 4 · Piste 006 · 口语改编",
+      "cue": "指着教室里的物品，向搭档说出它的名称和位置。"
+    }
+  ]
+}

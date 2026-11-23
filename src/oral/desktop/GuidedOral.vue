@@ -576,7 +576,7 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
 <section v-else-if="view==='overview'" class="landing narrow">
   <p class="overline" lang="fr">À propos</p><h1>启航法语 · 项目概览</h1>
   <p>在桌面端练法语发音、节奏和词形。原创口语练习按 Inspire 1 的八个单元组织，示范音可以离线播放。</p>
-  <ul><li>读课文 · 8 篇原创短文，练发音与逐句跟读。</li><li>接拍串说 · 8 课，每课 6 条节奏链。</li><li>看提示换一格 · 日常运动主题，3 个句框、12 张提示卡。</li></ul>
+  <ul><li>读课文 · 8 篇原创短文，练发音与逐句跟读。</li><li>接拍串说 · 8 课主题练习，另有 4 条第一课原题改编，可核对课本出处。</li><li>看提示换一格 · 日常运动主题，3 个句框、12 张提示卡。</li></ul>
   <p>练完可在「今日练习」看进度，或打开「需练习本」复练。喜欢边玩边练，可以进入口语小镇。</p>
   <button class="speak" @click="nav('games')">进入日常练习</button>
 </section>

@@ -46,6 +46,15 @@ class StarterSpeakingTest(TestCase):
             self.assertTrue(settings[Mode.FLUENCY].enabled)
             self.assertFalse(settings[Mode.SLOT].enabled)
 
+    def test_first_lesson_adaptations_have_distinct_exercise_references(self):
+        path, lesson = select_lesson(daily_packs(CHAINS, CHAINS),'inspire1-u01-l01-oralise')
+        self.assertEqual(validate(path, 'formal'), 4)
+        mappings = json.loads((BUILTIN/'inspire1-exercise-mapping.json').read_text(encoding='utf-8'))
+        self.assertEqual({row['exercise'] for row in mappings},{f'L01-ACT{number:02d}' for number in range(1,5)})
+        self.assertEqual({row['item'] for row in mappings},
+                         {f'{lesson["lesson_id"]}/{chain["id"]}' for chain in lesson['chains']})
+        self.assertTrue(all(chain['cue'] and 'PDF 第' in chain['source'] for chain in lesson['chains']))
+
     def test_private_lesson_discovery_cannot_shadow_another_lesson(self):
         with TemporaryDirectory() as scratch:
             root = Path(scratch)

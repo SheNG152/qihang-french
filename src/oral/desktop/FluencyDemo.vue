@@ -276,6 +276,8 @@ onBeforeUnmount(() => {
     </template>
     <template v-else-if="chain">
       <p class="muted">第 {{ session.position + 1 }} / {{ chainsCount }} 条 · {{ stage === 'chunks' ? '逐块热身' : stage === 'feedback' ? '本条反馈' : '连起来说' }}</p>
+      <p v-if="chain.source" class="muted">{{ chain.source }}</p>
+      <p v-if="chain.cue">{{ chain.cue }}</p>
       <template v-if="stage === 'feedback'">
         <p class="groups"><span v-for="group in groups" :key="group" lang="fr">{{ group }}</span></p>
         <h2>{{ statusLabels[feedback.verdict] }}</h2>

@@ -113,7 +113,8 @@ try {
   await button('接拍串说').click()
   const fluency = daily+'/fluency'
   const genres = await json(fluency)
-  assert.equal(genres.lessons.length,8)
+  assert.equal(genres.lessons.length,9)
+  assert.ok(genres.lessons.some(row=>row.id==='inspire1-u01-l01-oralise'))
   await page.getByLabel('练习课次').selectOption('studio-u08')
   await heading('查询信息与确认路线').waitFor()
   const firstStart = responseFor(fluency)
