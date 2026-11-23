@@ -22,6 +22,7 @@
   <view v-else-if="!showExam" class="oral-local-menu">
    <PracticeHome :daily-href="nativeDaily ? undefined : dailyURL" exam-level="DELF A1–B2" @daily="openDaily" @exam="showExam=true" />
   </view>
+  <p v-else-if="desktop && recognizerPending" class="oral-daily-status" role="status">正在准备本机语音识别，完成后将进入考试模拟。</p>
   <iframe v-else ref="frame" class="oral-local-frame" :src="frameURL" title="DELF A1–B2 口语练习 / Expression orale" allow="microphone; autoplay" referrerpolicy="no-referrer" />
  </view>
 </template>
@@ -31,6 +32,7 @@ import PracticeHome from '../oral/desktop/PracticeHome.vue';
 const emit=defineEmits(['notice','modes','settings','home','restore-file']),prepared=ref(localStorage.getItem('qihang-oral-prepared-v2')==='1'),oralHome=ref(true),frame=ref(null);let timer,alive=true;
 const desktop=!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const showExam=ref(!desktop);
+const recognizerPending=ref(desktop);
 const nativeDaily=desktop&&window.QihangDesktopDailyUrl?window.chrome?.webview:null;
 const dailyURL=nativeDaily?window.QihangDesktopDailyUrl:'http://127.0.0.1:8127/?desktop=1&daily=1';
 const dailyState=ref(''),dailyStatus=ref('');
@@ -42,10 +44,23 @@ function receiveDaily(event){
  dailyState.value=data.state;
  dailyStatus.value=data.state==='starting'?'正在打开日常练习。首次启动需要预热模型。':data.state==='opened'?'':data.message||'日常口语暂时无法打开，请重试。';
 }
-function enter(){prepared.value=true;localStorage.setItem('qihang-oral-prepared-v2','1');}
+function enter(){recognizerPending.value=false;prepared.value=true;localStorage.setItem('qihang-oral-prepared-v2','1');}
 function returnToMenu(){showExam.value=false;oralHome.value=true;emit('home',true);}
-function receiveStatus(value){if(value.recognizer?.ready===false||!value.model?.ready&&value.model?.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v2')==='1'&&value.provider?.status==='connected'&&value.microphone)enter();}
-async function refresh(){try{const status=await oralCall('status');if(!alive)return;const native=window.QihangNative;if(typeof native?.microphonePermission==='function'&&native.microphonePermission()!=='granted'){prepared.value=false;return;}if(status.recognizer?.ready===false||!status.model.ready&&status.model.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v2')==='1'&&status.model.ready)prepared.value=true;}catch{}}
+function receiveStatus({model,recognizer,microphone}){
+ const native=window.QihangNative;
+ const permissionMissing=typeof native?.microphonePermission==='function'&&native.microphonePermission()!=='granted';
+ const modelChecking=model?.state==='checking';
+ recognizerPending.value=modelChecking||recognizer?.ready===false;
+ if(permissionMissing||(!model?.ready&&!modelChecking)||recognizer?.state==='failed'||(!desktop&&recognizer?.ready===false)){
+  prepared.value=false;
+ }else if(!recognizerPending.value&&microphone!==false&&localStorage.getItem('qihang-oral-prepared-v2')==='1'){
+  prepared.value=true;
+ }
+}
+async function refresh(){
+ try{const status=await oralCall('status');if(alive)receiveStatus(status);}
+ catch{if(alive)recognizerPending.value=false;}
+}
 async function receive(event){if(event.origin!==location.origin||event.source!==(frame.value?.$el||frame.value)?.contentWindow)return;const data=event.data;
  if(data?.type==='qihang-oral-restore-file'&&data.file instanceof File)emit('restore-file',data.file);
  if(data?.type==='qihang-oral-view'){oralHome.value=data.home===true;emit('home',oralHome.value);}

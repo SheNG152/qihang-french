@@ -66,7 +66,6 @@ namespace QihangFrench {
   Process host;bool ownsHost,ready,closing,allowClose,openingDaily;TaskCompletionSource<bool> closeReady,dailyCloseReady;
   public AppWindow(string data){dataRoot=data;Text=Program.Title;Width=1180;Height=850;MinimumSize=new Size(430,640);StartPosition=FormStartPosition.CenterScreen;Icon=Icon.ExtractAssociatedIcon(Application.ExecutablePath);BackColor=Color.FromArgb(244,247,252);web.Dock=DockStyle.Fill;Controls.Add(web);status.Dock=DockStyle.Fill;status.Text="正在打开启航法语…\r\nOuverture de l’application…";status.TextAlign=ContentAlignment.MiddleCenter;status.Font=new Font("Microsoft YaHei UI",12);Controls.Add(status);
    var menu=new MenuStrip();var records=new ToolStripMenuItem("记录");records.DropDownItems.Add("导出备份",null,async(s,e)=>{if(ready)await web.ExecuteScriptAsync("window.dispatchEvent(new Event('qihang-backup'))");});records.DropDownItems.Add("打开记录位置",null,(s,e)=>Process.Start(new ProcessStartInfo(dataRoot){UseShellExecute=true}));menu.Items.Add(records);MainMenuStrip=menu;Controls.Add(menu);menu.Dock=DockStyle.Top;
-   menu.Items.Add("日常口语",null,async(s,e)=>await OpenDaily(false));
 #if DESKTOP_CHECKS
    if(!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("QIHANG_DESKTOP_CHECK_ROOT"))){ShowInTaskbar=false;WindowState=FormWindowState.Minimized;}
 #endif
@@ -182,6 +181,7 @@ namespace QihangFrench {
    core.WebMessageReceived+=ReceiveDaily;
    await core.AddScriptToExecuteOnDocumentCreatedAsync("if(window===window.top&&location.origin==="+Program.Json.Serialize(new Uri(DailyPractice).GetLeftPart(UriPartial.Authority))+") window.QihangEmbeddedDaily=true;");
    var loaded=new TaskCompletionSource<bool>();
+   var wait=Stopwatch.StartNew();
    EventHandler<CoreWebView2NavigationCompletedEventArgs> completed=(s,e)=>loaded.TrySetResult(e.IsSuccess);
    core.NavigationCompleted+=completed;
    try{
@@ -189,11 +189,16 @@ namespace QihangFrench {
     if(await Task.WhenAny(loaded.Task,Task.Delay(12000))!=loaded.Task||!loaded.Task.Result)
      throw new IOException("日常练习页面未能打开，请重试。");
    }finally{core.NavigationCompleted-=completed;}
+   while(!closing&&!IsDisposed&&dailyWeb==view){
+    if(await core.ExecuteScriptAsync("!!document.querySelector('main.desk.guided .daily-grid')")=="true")break;
+    if(wait.ElapsedMilliseconds>=12000)throw new IOException("日常练习页面未能打开，请重试。");
+    await Task.Delay(30);
+   }
    if(closing||IsDisposed||dailyWeb!=view)return;
-   web.Hide();
    view.Show();
    view.BringToFront();
    MainMenuStrip.BringToFront();
+   web.Hide();
    view.Focus();
   }
   void ReceiveDaily(object sender,CoreWebView2WebMessageReceivedEventArgs e){

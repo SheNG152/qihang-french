@@ -4,6 +4,10 @@
 
 Windows 主程序配置完成后，先在「口语练习室」选择日常练习或考试模拟。日常入口等待本机服务就绪，在同一窗口的 WebView2 中打开。点「返回主程序」可保存当前位置并回到原页面。独立网页和程序内页面共用本机练习记录，游戏与面板偏好按各自浏览器资料保存。标准安装可先启动独立日常口语服务。本机一体试玩包可以把 `native/windows-desktop/start-daily.py`、填写了 `python` 和 `modelRuntime` 的 `local-runtime.json` 及构建好的 `oral-assistant` 放在同一个 `日常口语运行`。本机 `.qihang-data.json` 可配置 `directory`、`hostPort`、`dailyPort` 和 `dailySpeechPort`。本机运行配置和教材保留在本机。
 
+Windows 已配置用户在模型检查或识别器预热期间仍可打开「口语练习室」。选择考试模拟后会在原窗口等待识别器就绪。日常练习 WebView2 在日常卡片页渲染后切入。
+
+游戏开场音乐和默认电台由本机素材目录提供。可在本机的 `日常口语运行/local-runtime.json` 中设置可选字段 `gamePrivateAssets`，填现有 `assets-private` 的绝对路径，或相对于 `日常口语运行` 的路径。独立试玩也可传 `--game-private-assets-dir`。修改后重新启动日常服务。开场音频放在该目录根部，电台使用 `radio/tracks.json` 和它引用的音频，参见 [素材清单](../ASSETS.md)。缺少私有素材时，开场可静音观看，面板显示「默认电台暂不可用」。这些文件留在本机，发布包和仓库不包含它们。
+
 两种口语练习的课次按素材来源分组，并在组内按单元、课次编号排序。课次选择会显示链或提示卡的数量。切换后先展示当前课次，再从该课次继续上次练习或开始新一轮。
 
 Windows 独立试玩可在 `oral-assistant` 双击 `启动日常口语第2步.cmd`。它预热已安装的本机 Whisper，再打开 `http://127.0.0.1:18983/?desktop=1&daily=1`，识别占用 18984。持久试玩数据默认在 `.local/daily-preview`，也可通过 `--data-dir` 指定当前需要的试玩目录，`--temporary-data` 使用独立临时目录。模型默认在本服务下，外置模型和依赖可以通过 `--runtime-dir` 指定其原服务目录。

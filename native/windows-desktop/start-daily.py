@@ -69,6 +69,9 @@ def run(options):
                 args = [settings['python'], '-X', 'utf8', str(oral / 'scripts/preview_daily_practice.py'),
                         '--runtime-dir', settings['modelRuntime'], '--data-dir', str(data),
                         '--port', str(port), '--speech-port', str(speech_port), '--no-browser']
+                private_assets = HOME / (settings.get('gamePrivateAssets') or 'assets-private')
+                if private_assets.is_dir():
+                    args.extend(('--game-private-assets-dir', str(private_assets.resolve())))
                 log_path = data / '启动日志.txt'
                 with log_path.open('ab') as log:
                     child = subprocess.Popen(args, cwd=oral, stdout=log, stderr=subprocess.STDOUT,

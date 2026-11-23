@@ -26,8 +26,11 @@ const dailyModes=[
   {id:'slot',title:'看提示换一格',french:'À l’indice, je change un mot',description:'看提示选对词形，再把整句话说出来。',
     focus:['词形准确'],support:['临场应答']},
 ]
-const view=ref('home'), packs=ref([]), selected=ref(''), queue=ref([]), s=ref(null)
+const entryParams=new URLSearchParams(location.search)
 const gameAvailable=!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+const enterGame=gameAvailable&&entryParams.get('game')==='1'
+const enterDaily=entryParams.has('daily')&&!entryParams.has('read')&&!enterGame
+const view=ref(enterDaily?'games':'home'), packs=ref([]), selected=ref(''), queue=ref([]), s=ref(null)
 const gameCharacter=ref(gameAvailable&&loadGameSave().save?.character.id)
 const gamePractice=ref(null), gameMapOpen=ref(false), gameReceipt=ref('')
 let gameOpening=false, gameSettling=false
@@ -568,18 +571,16 @@ async function leaveDesktop(close=false){
 }
 const closeDesktop=()=>leaveDesktop(true)
 function pagehide(){clean();leaveNormalPracticeAudio();if(gamePractice.value||gameAudioLease)leaveGamePracticeAudio()}
-onMounted(()=>{unwatchAudio=registerPlayer(stopSound);history.replaceState({atelier:'home'},'','');window.addEventListener('popstate',pop);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide);tick=setInterval(clock,400)
+onMounted(()=>{unwatchAudio=registerPlayer(stopSound);history.replaceState({atelier:view.value},'','');window.addEventListener('popstate',pop);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide);tick=setInterval(clock,400)
  window.addEventListener('beforeunload',beforeUnload)
  if(desktopHost)window.addEventListener('qihang-daily-host-close',closeDesktop)
- const params=new URLSearchParams(location.search)
- const enterGame=gameAvailable&&params.get('game')==='1'
  dailyCatalog().then(async()=>{
    if(enterGame){
-     const run=pendingAdventure(params.get('gameRun'))
+     const run=pendingAdventure(entryParams.get('gameRun'))
      if(run&&view.value==='adventure')openGamePractice(run,false)
      return
    }
-   const mode=params.get('practice')
+   const mode=entryParams.get('practice')
    if(!enterGame&&dailyCards.value.some(card=>card.id===mode)){
      if(await openDailyMode(mode,false)){history.replaceState({atelier:mode},'','');restoreDailyReview()}
    }
@@ -587,10 +588,9 @@ onMounted(()=>{unwatchAudio=registerPlayer(stopSound);history.replaceState({atel
  if(enterGame){
    nav('adventure',false);history.replaceState({atelier:'adventure'},'','')
  }
- else if(params.has('read'))scope()
- else if(params.has('daily')){
-   nav('games',false);history.replaceState({atelier:'games'},'','')
- }})
+ else if(entryParams.has('read'))scope()
+ else if(enterDaily)loadToday()
+})
 onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();unwatchAudio?.();window.removeEventListener('popstate',pop);window.removeEventListener('blur',blur);window.removeEventListener('beforeunload',beforeUnload);window.removeEventListener('qihang-daily-host-close',closeDesktop);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide)})
 </script>
 <template><main class="desk guided">
