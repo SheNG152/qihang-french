@@ -58,7 +58,7 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
     async def catalog(request):
         lessons = packs()
         _, content = select_lesson(lessons, request.query.get('lesson'))
-        recent = next((row for row in store.listing(regular=True) if row["part"] == content["lesson_id"]), None)
+        recent = next(iter(store.listing(regular=True, part=content["lesson_id"])), None)
         return web.json_response({"lesson": content, "lessons":lesson_choices(lessons), "recent": recent,
                                   "window_seconds": settings.window_seconds})
 
@@ -94,7 +94,9 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         name = request.match_info["file"]
         if Path(name).name != name or '\\' in name:
             raise web.HTTPNotFound()
-        for path, lesson in packs().values():
+        lessons = packs()
+        selected = request.query.get('lesson')
+        for path, lesson in ([select_lesson(lessons, selected)] if selected else lessons.values()):
             if any(name in (row['demo_wav'], row['short_demo_wav']) for row in lesson['chains']):
                 return web.FileResponse(path.parent / name)
         raise web.HTTPNotFound()

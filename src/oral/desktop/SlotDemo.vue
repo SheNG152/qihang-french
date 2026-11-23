@@ -3,10 +3,12 @@ import {canPlayPracticeAudio, enterCapture, registerPlayer} from '../../../oral-
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue'
 import {openRecordingWindow, pcmWave} from './recording-window.js'
 import {recoverAdventure} from '../../game/practiceBridge.js'
+import LessonPicker from './LessonPicker.vue'
 
 const props = defineProps({request:{type:Function, required:true}, review:Object, adventure:Object})
 const emit = defineEmits(['return-notebook', 'review-session', 'game-end'])
 const base = '/api/daily-practice/slot'
+const lessonKey = 'qihang-slot-lesson'
 const catalog = ref(null), session = ref(null), heardClips = ref([]), playing = ref('')
 const busy = ref('loading'), error = ref(''), showHelp = ref(false)
 const takes = ref(new Map())
@@ -49,7 +51,7 @@ const listenAgain = {
   voice_timing_unavailable:'这次未检测到有效发声。等滴声，再读高亮的整句。',
   insufficient_speech:'系统检测到的发声时间偏短。可以跟着高亮的整句再读一遍。',
   insufficient_assisted_speech:'系统按检出的发声时间核对跟说完成度。',
-  frame_coverage:'本机识别没能确认固定句框 Je fais。',
+  frame_coverage:'本机识别没能确认这张卡的固定句框。请从句首读完整句。',
   slot_anchor:'句框和换词的位置没识别清楚。可以照着高亮的整句读。',
   missing_slot:'已识别句框，这次没能确认换进去的词。',
   low_slot_confidence:'本机识别对换进去的词把握不足。',
@@ -75,8 +77,10 @@ const options = body => ({method:'POST', headers:writeHeaders('application/json'
 const baseSession = () => base + '/' + session.value.id
 const endpoint = action => baseSession() + '/' + session.value.revision + '/' + action
 let recorder, startSample, cueSample, deadline, onset, heard, player, playerUrl, clock, disposed = false
+let playback = 0
 
 async function json(url, init) { return (await props.request(url, init)).json() }
+function getCatalog(lesson) { return json(base + (lesson ? '?lesson=' + encodeURIComponent(lesson) : '')) }
 function activeMs() {
   return clock ? Math.round(clock.previous + performance.now() - clock.start) : session.value?.active_ms || 0
 }
@@ -98,12 +102,23 @@ function accept(next) {
   session.value = next
   showHelp.value = false
 }
-async function load(lesson = props.review?.lessonId) {
+async function load(lesson = props.review?.lessonId, resume = true) {
   busy.value = 'loading'
   error.value = ''
+  stopAudio()
   heardClips.value = []
   try {
-    catalog.value = await json(base + (lesson ? '?lesson=' + encodeURIComponent(lesson) : ''))
+    let next = await getCatalog(lesson)
+    if (!lesson && !props.adventure && !props.review) {
+      let saved
+      try { saved = localStorage.getItem(lessonKey) } catch {}
+      if (saved !== next.lesson.lesson_id && next.lessons.some(item => item.id === saved)) next = await getCatalog(saved)
+    }
+    if (disposed) return
+    catalog.value = next
+    if (!props.adventure && !props.review) {
+      try { localStorage.setItem(lessonKey,next.lesson.lesson_id) } catch {}
+    }
     const recent = catalog.value.recent
     if (props.adventure) {
       const state = await recoverAdventure(json, base, props.adventure)
@@ -113,14 +128,24 @@ async function load(lesson = props.review?.lessonId) {
       accept(await json(base + '/' + props.review.sessionId))
       if (session.value.stage === 'pending') await grade()
     } else if (props.review) await start(props.review)
-    else if (catalog.value.audition_confirmed && recent?.phase === 'active') {
+    else if (resume && catalog.value.audition_confirmed && recent?.phase === 'active') {
       accept(await json(base + '/' + recent.id))
       if (session.value.stage === 'pending') await grade()
     }
-  } catch (err) { error.value = err.message }
+  } catch (err) { error.value = !catalog.value && err.status === 404 ? '当前没有可用的词形题库。' : err.message }
   finally { busy.value = '' }
 }
+function returnToLessons() {
+  const lesson = session.value.part
+  checkpoint()
+  clock = null
+  takes.value.clear()
+  showHelp.value = false
+  session.value = null
+  return load(lesson,false)
+}
 function stopAudio() {
+  playback++
   if (player) { player.onended = null; player.pause(); player = null }
   if (playerUrl) URL.revokeObjectURL(playerUrl)
   playerUrl = ''
@@ -138,15 +163,17 @@ async function playClip(clip, rate, onEnded) {
 async function listen(candidate, audition = false) {
   if (busy.value || playing.value || !canPlayPracticeAudio()) return
   playing.value = candidate.id
+  const token = ++playback
   error.value = ''
   try {
-    const response = await props.request(base + '/audio/' + encodeURIComponent(candidate.demo_wav))
+    const lesson = session.value?.part || catalog.value.lesson.lesson_id
+    const response = await props.request(base + '/audio/' + encodeURIComponent(candidate.demo_wav) + '?' + new URLSearchParams({lesson}))
     const clip = await response.blob()
-    if (disposed || playing.value !== candidate.id || !canPlayPracticeAudio()) return
+    if (disposed || token !== playback || !canPlayPracticeAudio()) return
     await playClip(clip, audition ? 1 : .75, () => {
       if (audition && !heardClips.value.includes(candidate.id)) heardClips.value.push(candidate.id)
     })
-  } catch { error.value = '本地原声未能播放，请重试。'; stopAudio() }
+  } catch { if (token === playback) { error.value = '本地原声未能播放，请重试。'; stopAudio() } }
 }
 async function confirmAudition() {
   busy.value = 'saving'
@@ -179,7 +206,10 @@ async function previousReport() {
   if (busy.value) return
   busy.value = 'loading'
   error.value = ''
-  try { accept(await json(base + '/' + catalog.value.recent.id)) }
+  try {
+    accept(await json(base + '/' + catalog.value.recent.id))
+    if (!disposed && session.value.stage === 'pending') await grade()
+  }
   catch (err) { error.value = err.message }
   finally { busy.value = '' }
 }
@@ -322,6 +352,7 @@ async function downloadLog() {
   } catch (err) { error.value = err.message }
 }
 function leave() { checkpoint(); closeRecorder(); stopAudio(); takes.value.clear() }
+defineExpose({isBusy:()=>!!busy.value})
 let unregisterAudio
 onMounted(() => { unregisterAudio = registerPlayer(stopAudio); window.addEventListener('pagehide', leave); load() })
 onBeforeUnmount(() => { disposed = true; unregisterAudio?.(); window.removeEventListener('pagehide', leave); leave() })
@@ -334,14 +365,11 @@ onBeforeUnmount(() => { disposed = true; unregisterAudio?.(); window.removeEvent
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
     <button v-if="!adventure && session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
       class="secondary" :disabled="!!busy || !!playing" @click="start()">开始新版练习</button>
-    <button v-if="!adventure && !review && session && catalog?.lessons?.length > 1" class="text-link"
-      :disabled="!!busy" @click="checkpoint(); stopAudio(); session = null">返回课次选择</button>
+    <button v-if="!adventure && !review && session" class="text-link"
+      :disabled="!!busy" @click="returnToLessons">返回课次选择</button>
     <template v-if="catalog && !session">
-      <label v-if="!adventure && !review && catalog.lessons?.length > 1">练习课次
-        <select :value="catalog.lesson.lesson_id" :disabled="!!busy" @change="load($event.target.value)">
-          <option v-for="lesson in catalog.lessons" :key="lesson.id" :value="lesson.id">{{ lesson.label }} · {{ lesson.title.zh }}</option>
-        </select>
-      </label>
+      <LessonPicker v-if="!adventure && !review" :lessons="catalog.lessons" :selected="catalog.lesson.lesson_id"
+        :busy="!!busy" item-label="张" @choose="lesson=>load(lesson,false)" />
       <p class="muted">{{ catalog.lesson.label }} · {{ frames.length }} 个句框 · {{ cardCount }} 张提示卡</p>
       <h2>{{ catalog.lesson.title.zh }}</h2>
       <p>每张卡提示一种说法。等滴声，读高亮的完整法语句子。每组答完 4 张，再一起看反馈。</p>
@@ -356,10 +384,14 @@ onBeforeUnmount(() => { disposed = true; unregisterAudio?.(); window.removeEvent
       </ul>
       <button v-if="!catalog.audition_confirmed" class="speak" :disabled="heardClips.length !== 2 || !!busy || !!playing"
         @click="confirmAudition">两段都听清了</button>
+      <button v-else-if="!adventure && catalog.recent?.phase === 'active'" class="speak" :disabled="!!busy"
+        @click="previousReport">继续上次练习</button>
       <button v-else class="speak" :disabled="!!busy" @click="start()">开始练习</button>
       <button v-if="!adventure && catalog.audition_confirmed && catalog.recent?.phase === 'ended'" class="secondary"
         :disabled="!!busy" @click="previousReport">查看上次结果</button>
     </template>
+    <p v-else-if="!catalog && busy" role="status">正在加载题库…</p>
+    <button v-else-if="!catalog && error" class="secondary" @click="load()">重新加载题库</button>
     <template v-else-if="session?.stage === 'record' && task">
       <p v-if="frames.length > 1" class="muted">句框 {{ frameNumber }} / {{ frames.length }}</p>
       <p class="muted">第 {{ session.clips.length + 1 }} / {{ session.tasks.length }} 张</p>

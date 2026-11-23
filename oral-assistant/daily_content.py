@@ -1,5 +1,6 @@
 """Discover shipped speaking lessons and optional locally installed packs."""
 import json
+import re
 from pathlib import Path
 
 from aiohttp import web
@@ -36,5 +37,18 @@ def select_lesson(lessons, lesson_id=None):
 
 
 def lesson_choices(lessons):
-    return [{'id':key, 'label':lesson.get('label', key), 'title':lesson.get('title', {'zh':key})}
-            for key, (_, lesson) in lessons.items()]
+    def choice(key, lesson):
+        textbook = re.fullmatch(r'inspire1-u(\d+)-l(\d+)(-oralise)?', key)
+        thematic = re.fullmatch(r'studio-u(\d+)', key)
+        unit = int((textbook or thematic)[1]) if textbook or thematic else None
+        number = int(textbook[2]) if textbook else None
+        group = ('adapted' if textbook[3] else 'textbook') if textbook else ('theme' if thematic else 'local')
+        count = (len(lesson['chains']) if 'chains' in lesson else
+                 sum(len(frame['prompts']) for frame in lesson.get('frames', [])))
+        return {'id':key, 'label':lesson.get('label', key), 'title':lesson.get('title', {'zh':key}),
+                'group':group, 'unit':unit, 'number':number, 'count':count}
+
+    groups = ('textbook', 'adapted', 'theme', 'local')
+    choices = (choice(key, lesson) for key, (_, lesson) in lessons.items())
+    return sorted(choices, key=lambda row: (groups.index(row['group']), row['unit'] or 0,
+                                            row['number'] or 0, row['id']))

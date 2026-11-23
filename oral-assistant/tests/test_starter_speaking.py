@@ -5,16 +5,36 @@ from unittest import TestCase
 from unittest.mock import patch
 import wave
 
-from daily_content import BUILTIN, daily_packs, select_lesson
+from daily_content import BUILTIN, daily_packs, lesson_choices, select_lesson
 from daily_practice_config import load_settings
 from fluency_session import DEMO_PACK as CHAINS
 from lecture import MEDIA, catalog
 from practice_records import Mode
 from scripts.validate_daily_practice import validate
 from slot_session import DEMO_PACK as FRAMES
+from store import Store
 
 
 class StarterSpeakingTest(TestCase):
+    def test_catalog_groups_sources_and_sorts_unit_numbers(self):
+        ids = ['studio-u10', 'private', 'inspire1-u5-l16', 'studio-u2', 'inspire1-u01-l01-oralise']
+        rows = lesson_choices({key:(None, {'chains':[{}]}) for key in ids})
+        self.assertEqual([(row['id'],row['group'],row['unit'],row['count']) for row in rows], [
+            ('inspire1-u5-l16','textbook',5,1), ('inspire1-u01-l01-oralise','adapted',1,1),
+            ('studio-u2','theme',2,1), ('studio-u10','theme',10,1), ('private','local',None,1),
+        ])
+
+    def test_recent_lesson_ignores_game_and_review_before_limit(self):
+        with TemporaryDirectory() as scratch:
+            store = Store(scratch)
+            regular = {'id': '0'*32, 'part':'requested', 'created':0}
+            store.save(regular)
+            store.save({'id':'1'*32,'part':'requested','created':1,'game':{'origin':'game'}})
+            store.save({'id':'2'*32,'part':'requested','created':2,'review_item':'item'})
+            for i in range(3,105):
+                store.save({'id':f'{i:032x}', 'part':'other','created':i})
+            self.assertEqual([row['id'] for row in store.listing(regular=True, part='requested')],[regular['id']])
+
     def test_shipped_reading_tracks_and_sections(self):
         lessons = [p for p in catalog(MEDIA, playable=True).values() if p['id'].startswith('studio-')]
         self.assertEqual([p['unit'] for p in lessons], list(range(1, 9)))

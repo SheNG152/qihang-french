@@ -129,6 +129,9 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
     store = Store(Path(data_dir) / "daily-speaking/v1/slot")
     journal = PracticeJournal(store.root / "decisions")
     audition_note = store.root / "audition.json"
+
+    def audition_path(fingerprint):
+        return store.root / 'auditions' / (fingerprint + '.json')
     busy = set()
 
     def packs():
@@ -150,10 +153,13 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         if all(frame["validation"]["listened"] and frame["validation"]["blind_test"] == "通过"
                for frame in lesson["frames"]):
             return True
-        try:
-            return json.loads(audition_note.read_text(encoding="utf-8"))["fingerprint"] == fingerprint
-        except FileNotFoundError:
-            return False
+        for path in (audition_path(fingerprint), audition_note):
+            try:
+                if json.loads(path.read_text(encoding="utf-8")).get("fingerprint") == fingerprint:
+                    return True
+            except FileNotFoundError:
+                continue
+        return False
 
     def view(session):
         return web.json_response(session)
@@ -175,7 +181,7 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
     async def catalog(request):
         lessons = packs()
         lesson, fingerprint = content(*select_lesson(lessons, request.query.get('lesson')))
-        recent = next((row for row in store.listing(regular=True) if row["part"] == lesson["lesson_id"]), None)
+        recent = next(iter(store.listing(regular=True, part=lesson["lesson_id"])), None)
         return web.json_response({"lesson":lesson, "lessons":lesson_choices(lessons), "recent":recent,
                                   "audition_confirmed":confirmed(lesson, fingerprint), "fingerprint":fingerprint})
 
@@ -187,14 +193,16 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         if body.get("fingerprint") != fingerprint or body.get("heard") != ids:
             raise ValueError("请先播放并听完两段原声")
         validate(path)
-        atomic_json(audition_note, {"fingerprint":fingerprint, "confirmed_at":time.time()})
+        atomic_json(audition_path(fingerprint), {"fingerprint":fingerprint, "confirmed_at":time.time()})
         return web.json_response({"confirmed":True})
 
     async def audio(request):
         name = request.match_info["file"]
         if Path(name).name != name or '\\' in name:
             raise web.HTTPNotFound()
-        for path, lesson in packs().values():
+        lessons = packs()
+        selected = request.query.get('lesson')
+        for path, lesson in ([select_lesson(lessons, selected)] if selected else lessons.values()):
             if any(name == item['demo_wav'] for frame in lesson['frames'] for item in frame['candidates']):
                 return web.FileResponse(path.parent / name)
         raise web.HTTPNotFound()

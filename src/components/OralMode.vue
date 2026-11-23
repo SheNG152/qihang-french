@@ -6,14 +6,13 @@
    <button class="oral-settings-button" hover-class="none" @click="emit('settings')"><Icon name="settings" /><Bi zh="设置" fr="Réglages" small /></button>
   </view>
   <aside v-if="desktop && !prepared" class="oral-performance-note">
-   <button v-if="nativeDaily" type="button" class="oral-settings-button" @click="openDaily">打开电脑日常口语 ↗</button>
+   <button v-if="nativeDaily" type="button" class="oral-settings-button" @click="openDaily">打开电脑日常口语</button>
    <a v-else :href="dailyURL" target="_blank" rel="noopener">打开电脑日常口语 ↗</a>
    <span>读课文、接拍串说、看提示换一格和口语小镇。首次打开时需要等待本机模型预热。</span>
   </aside>
   <aside v-if="dailyStatus && !showExam" class="oral-daily-status" role="status">
    <span>{{dailyStatus}}</span>
-   <button v-if="dailyState!=='starting'" type="button" class="oral-settings-button" @click="copyDailyAddress">复制练习地址</button>
-   <code v-if="showDailyAddress">{{dailyURL}}</code>
+   <button v-if="dailyState==='error'" type="button" class="oral-settings-button" @click="openDaily">重试</button>
   </aside>
   <aside v-if="!prepared || (showExam && oralHome)" class="oral-performance-note" aria-label="口语练习设备建议">
    <strong>建议使用性能较好的电脑练习</strong>
@@ -34,16 +33,15 @@ const desktop=!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const showExam=ref(!desktop);
 const nativeDaily=desktop&&window.QihangDesktopDailyUrl?window.chrome?.webview:null;
 const dailyURL=nativeDaily?window.QihangDesktopDailyUrl:'http://127.0.0.1:8127/?desktop=1&daily=1';
-const dailyState=ref(''),dailyStatus=ref(''),showDailyAddress=ref(false);
+const dailyState=ref(''),dailyStatus=ref('');
 const frameURL=new URL('static/oral/index.html',window.location.href).href;
-function openDaily(){if(!nativeDaily||dailyState.value==='starting')return;showDailyAddress.value=false;nativeDaily.postMessage({type:'qihang-open-daily'});}
+function openDaily(){if(!nativeDaily||dailyState.value==='starting')return;nativeDaily.postMessage({type:'qihang-open-daily'});}
 function receiveDaily(event){
  const data=event.data;
  if(data?.type!=='qihang-daily-state')return;
  dailyState.value=data.state;
- dailyStatus.value=data.state==='starting'?'正在打开日常练习。首次启动需要预热模型。':data.state==='opened'?'已交给默认浏览器打开。若没有看到窗口，可以复制练习地址。':data.message||'日常口语暂时无法打开，请重试。';
+ dailyStatus.value=data.state==='starting'?'正在打开日常练习。首次启动需要预热模型。':data.state==='opened'?'':data.message||'日常口语暂时无法打开，请重试。';
 }
-async function copyDailyAddress(){try{await navigator.clipboard.writeText(dailyURL);emit('notice','日常练习地址已复制。');}catch{showDailyAddress.value=true;}}
 function enter(){prepared.value=true;localStorage.setItem('qihang-oral-prepared-v2','1');}
 function returnToMenu(){showExam.value=false;oralHome.value=true;emit('home',true);}
 function receiveStatus(value){if(value.recognizer?.ready===false||!value.model?.ready&&value.model?.state!=='checking')prepared.value=false;else if(!prepared.value&&localStorage.getItem('qihang-oral-prepared-v2')==='1'&&value.provider?.status==='connected'&&value.microphone)enter();}
@@ -75,7 +73,6 @@ onMounted(()=>{emit('home',true);refresh();timer=setInterval(refresh,2000);windo
 }
 .oral-performance-note strong { display: block; font-weight: 600; }
 .oral-daily-status { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:0 22px 8px; padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:var(--glass); color:var(--ink); font-size:13px; }
-.oral-daily-status code { user-select:all; overflow-wrap:anywhere; }
 .oral-local-menu { --practice-home-top:clamp(20px,3vh,40px); flex:1; min-height:0; overflow-y:auto; padding:0 clamp(22px,4vw,55px) 32px; }
 @media (max-width: 720px) {
   .oral-performance-note { margin-inline: 13px; font-size: 12px; }

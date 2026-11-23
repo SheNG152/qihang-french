@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onBeforeUnmount, ref, shallowRef} from 'vue'
+import {computed, nextTick, onMounted, onBeforeUnmount, ref, shallowRef} from 'vue'
 import ReadingShelf from './ReadingShelf.vue'
 import FluencyDemo from './FluencyDemo.vue'
 import SlotDemo from './SlotDemo.vue'
@@ -16,6 +16,8 @@ import {openMicrophone} from './microphone.js'
 
 const base='/api/lecture', scopeKey='qihang-oral-scope-v2'
 const dailyBase='/api/daily-practice'
+const desktopHost=window.QihangEmbeddedDaily===true?window.chrome?.webview:null
+const training=ref(null)
 const lectureCard={id:'lecture',title:'读课文',french:'Lecture',description:'逐句读课文，听原声，把容易读错的词读清楚。',
   focus:['发音清晰'],support:['停顿节奏']}
 const dailyModes=[
@@ -111,7 +113,11 @@ const pct=n=>n==null?'—':Math.round(n*100)+'%'
 const apiPost=b=>({method:'POST',headers:{'Content-Type':'application/json','X-Oral-Client':'web'},body:JSON.stringify(b)})
 async function response(path,options){
   const res=await (window.QihangOralClient?.fetch||fetch)(path,options)
-  if(!res.ok) throw Error((await res.json().catch(()=>({}))).error||'口语服务暂时没有回应。')
+  if(!res.ok) {
+    const problem=Error((await res.json().catch(()=>({}))).error||'口语服务暂时没有回应。')
+    problem.status=res.status
+    throw problem
+  }
   return res
 }
 async function api(path,options){return (await response(path,options)).json()}
@@ -543,9 +549,28 @@ const stats=computed(()=>{const data=Object.values(report.value?.lines||{});retu
   ['独立通过',data.filter(r=>r.passKind==='independent').length],['辅助通过',data.filter(r=>r.passKind==='assisted').length],
   ['待巩固',report.value?.due.length],['首读准确率',pct(report.value?.accuracy)]]})
 function exam(){location.assign(window.QihangOralClient?'index.html?from=atelier':'/?from=atelier')}
+async function leaveDesktop(close=false){
+  const message=close?'qihang-daily-close-ready':'qihang-daily-return'
+  if(mic.value||sending||loading.value||gameOpening||gameSettling||training.value?.isBusy()){
+    error.value='请完成当前录音或等待判定保存，再返回。'
+    if(close)desktopHost.postMessage({type:message,error:error.value})
+    return
+  }
+  if(canSave.value&&!remember(s.value)){
+    error.value='无法保存练习位置，请重试。'
+    if(close)desktopHost.postMessage({type:message,error:error.value})
+    return
+  }
+  nav('games',false)
+  await nextTick()
+  gameRadio.value?.dispose()
+  desktopHost.postMessage({type:message})
+}
+const closeDesktop=()=>leaveDesktop(true)
 function pagehide(){clean();leaveNormalPracticeAudio();if(gamePractice.value||gameAudioLease)leaveGamePracticeAudio()}
 onMounted(()=>{unwatchAudio=registerPlayer(stopSound);history.replaceState({atelier:'home'},'','');window.addEventListener('popstate',pop);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide);tick=setInterval(clock,400)
  window.addEventListener('beforeunload',beforeUnload)
+ if(desktopHost)window.addEventListener('qihang-daily-host-close',closeDesktop)
  const params=new URLSearchParams(location.search)
  const enterGame=gameAvailable&&params.get('game')==='1'
  dailyCatalog().then(async()=>{
@@ -566,10 +591,10 @@ onMounted(()=>{unwatchAudio=registerPlayer(stopSound);history.replaceState({atel
  else if(params.has('daily')){
    nav('games',false);history.replaceState({atelier:'games'},'','')
  }})
-onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();unwatchAudio?.();window.removeEventListener('popstate',pop);window.removeEventListener('blur',blur);window.removeEventListener('beforeunload',beforeUnload);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide)})
+onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();unwatchAudio?.();window.removeEventListener('popstate',pop);window.removeEventListener('blur',blur);window.removeEventListener('beforeunload',beforeUnload);window.removeEventListener('qihang-daily-host-close',closeDesktop);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide)})
 </script>
 <template><main class="desk guided">
-<header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">{{gamePractice?'保存并回地图':'保存并退出'}}</button><button v-else-if="view!=='games'" class="back" @click="back">← {{gamePractice?'返回地图':dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||view==='adventure'||dailyMode?'日常练习':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
+<header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'||desktopHost"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">{{gamePractice?'保存并回地图':'保存并退出'}}</button><button v-else-if="view!=='games'&&view!=='home'" class="back" @click="back">← {{gamePractice?'返回地图':dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||view==='adventure'||dailyMode?'日常练习':'课次列表'}}</button><button v-if="desktopHost" class="back" @click="leaveDesktop()">返回主程序</button><button v-else class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
 <p class="alert" role="alert" v-if="error">{{error}} <button v-if="['scope','notebook'].includes(view)" @click="shelf(view,false)">重试</button><button v-else-if="gamePractice?.mode==='lecture'&&!s" @click="openGamePractice(gamePractice,false)">重试</button></p>
 <p v-if="view==='games' && recognizerReady===false" class="alert" role="status">本机法语识别尚未就绪。可以试听示范，录音判定需要先启动本机识别服务。<button class="text-link" @click="dailyCatalog">刷新识别状态</button></p>
 <PracticeHome v-if="view==='home'" @daily="nav('games')" @exam="exam" />
@@ -614,9 +639,9 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
 </section>
 <GameMode v-else-if="view==='adventure'" :auto-enter="gameMapOpen" :return-message="gameReceipt" :radio="gameRadio"
   @adventure="startGamePractice" @leave="nav('games')" @created="id=>gameCharacter=id"/>
-<FluencyDemo v-else-if="dailyMode?.id==='fluency'" :request="response" :review="dailyReview" :adventure="gamePractice"
+<FluencyDemo v-else-if="dailyMode?.id==='fluency'" ref="training" :request="response" :review="dailyReview" :adventure="gamePractice"
   @game-end="finishGamePractice" @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
-<SlotDemo v-else-if="dailyMode?.id==='slot'" :request="response" :review="dailyReview" :adventure="gamePractice"
+<SlotDemo v-else-if="dailyMode?.id==='slot'" ref="training" :request="response" :review="dailyReview" :adventure="gamePractice"
   @game-end="finishGamePractice" @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
 <template v-else-if="view==='scope'||view==='notebook'"><p v-if="loading" class="muted" role="status">正在读取朗读记录…</p>
 <ReadingShelf v-else-if="!error" :key="view" :packs="packs" :lessons="records" :selected="get(scopeKey)" :in-progress="inProgress" :positions="positions" :resume-notes="!!notebookBookmark" :queue="queue" :daily-notes="dailyNotes" :daily-modes="dailyCards" :notebook="view==='notebook'" :notice="notice"

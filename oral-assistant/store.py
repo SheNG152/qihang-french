@@ -34,12 +34,13 @@ class Store:
             raise ValueError('没有找到这次练习记录')
         return json.loads(path.read_text(encoding='utf-8'))
 
-    def listing(self, *, regular=False):
+    def listing(self, *, regular=False, part=None):
         result = []
         for path in self.sessions.glob('*/session.json'):
             try:
                 data = json.loads(path.read_text(encoding='utf-8'))
-                if regular and data.get('review_item'):
+                if (part is not None and data.get('part') != part
+                        or regular and (data.get('review_item') or data.get('game'))):
                     continue
                 result.append({k: data.get(k) for k in ('id', 'created', 'updated', 'mode', 'part', 'phase', 'ended')})
             except (OSError, ValueError):

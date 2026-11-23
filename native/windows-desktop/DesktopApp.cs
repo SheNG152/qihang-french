@@ -61,8 +61,9 @@ namespace QihangFrench {
    return Program.ConfiguredPort("hostPort",5188);
   }
   readonly string dataRoot;readonly WebView2 web=new WebView2();readonly Label status=new Label();
+  WebView2 dailyWeb;
   readonly HttpClient http=new HttpClient(new HttpClientHandler{UseProxy=false});
-  Process host;bool ownsHost,ready,closing,allowClose,openingDaily;TaskCompletionSource<bool> closeReady;
+  Process host;bool ownsHost,ready,closing,allowClose,openingDaily;TaskCompletionSource<bool> closeReady,dailyCloseReady;
   public AppWindow(string data){dataRoot=data;Text=Program.Title;Width=1180;Height=850;MinimumSize=new Size(430,640);StartPosition=FormStartPosition.CenterScreen;Icon=Icon.ExtractAssociatedIcon(Application.ExecutablePath);BackColor=Color.FromArgb(244,247,252);web.Dock=DockStyle.Fill;Controls.Add(web);status.Dock=DockStyle.Fill;status.Text="正在打开启航法语…\r\nOuverture de l’application…";status.TextAlign=ContentAlignment.MiddleCenter;status.Font=new Font("Microsoft YaHei UI",12);Controls.Add(status);
    var menu=new MenuStrip();var records=new ToolStripMenuItem("记录");records.DropDownItems.Add("导出备份",null,async(s,e)=>{if(ready)await web.ExecuteScriptAsync("window.dispatchEvent(new Event('qihang-backup'))");});records.DropDownItems.Add("打开记录位置",null,(s,e)=>Process.Start(new ProcessStartInfo(dataRoot){UseShellExecute=true}));menu.Items.Add(records);MainMenuStrip=menu;Controls.Add(menu);menu.Dock=DockStyle.Top;
    menu.Items.Add("日常口语",null,async(s,e)=>await OpenDaily(false));
@@ -88,12 +89,13 @@ namespace QihangFrench {
    Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER",Path.Combine(dataRoot,"BrowserRecords"));Environment.SetEnvironmentVariable("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER",engine);Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",null);var options=new CoreWebView2EnvironmentOptions();
 #if DESKTOP_CHECKS
    string debug=Environment.GetEnvironmentVariable("QIHANG_DESKTOP_CHECK_PORT");if(!String.IsNullOrEmpty(debug))options.AdditionalBrowserArguments="--remote-debugging-address=127.0.0.1 --remote-debugging-port="+Int32.Parse(debug);
+   if(Environment.GetEnvironmentVariable("QIHANG_DESKTOP_CHECK_FAKE_MIC")=="1")options.AdditionalBrowserArguments+=" --use-fake-device-for-media-stream";
 #endif
    var environment=await CoreWebView2Environment.CreateAsync(engine,Path.Combine(dataRoot,"BrowserRecords"),options);await web.EnsureCoreWebView2Async(environment);var settings=web.CoreWebView2.Settings;settings.AreDevToolsEnabled=false;settings.AreDefaultContextMenusEnabled=false;settings.IsStatusBarEnabled=false;settings.AreBrowserAcceleratorKeysEnabled=true;
    web.CoreWebView2.NavigationStarting+=(s,e)=>{Uri uri;if(e.Uri.StartsWith("blob:"+Origin,StringComparison.Ordinal))return;if(!Uri.TryCreate(e.Uri,UriKind.Absolute,out uri)||!e.Uri.StartsWith(Origin,StringComparison.Ordinal)){e.Cancel=true;if(uri!=null&&uri.Scheme=="https")External(uri.AbsoluteUri);}};
    web.CoreWebView2.NewWindowRequested+=async(s,e)=>{e.Handled=true;Uri uri;if(Uri.TryCreate(e.Uri,UriKind.Absolute,out uri)){if(uri.AbsoluteUri==DailyPractice)await OpenDaily(false);else if(uri.Scheme=="https")External(uri.AbsoluteUri);}};
    web.CoreWebView2.PermissionRequested+=(s,e)=>{if(e.Uri.StartsWith(Origin,StringComparison.Ordinal)&&e.PermissionKind==CoreWebView2PermissionKind.Microphone)e.State=CoreWebView2PermissionState.Allow;};
-   web.CoreWebView2.DownloadStarting+=(s,e)=>{using(var deferral=e.GetDeferral())using(var dialog=new SaveFileDialog()){dialog.FileName=Path.GetFileName(e.ResultFilePath);dialog.Filter="所有文件|*.*";if(dialog.ShowDialog(this)==DialogResult.OK){e.ResultFilePath=dialog.FileName;e.Handled=true;}else e.Cancel=true;}};
+   web.CoreWebView2.DownloadStarting+=SaveDownload;
    web.CoreWebView2.WebMessageReceived+=async(s,e)=>{if(!e.Source.StartsWith(Origin,StringComparison.Ordinal))return;try{var value=Program.Json.Deserialize<Dictionary<string,object>>(e.WebMessageAsJson);
 #if DESKTOP_CHECKS
     if(value.ContainsKey("type")&&(string)value["type"]=="qihang-check-close"){BeginInvoke(new Action(Close));return;}
@@ -144,26 +146,91 @@ namespace QihangFrench {
    }
   }
   async Task OpenDaily(bool fromPage){
+   if(dailyWeb!=null&&dailyWeb.Visible){dailyWeb.Focus();return;}
    if(openingDaily){if(fromPage)DailyState("starting");return;}
+   if(!ready||closing)return;
    openingDaily=true;
    try{
    DailyState("starting");
    await PrepareDaily();
    if(closing||IsDisposed)return;
-#if DESKTOP_CHECKS
-   string testUrl=Environment.GetEnvironmentVariable("QIHANG_DESKTOP_CHECK_DAILY_URL");
-   if(!String.IsNullOrEmpty(testUrl))File.WriteAllText(Path.Combine(dataRoot,"日常口语","入口自测.json"),Program.Json.Serialize(new {url=testUrl}));
-   else
-#endif
-   {
-    try{Process.Start(new ProcessStartInfo(DailyPractice){UseShellExecute=true,Verb="open",WindowStyle=ProcessWindowStyle.Normal});}
-    catch{throw new IOException("Windows 未能打开默认浏览器。可以复制地址后在浏览器中打开。");}
-   }
+   await ShowDaily();
    DailyState("opened");
-  }catch(Exception e){if(!closing&&!IsDisposed){DailyState("error",e.Message);if(!fromPage)MessageBox.Show(this,e.Message,Program.Title,MessageBoxButtons.OK,MessageBoxIcon.Information);}}
+  }catch(Exception e){if(!closing&&!IsDisposed){CloseDaily();DailyState("error",e.Message);if(!fromPage)MessageBox.Show(this,e.Message,Program.Title,MessageBoxButtons.OK,MessageBoxIcon.Information);}}
   finally{openingDaily=false;}}
+  static bool IsDailyOrigin(string value){
+   Uri uri;
+   return Uri.TryCreate(value,UriKind.Absolute,out uri)&&uri.GetLeftPart(UriPartial.Authority)==new Uri(DailyPractice).GetLeftPart(UriPartial.Authority);
+  }
+  async Task ShowDaily(){
+   var view=new WebView2{Dock=DockStyle.Fill,Visible=false};
+   dailyWeb=view;
+   Controls.Add(view);
+   await view.EnsureCoreWebView2Async(web.CoreWebView2.Environment);
+   if(closing||IsDisposed)return;
+   var core=view.CoreWebView2;
+   core.Settings.AreDevToolsEnabled=false;
+   core.Settings.AreDefaultContextMenusEnabled=false;
+   core.Settings.IsStatusBarEnabled=false;
+   core.NavigationStarting+=(s,e)=>{e.Cancel=!IsDailyOrigin(e.Uri);};
+   core.NewWindowRequested+=(s,e)=>{e.Handled=true;};
+   core.PermissionRequested+=(s,e)=>{
+    if(e.PermissionKind==CoreWebView2PermissionKind.Microphone)
+     e.State=IsDailyOrigin(e.Uri)?CoreWebView2PermissionState.Allow:CoreWebView2PermissionState.Deny;
+   };
+   core.DownloadStarting+=SaveDownload;
+   core.WebMessageReceived+=ReceiveDaily;
+   await core.AddScriptToExecuteOnDocumentCreatedAsync("if(window===window.top&&location.origin==="+Program.Json.Serialize(new Uri(DailyPractice).GetLeftPart(UriPartial.Authority))+") window.QihangEmbeddedDaily=true;");
+   var loaded=new TaskCompletionSource<bool>();
+   EventHandler<CoreWebView2NavigationCompletedEventArgs> completed=(s,e)=>loaded.TrySetResult(e.IsSuccess);
+   core.NavigationCompleted+=completed;
+   try{
+    core.Navigate(DailyPractice);
+    if(await Task.WhenAny(loaded.Task,Task.Delay(12000))!=loaded.Task||!loaded.Task.Result)
+     throw new IOException("日常练习页面未能打开，请重试。");
+   }finally{core.NavigationCompleted-=completed;}
+   if(closing||IsDisposed||dailyWeb!=view)return;
+   web.Hide();
+   view.Show();
+   view.BringToFront();
+   MainMenuStrip.BringToFront();
+   view.Focus();
+  }
+  void ReceiveDaily(object sender,CoreWebView2WebMessageReceivedEventArgs e){
+   if(dailyWeb==null||sender!=dailyWeb.CoreWebView2||!IsDailyOrigin(e.Source))return;
+   try{
+    var value=Program.Json.Deserialize<Dictionary<string,object>>(e.WebMessageAsJson);
+    object type;if(!value.TryGetValue("type",out type))return;
+    if((string)type=="qihang-daily-return"&&!closing)BeginInvoke(new Action(CloseDaily));
+    if((string)type=="qihang-daily-close-ready"&&dailyCloseReady!=null)
+     dailyCloseReady.TrySetResult(!value.ContainsKey("error"));
+   }catch{}
+  }
+  void CloseDaily(){
+   if(dailyWeb!=null){var view=dailyWeb;dailyWeb=null;Controls.Remove(view);view.Dispose();}
+   if(!closing&&!web.IsDisposed){web.Show();web.Focus();}
+  }
+  void SaveDownload(object sender,CoreWebView2DownloadStartingEventArgs e){
+   using(var deferral=e.GetDeferral())using(var dialog=new SaveFileDialog()){
+    dialog.FileName=Path.GetFileName(e.ResultFilePath);dialog.Filter="所有文件|*.*";
+    if(dialog.ShowDialog(this)==DialogResult.OK){e.ResultFilePath=dialog.FileName;e.Handled=true;}else e.Cancel=true;
+   }
+  }
   static void External(string url){try{Process.Start(new ProcessStartInfo(url){UseShellExecute=true});}catch{}}
-  async void OnClosing(object sender,FormClosingEventArgs e){if(allowClose)return;e.Cancel=true;if(closing)return;closing=true;try{if(ready){closeReady=new TaskCompletionSource<bool>();await web.ExecuteScriptAsync("window.dispatchEvent(new Event('qihang-host-close'))");var finished=await Task.WhenAny(closeReady.Task,Task.Delay(25000));if(finished!=closeReady.Task||!closeReady.Task.Result){MessageBox.Show("记录尚在保存，请稍后再退出。","启航法语");closing=false;return;}}web.Dispose();StopHost();allowClose=true;Close();}catch{closing=false;MessageBox.Show("记录尚未保存，请稍后再退出。","启航法语");}}
+  async void OnClosing(object sender,FormClosingEventArgs e){
+   if(allowClose)return;e.Cancel=true;if(closing)return;closing=true;
+   try{
+    if(dailyWeb!=null&&dailyWeb.Visible){
+     dailyCloseReady=new TaskCompletionSource<bool>();
+     await dailyWeb.ExecuteScriptAsync("window.dispatchEvent(new Event('qihang-daily-host-close'))");
+     if(await Task.WhenAny(dailyCloseReady.Task,Task.Delay(25000))!=dailyCloseReady.Task||!dailyCloseReady.Task.Result)
+      throw new IOException("日常练习正在录音或保存。请完成这一条后再退出。");
+    }
+    if(ready){closeReady=new TaskCompletionSource<bool>();await web.ExecuteScriptAsync("window.dispatchEvent(new Event('qihang-host-close'))");var finished=await Task.WhenAny(closeReady.Task,Task.Delay(25000));if(finished!=closeReady.Task||!closeReady.Task.Result)throw new IOException("记录尚在保存，请稍后再退出。");}
+    CloseDaily();web.Dispose();StopHost();allowClose=true;Close();
+   }catch(Exception error){closing=false;MessageBox.Show(error.Message,"启航法语");}
+   finally{dailyCloseReady=null;}
+  }
   void StopHost(){if(ownsHost&&host!=null){try{if(!host.HasExited)host.Kill();}catch{}host.Dispose();host=null;}http.CancelPendingRequests();}
  }
 }

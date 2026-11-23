@@ -3,6 +3,7 @@ import {canPlayPracticeAudio, registerPlayer} from '../../../oral-assistant/web/
 import {computed, onBeforeUnmount, onMounted, ref} from 'vue'
 import {openRecordingWindow} from './recording-window.js'
 import {recoverAdventure} from '../../game/practiceBridge.js'
+import LessonPicker from './LessonPicker.vue'
 
 const props = defineProps({request: {type: Function, required: true}, review:Object, adventure:Object})
 const emit = defineEmits(['return-notebook', 'review-session', 'game-end'])
@@ -40,6 +41,7 @@ const writeHeaders = type => ({'Content-Type':type,'X-Oral-Client':'web'})
 let recorder, player, audioUrl, onsetTimer, activeSince, heard, disposed = false
 
 async function json(path, options) { return (await props.request(path, options)).json() }
+function getCatalog(lesson) { return json(base + (lesson ? '?lesson=' + encodeURIComponent(lesson) : '')) }
 function savedClock(key) {
   try { return Number(localStorage.getItem(key)) || 0 } catch { return 0 }
 }
@@ -66,31 +68,42 @@ function useSession(next) {
   session.value = next
   earlyHint.value = false
 }
-async function load(lesson = props.review?.lessonId) {
+async function load(lesson = props.review?.lessonId, resume = true) {
   busy.value = 'loading'
   error.value = ''
+  stopPlayer()
   try {
-    catalog.value = await json(base + (lesson ? '?lesson=' + encodeURIComponent(lesson) : ''))
+    let next = await getCatalog(lesson)
     if (!lesson && !props.adventure && !props.review) {
       let saved
       try { saved = localStorage.getItem('qihang-fluency-lesson') } catch {}
-      if (saved !== catalog.value.lesson.lesson_id && catalog.value.lessons?.some(item => item.id === saved)) {
-        catalog.value = await json(base + '?lesson=' + encodeURIComponent(saved))
+      if (saved !== next.lesson.lesson_id && next.lessons.some(item => item.id === saved)) {
+        next = await getCatalog(saved)
       }
     }
-    if (lesson && !props.adventure && !props.review) {
-      try { localStorage.setItem('qihang-fluency-lesson', lesson) } catch {}
+    if (disposed) return
+    catalog.value = next
+    if (!props.adventure && !props.review) {
+      try { localStorage.setItem('qihang-fluency-lesson', next.lesson.lesson_id) } catch {}
     }
     if (props.adventure) {
       const state = await recoverAdventure(json, base, props.adventure)
       if (state) useSession(state)
     } else if (props.review?.sessionId) useSession(await json(base + '/' + props.review.sessionId))
     else if (props.review) await start(props.review)
-    else if (catalog.value.recent?.phase === 'active') {
+    else if (resume && next.recent?.phase === 'active') {
       useSession(await json(base + '/' + catalog.value.recent.id))
     }
-  } catch (err) { error.value = err.message }
+  } catch (err) { error.value = !catalog.value && err.status === 404 ? '当前没有可用的节奏课包。' : err.message }
   finally { busy.value = '' }
+}
+function returnToLessons() {
+  const lesson = session.value.part
+  checkpoint()
+  activeSince = null
+  earlyHint.value = false
+  session.value = null
+  return load(lesson,false)
 }
 async function start(review = null) {
   busy.value = 'loading'
@@ -105,8 +118,12 @@ async function start(review = null) {
   finally { busy.value = '' }
 }
 async function previousReport() {
+  if (busy.value) return
+  busy.value = 'loading'
+  error.value = ''
   try { useSession(await json(base + '/' + catalog.value.recent.id)) }
   catch (err) { error.value = err.message }
+  finally { busy.value = '' }
 }
 async function advance(action) {
   busy.value = 'saving'
@@ -134,7 +151,8 @@ async function listen() {
   error.value = ''
   try {
     const key = hintLevel.value === 2 ? 'short_demo_wav' : 'demo_wav'
-    const response = await props.request(base + '/audio/' + encodeURIComponent(chain.value[key]))
+    const response = await props.request(base + '/audio/' + encodeURIComponent(chain.value[key]) + '?' +
+      new URLSearchParams({lesson:session.value.part}))
     const blob = await response.blob()
     if (disposed || !playing.value || !canPlayPracticeAudio()) return
     audioUrl = URL.createObjectURL(blob)
@@ -216,6 +234,7 @@ function leave() {
   recorder = null
   stopPlayer()
 }
+defineExpose({isBusy:()=>!!busy.value})
 let unregisterAudio
 onMounted(() => {
   unregisterAudio = registerPlayer(stopPlayer)
@@ -237,21 +256,21 @@ onBeforeUnmount(() => {
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
     <button v-if="!adventure && session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
       class="secondary" :disabled="!!busy || playing" @click="start()">开始新版练习</button>
-    <button v-if="!adventure && !review && session && catalog?.lessons?.length > 1" class="text-link"
-      :disabled="!!busy" @click="checkpoint(); stopPlayer(); session = null">返回课次选择</button>
+    <button v-if="!adventure && !review && session" class="text-link"
+      :disabled="!!busy" @click="returnToLessons">返回课次选择</button>
     <template v-if="!session && catalog">
-      <label v-if="!adventure && !review && catalog.lessons?.length > 1">练习课次
-        <select :value="catalog.lesson.lesson_id" :disabled="!!busy" @change="load($event.target.value)">
-          <option v-for="lesson in catalog.lessons" :key="lesson.id" :value="lesson.id">{{ lesson.label }} · {{ lesson.title.zh }}</option>
-        </select>
-      </label>
+      <LessonPicker v-if="!adventure && !review" :lessons="catalog.lessons" :selected="catalog.lesson.lesson_id"
+        :busy="!!busy" item-label="条" @choose="lesson=>load(lesson,false)" />
       <p class="muted">{{ catalog.lesson.label }} · {{ chainsCount }} 条节奏链</p>
       <h2>{{ catalog.lesson.title.zh }}</h2>
       <p>每条可以先逐块热身，再连起来说。热身计入开口时间，整条连说才会给判定。</p>
-      <button class="speak" :disabled="!!busy" @click="start()">开始练习</button>
+      <button v-if="!adventure && catalog.recent?.phase === 'active'" class="speak" :disabled="!!busy"
+        @click="previousReport">继续上次练习</button>
+      <button v-else class="speak" :disabled="!!busy" @click="start()">开始练习</button>
       <button v-if="!adventure && catalog.recent?.phase === 'ended'" class="secondary" @click="previousReport">查看上次结果</button>
     </template>
     <p v-else-if="!catalog && busy" role="status">正在加载口语课次…</p>
+    <button v-else-if="!catalog && error" class="secondary" @click="load()">重新加载课次</button>
     <template v-else-if="stage === 'report'">
       <h2>本轮结果</h2>
       <div class="metrics">

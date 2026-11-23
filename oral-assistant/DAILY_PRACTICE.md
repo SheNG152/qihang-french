@@ -2,7 +2,9 @@
 
 先从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，再按 [口语助手安装说明](README.md) 完成一次本机运行环境和法语模型安装。在 Windows 双击 `启动日常口语.cmd`，或在主软件的电脑口语面板点击「打开电脑日常口语」。入口为 `http://127.0.0.1:8127/?desktop=1&daily=1`。八个单元的原创主题练习与示范音已随源码提供，完成模型安装后可离线练习。`daily-practice.json` 仍可显式关闭 A、B。
 
-Windows 主程序配置完成后，先在「口语练习室」选择日常练习或考试模拟。日常入口等待本机服务就绪后交给默认浏览器，并在页面显示状态和启动错误。标准安装可先启动独立日常口语服务。本机一体试玩包可以把 `native/windows-desktop/start-daily.py`、填写了 `python` 和 `modelRuntime` 的 `local-runtime.json` 及构建好的 `oral-assistant` 放在同一个 `日常口语运行`。本机 `.qihang-data.json` 可配置 `directory`、`hostPort`、`dailyPort` 和 `dailySpeechPort`。本机运行配置和教材保留在本机。
+Windows 主程序配置完成后，先在「口语练习室」选择日常练习或考试模拟。日常入口等待本机服务就绪，在同一窗口的 WebView2 中打开。点「返回主程序」可保存当前位置并回到原页面。独立网页和程序内页面共用本机练习记录，游戏与面板偏好按各自浏览器资料保存。标准安装可先启动独立日常口语服务。本机一体试玩包可以把 `native/windows-desktop/start-daily.py`、填写了 `python` 和 `modelRuntime` 的 `local-runtime.json` 及构建好的 `oral-assistant` 放在同一个 `日常口语运行`。本机 `.qihang-data.json` 可配置 `directory`、`hostPort`、`dailyPort` 和 `dailySpeechPort`。本机运行配置和教材保留在本机。
+
+两种口语练习的课次按素材来源分组，并在组内按单元、课次编号排序。课次选择会显示链或提示卡的数量。切换后先展示当前课次，再从该课次继续上次练习或开始新一轮。
 
 Windows 独立试玩可在 `oral-assistant` 双击 `启动日常口语第2步.cmd`。它预热已安装的本机 Whisper，再打开 `http://127.0.0.1:18983/?desktop=1&daily=1`，识别占用 18984。持久试玩数据默认在 `.local/daily-preview`，也可通过 `--data-dir` 指定当前需要的试玩目录，`--temporary-data` 使用独立临时目录。模型默认在本服务下，外置模型和依赖可以通过 `--runtime-dir` 指定其原服务目录。
 
