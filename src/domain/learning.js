@@ -463,7 +463,8 @@ export function repairSessionChoices(data,p,s){
     const word=p.words.find(w=>w.id===q.wordId),form=word?.forms.find(f=>f.id===q.formId);
     if(!word||!form)continue;
     const options=makeOptions(data,p,word,form,q.kind,Math.random,s.mode,q.options||[]);
-    if(JSON.stringify(options)!==JSON.stringify(q.options))q.options=options;
+    if(JSON.stringify(options)===JSON.stringify(q.options))continue;
+    q.options=options;
     s.optionSets||={};s.optionSets[word.id+'|'+q.kind]=clone(options);
     if(q.rejectedIds)q.rejectedIds=q.rejectedIds.filter(id=>options.some(option=>option.id===id));
   }

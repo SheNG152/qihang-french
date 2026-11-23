@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
+from unittest.mock import patch
 import wave
 
 from daily_content import BUILTIN, daily_packs, select_lesson
@@ -44,3 +45,18 @@ class StarterSpeakingTest(TestCase):
             settings = load_settings(path.parent, {Mode.FLUENCY, Mode.SLOT})
             self.assertTrue(settings[Mode.FLUENCY].enabled)
             self.assertFalse(settings[Mode.SLOT].enabled)
+
+    def test_private_lesson_discovery_cannot_shadow_another_lesson(self):
+        with TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            primary = root / 'media/demo/chains.json'
+            extra = root / 'media/local/chains.json'
+            shipped = root / 'builtin/daily/shipped/chains.json'
+            for path, key in [(primary, 'demo'), (extra, 'private'), (shipped, 'shipped')]:
+                path.parent.mkdir(parents=True)
+                path.write_text(json.dumps({'lesson_id':key}), encoding='utf-8')
+            with patch('daily_content.BUILTIN', root / 'builtin'):
+                self.assertEqual(list(daily_packs(primary, primary)), ['demo','private','shipped'])
+                extra.write_text(json.dumps({'lesson_id':'shipped'}), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, '课次编号重复：shipped'):
+                    daily_packs(primary, primary)

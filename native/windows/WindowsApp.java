@@ -25,6 +25,8 @@ public final class WindowsApp implements Host {
   File data=dataDirectory();
   reminders=new ReviewReminders(home,data);
   JSONObject manifest=J.json(new File(home,"口语运行/model-manifest.json"));
+  File bundled=new File(home,"口语运行/models/"+manifest.getString("filename"));
+  if(bundled.isFile())manifest.put("bundledModelPath",bundled.getCanonicalPath());
   core=new OralCore(data,manifest,J.json(new File(home,"口语运行/evaluation-schema.json")),this);
   server.createContext("/",this::request);server.setExecutor(Executors.newFixedThreadPool(8));server.start();if(!Boolean.getBoolean("qihang.headless"))Desktop.getDesktop().browse(new URI("http://127.0.0.1:"+PORT+"/"));
   ScheduledExecutorService life=Executors.newSingleThreadScheduledExecutor();life.scheduleAtFixedRate(()->{if(System.currentTimeMillis()-seen>180000){core.close();server.stop(0);System.exit(0);}},30,30,TimeUnit.SECONDS);

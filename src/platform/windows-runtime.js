@@ -1,6 +1,6 @@
 // Keep the bundled host alive while either learning mode is open.
 export function keepWindowsRuntimeAlive() {
-  if (window.QihangNative?.oralCall || location.hostname !== '127.0.0.1' || !['5188','5194'].includes(location.port)) return () => {};
+  if (window.QihangNative?.oralCall || location.hostname !== '127.0.0.1' || (!window.QihangDesktopDailyUrl && !['5188','5194'].includes(location.port))) return () => {};
   let stopped = false, pending = false, controller;
   async function ping() {
     if (stopped || pending) return;

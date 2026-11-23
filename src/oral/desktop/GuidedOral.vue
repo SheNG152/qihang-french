@@ -3,6 +3,7 @@ import {computed, onMounted, onBeforeUnmount, ref, shallowRef} from 'vue'
 import ReadingShelf from './ReadingShelf.vue'
 import FluencyDemo from './FluencyDemo.vue'
 import SlotDemo from './SlotDemo.vue'
+import PracticeHome from './PracticeHome.vue'
 import PracticeSkills from './PracticeSkills.vue'
 import WordLine from './WordLine.vue'
 import GameMode from '../../game/GameMode.vue'
@@ -23,7 +24,6 @@ const dailyModes=[
   {id:'slot',title:'看提示换一格',french:'À l’indice, je change un mot',description:'看提示选对词形，再把整句话说出来。',
     focus:['词形准确'],support:['临场应答']},
 ]
-const examSkills={focus:['听题理解','临场应答','组织表达'],support:['词形准确']}
 const view=ref('home'), packs=ref([]), selected=ref(''), queue=ref([]), s=ref(null)
 const gameAvailable=!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 const gameCharacter=ref(gameAvailable&&loadGameSave().save?.character.id)
@@ -124,9 +124,15 @@ async function dailyCatalog(){
   try{const data=await api(dailyBase);dailySettings.value=data.modes||{};recognizerReady.value=data.recognizer_ready??null}
   catch{dailySettings.value={}}
 }
-async function catalog(){
-  const [data, notes]=await Promise.all([api(base+'?layout=guided'),api(dailyBase+'/notebook').catch(()=>({items:[]}))])
+async function catalog(where, version){
+  const notesRequest=api(dailyBase+'/notebook')
+  const [data, notes]=await Promise.all([
+    api(base+'?layout=guided'),
+    where==='notebook'?notesRequest:notesRequest.catch(()=>({items:[]})),
+  ])
+  if(version!==epoch)return
   if(!Array.isArray(data.reviewQueue))throw Error('请打开本版桌面预览。')
+  if(!Array.isArray(notes.items))throw Error('无法读取需练习本，请重试。')
   packs.value=data.texts; queue.value=data.reviewQueue;records.value=data.lessons||{};inProgress.value=data.inProgress||{}
   dailyNotes.value=notes.items
   positions.value={}
@@ -308,7 +314,7 @@ function restoreDailyReview(){
 async function shelf(where='scope',push=true){
   nav(where,push);s.value=null;batch.value=[];batchSize.value=0
   const v=epoch;loading.value=true
-  try{await catalog()}catch(e){if(v===epoch)error.value=e.message}
+  try{await catalog(where,v)}catch(e){if(v===epoch)error.value=e.message}
   finally{if(v===epoch)loading.value=false}
 }
 function scope(){notice.value='';return shelf()}
@@ -566,14 +572,7 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
 <header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">{{gamePractice?'保存并回地图':'保存并退出'}}</button><button v-else-if="view!=='games'" class="back" @click="back">← {{gamePractice?'返回地图':dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||view==='adventure'||dailyMode?'日常练习':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
 <p class="alert" role="alert" v-if="error">{{error}} <button v-if="['scope','notebook'].includes(view)" @click="shelf(view,false)">重试</button><button v-else-if="gamePractice?.mode==='lecture'&&!s" @click="openGamePractice(gamePractice,false)">重试</button></p>
 <p v-if="view==='games' && recognizerReady===false" class="alert" role="status">本机法语识别尚未就绪。可以试听示范，录音判定需要先启动本机识别服务。<button class="text-link" @click="dailyCatalog">刷新识别状态</button></p>
-<section v-if="view==='home'" class="landing"><p class="overline">Atelier de français</p><h1>口语练习室</h1><div class="mode-grid">
-<button class="mode daily" @click="nav('games')"><span class="card-fr">Pratique</span><span class="bars" aria-hidden="true"><i v-for="(h,i) in [25,45,68,43,80,96,72,47,68,40,24]" :key="i" :style="{'--bar':h+'%'}"/></span><strong>日常练习</strong><span class="card-foot">跟着课本，练好每一句。<b>↗</b></span></button>
-<button class="mode exam exam-practice" aria-labelledby="exam-title" aria-describedby="exam-skills exam-summary" @click="exam">
-  <span class="card-fr" lang="fr">Examen</span><span class="exam-label">DELF A1</span><strong id="exam-title">考试模拟</strong>
-  <PracticeSkills id="exam-skills" v-bind="examSkills"/>
-  <span class="skill-key">外圈主练 · 内圈兼练</span>
-  <span id="exam-summary" class="card-foot">听考官提问，练习问答和情景互动。<b aria-hidden="true">↗</b></span>
-</button></div></section>
+<PracticeHome v-if="view==='home'" @daily="nav('games')" @exam="exam" />
 <section v-else-if="view==='overview'" class="landing narrow">
   <p class="overline" lang="fr">À propos</p><h1>启航法语 · 项目概览</h1>
   <p>在桌面端练法语发音、节奏和词形。原创口语练习按 Inspire 1 的八个单元组织，示范音可以离线播放。</p>
@@ -620,7 +619,7 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
 <SlotDemo v-else-if="dailyMode?.id==='slot'" :request="response" :review="dailyReview" :adventure="gamePractice"
   @game-end="finishGamePractice" @review-session="rememberDailyReview" @return-notebook="shelf('notebook')"/>
 <template v-else-if="view==='scope'||view==='notebook'"><p v-if="loading" class="muted" role="status">正在读取朗读记录…</p>
-<ReadingShelf v-else :key="view" :packs="packs" :lessons="records" :selected="get(scopeKey)" :in-progress="inProgress" :positions="positions" :resume-notes="!!notebookBookmark" :queue="queue" :daily-notes="dailyNotes" :daily-modes="dailyCards" :notebook="view==='notebook'" :notice="notice"
+<ReadingShelf v-else-if="!error" :key="view" :packs="packs" :lessons="records" :selected="get(scopeKey)" :in-progress="inProgress" :positions="positions" :resume-notes="!!notebookBookmark" :queue="queue" :daily-notes="dailyNotes" :daily-modes="dailyCards" :notebook="view==='notebook'" :notice="notice"
   @open="openLesson" @report="lastReport" @notebook="notice='';shelf('notebook')" @resume="resumeNotebook" @practice="practice" @practice-daily="practiceDaily" @export="exportLibrary"/></template>
 <section v-else-if="isReader" class="reader"><p v-if="!s" class="muted">正在准备课文…</p>
 <template v-if="pack&&s"><div class="track-head"><span>{{pack.title.zh}} · {{pack.title.fr}}</span><span v-if="progress.full">整段连读</span><span v-else-if="!progress.remaining&&!celebration">本轮已读完 · 待练 0 句</span><span v-else>{{s?.reviewRound?'复练':'本轮'}}第 {{progress.position}} / {{progress.total}} 句 · 待练 {{progress.remaining}} 句</span></div>
@@ -656,10 +655,6 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
 .radar-card .practice-skills{margin:0 0 11px;background:#fcfdfb;border:1px solid #dce8da;border-radius:12px}
 .radar-card small{font-size:14px}
 .radar-card .go{right:14px;top:16px}
-.exam-practice{--skill-ink:#384960}
-.exam-practice>strong{margin-top:4px}
-.exam-practice .practice-skills{margin-top:8px;background:#f9fbfe;border:1px solid #dce5ee;border-radius:12px}
-.exam-practice .skill-key{align-self:center;margin:6px 0 8px}
 @media(max-width:880px){.daily-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.daily-grid{grid-template-columns:1fr}}
 .scope-intro,.warm{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.scope-intro{padding:5px 0 22px}.scope-intro h1{font-size:30px}.warm{background:#e7efe5;border-radius:12px;padding:0 14px;margin-top:14px}.chunks{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.chunks span{background:#e6efe4;border-radius:8px;padding:7px 11px;font:18px Georgia,serif}.guided .sentence-box{padding:clamp(24px,5vh,50px) 0 14px}.game.live em{color:#28583d}.controls>.text-link{display:block;margin:auto}.scope-intro .scope select{max-width:240px}

@@ -2,6 +2,8 @@
 
 先从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，再按 [口语助手安装说明](README.md) 完成一次本机运行环境和法语模型安装。在 Windows 双击 `启动日常口语.cmd`，或在主软件的电脑口语面板点击「打开电脑日常口语」。入口为 `http://127.0.0.1:8127/?desktop=1&daily=1`。八个单元的原创主题练习与示范音已随源码提供，完成模型安装后可离线练习。`daily-practice.json` 仍可显式关闭 A、B。
 
+Windows 主程序配置完成后，先在「口语练习室」选择日常练习或考试模拟。日常入口等待本机服务就绪后交给默认浏览器，并在页面显示状态和启动错误。标准安装可先启动独立日常口语服务。本机一体试玩包可以把 `native/windows-desktop/start-daily.py`、填写了 `python` 和 `modelRuntime` 的 `local-runtime.json` 及构建好的 `oral-assistant` 放在同一个 `日常口语运行`。本机 `.qihang-data.json` 可配置 `directory`、`hostPort`、`dailyPort` 和 `dailySpeechPort`。本机运行配置和教材保留在本机。
+
 Windows 独立试玩可在 `oral-assistant` 双击 `启动日常口语第2步.cmd`。它预热已安装的本机 Whisper，再打开 `http://127.0.0.1:18983/?desktop=1&daily=1`，识别占用 18984。持久试玩数据默认在 `.local/daily-preview`，也可通过 `--data-dir` 指定当前需要的试玩目录，`--temporary-data` 使用独立临时目录。模型默认在本服务下，外置模型和依赖可以通过 `--runtime-dir` 指定其原服务目录。
 
 源码分支中的课包生成器读取本机取得授权的教材文本和原声。教材、试听答题记录和安装后的课包各自在本地准备。
@@ -57,6 +59,8 @@ A 的独立判定在检测到有效发声后检查词覆盖、停顿、重启和
 - `chains.json` 的 `chains` 条目用 `id`、`groups`、`pause_after_words`、`short_groups`、`demo_wav`、`short_demo_wav`。边界用累计词数表示，按对齐器同一分词检查每链 9–14 词。验证短版对应前两块及两个本地 WAV 的完整性。
 - `frames.json` 的 `frames` 条目用 `id`、含一个 `{slot}` 的 `template`、`candidates`（各有 `id/form/pronunciation/condition`）、`prompts`（各有 `id/target/cue`）、`examples`（各有 `prompt/spoken_candidate/accepted`）及 `validation`（`listened/blind_test/asr_hits`）。验证两个形式各出现两次，每个都有正反例，发音标注可区分。Demo 要求人工试听；正式内容还要求真人盲测通过和 ASR 试跑记录。
 - 两种包都校验必填字段、各自范围内的 ID 唯一性和占位符。B 候选若有 `demo_wav`，校验本地切片。B 扩展的三组沿用同一真人通过的词形对。生成器从 `content/daily-practice/inspire1-u5-l16/盲测20261122.json` 校验真人答题记录。多句框课包须通过正式校验才可加载。
+
+校验后可把私有节奏和词形课包放到 `.media/daily-practice/<课次>/chains.json` 或 `frames.json`，朗读原声课包放到 `.media/lecture`。同一模式内课次 ID 必须唯一。学生用书全书的活动需要独立的已核验题号索引。`python scripts/audit_textbook_coverage.py <题号索引.json> <映射.json>` 会列出未映射题号、重复题号和无效映射，缺项时退出码为 1。题号索引使用 `{edition, complete, exercises: [{id, ...}]}`，映射数组每项为 `{exercise, mode, item}`。`item` 使用 `课次/句或链`，词形用 `课次/句框/提示卡`。映射的原文与任务类型仍需逐题审核。内置主题课只代表所标出的原创内容。
 
 ## 开发自测
 

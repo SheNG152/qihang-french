@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from 'vue'
+import {computed, h} from 'vue'
 
 const props = defineProps({id:String, focus:Array, support:Array})
 const skills = ['发音清晰', '停顿节奏', '词形准确', '临场应答', '组织表达', '听题理解']
@@ -27,6 +27,12 @@ const spokes = computed(() => axes.map(axis => {
 }))
 const profile = computed(() => spokes.value.map(({point}) => `${point.x},${point.y}`).join(' '))
 const description = computed(() => `训练侧重。主练${props.focus.join('、')}。兼练${props.support.join('、')}。`)
+
+// Render SVG labels directly so uni-app does not turn them into its HTML text component.
+const AxisLabel = ({axis}) => h('text', {
+  x:axis.label.x, y:axis.label.y, 'text-anchor':axis.anchor, 'dominant-baseline':'central',
+  class:axis.level === 2 ? 'skill-label skill-label-focus' : 'skill-label',
+}, axis.name)
 </script>
 
 <template>
@@ -39,8 +45,7 @@ const description = computed(() => `训练侧重。主练${props.focus.join('、
       <template v-for="axis in spokes" :key="axis.name">
         <circle v-if="axis.level" :cx="axis.point.x" :cy="axis.point.y" :r="axis.level === 2 ? 4.5 : 3.5"
           class="skill-point" :class="{'skill-focus':axis.level === 2}"/>
-        <text :x="axis.label.x" :y="axis.label.y" :text-anchor="axis.anchor" dominant-baseline="central"
-          :class="{'skill-label-focus':axis.level === 2}">{{ axis.name }}</text>
+        <AxisLabel :axis="axis"/>
       </template>
     </svg>
     <span class="skill-main" aria-hidden="true"><b>主练</b> {{ focus.join('、') }}</span>
@@ -55,8 +60,8 @@ svg{display:block;width:100%;max-width:280px;overflow:visible}
 .skill-profile{fill:currentColor;fill-opacity:.15;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
 .skill-point{fill:#f9fbf8;stroke:currentColor;stroke-width:1.6}
 .skill-focus{fill:currentColor;stroke:#f9fbf8;stroke-width:1.3}
-text{fill:var(--sub);font:13px "Microsoft YaHei","Segoe UI",sans-serif}
-.skill-label-focus{fill:currentColor;font-weight:700}
+.practice-skills :deep(.skill-label){fill:var(--sub);font:13px "Microsoft YaHei","Segoe UI",sans-serif}
+.practice-skills :deep(.skill-label-focus){fill:currentColor;font-weight:700}
 .skill-main{font-size:13px;line-height:1.55;font-weight:600}
 .skill-main b{display:inline-block;margin-right:3px;padding:2px 6px;border:1px solid currentColor;border-radius:4px;font-size:11px;line-height:1.2}
 </style>

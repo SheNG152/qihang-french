@@ -11,12 +11,17 @@ BUILTIN = ROOT / 'content/starter-speaking'
 def daily_packs(primary, default_path):
     paths = [primary]
     if primary == default_path:
+        paths.extend(path for path in sorted(primary.parent.parent.glob(f'*/{primary.name}'))
+                     if path != primary)
         paths.extend(sorted((BUILTIN / 'daily').glob(f'*/{default_path.name}')))
     lessons = {}
     for path in paths:
         if path.is_file():
             lesson = json.loads(path.read_text(encoding='utf-8'))
-            lessons.setdefault(lesson['lesson_id'], (path, lesson))
+            key = lesson['lesson_id']
+            if key in lessons:
+                raise ValueError(f'日常口语课次编号重复：{key}')
+            lessons[key] = (path, lesson)
     return lessons
 
 

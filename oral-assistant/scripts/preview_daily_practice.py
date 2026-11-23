@@ -1,6 +1,7 @@
 """Start an isolated daily speaking preview with a local French model."""
 import argparse
 import asyncio
+import json
 import os
 from pathlib import Path
 import secrets
@@ -16,9 +17,11 @@ sys.path.insert(0, str(ROOT))
 
 from french_asr import FrenchEngine
 from daily_content import daily_packs, select_lesson
+from daily_practice_config import load_settings
 from fluency_session import DEMO_PACK
 from slot_session import DEMO_PACK as SLOT_PACK
 from server import make_app
+from practice_records import Mode
 from speech_server import make_speech_app
 from store import atomic_json
 
@@ -41,11 +44,21 @@ async def serve(args, data):
     engine = installed_runtime(args.runtime_dir)
     if not engine.state["available"]:
         raise RuntimeError("未找到已安装的本机法语模型或依赖")
-    chains = daily_packs(DEMO_PACK, DEMO_PACK) if not args.disable_a else {}
-    frames = daily_packs(SLOT_PACK, SLOT_PACK) if not args.disable_b else {}
-    if not args.disable_a and not chains or not args.disable_b and not frames:
+    config_path = data / 'daily-practice.json'
+    if args.disable_a or args.disable_b:
+        existing = json.loads(config_path.read_text(encoding='utf-8')) if config_path.is_file() else {}
+        for mode, disabled in ((Mode.FLUENCY, args.disable_a), (Mode.SLOT, args.disable_b)):
+            if disabled:
+                existing.setdefault(mode, {})['enabled'] = False
+        atomic_json(config_path, existing)
+    settings = load_settings(data, {Mode.FLUENCY, Mode.SLOT})
+    use_chains = settings[Mode.FLUENCY].enabled
+    use_frames = settings[Mode.SLOT].enabled
+    chains = daily_packs(DEMO_PACK, DEMO_PACK) if use_chains else {}
+    frames = daily_packs(SLOT_PACK, SLOT_PACK) if use_frames else {}
+    if (use_chains and not chains) or (use_frames and not frames):
         raise RuntimeError('项目缺少内置口语课包，请检查源码是否完整。')
-    if not args.disable_a or not args.disable_b:
+    if chains or frames:
         print("正在预热本机法语模型…", flush=True)
         await engine.warmup()
         if chains:
@@ -61,10 +74,6 @@ async def serve(args, data):
                 await engine.transcribe_alternate_wav((path.parent / pack['frames'][0]['candidates'][0]['demo_wav']).read_bytes())
             except (ValueError, RuntimeError) as exc:
                 print(f"B 备用识别预热未完成：{exc}", flush=True)
-    atomic_json(data / "daily-practice.json", {
-        "fluency": {"enabled": not args.disable_a},
-        "slot": {"enabled": not args.disable_b},
-    })
     token = secrets.token_urlsafe(40)
     worker = web.AppRunner(make_speech_app(data, args.speech_port, engine, token), access_log=None)
     await worker.setup()
