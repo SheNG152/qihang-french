@@ -118,11 +118,16 @@ namespace QihangFrench {
    string directory=Path.Combine(Program.Home,"日常口语运行");
    string configPath=Path.Combine(directory,"local-runtime.json");
    if(!File.Exists(configPath)){
-    var catalog=new Uri(new Uri(DailyPractice),"/api/daily-practice");
+    var entry=new Uri(DailyPractice);
+    var catalog=new Uri(entry,"/api/daily-practice");
     try{
      using(var time=new CancellationTokenSource(2500))using(var local=new HttpClient(new HttpClientHandler{UseProxy=false,AllowAutoRedirect=false})){
-      string payload=await (await local.GetAsync(catalog,time.Token)).Content.ReadAsStringAsync();
-      if(Program.Json.Deserialize<Dictionary<string,object>>(payload).ContainsKey("modes"))return;
+      using(var home=await local.GetAsync(entry,time.Token))home.EnsureSuccessStatusCode();
+      using(var response=await local.GetAsync(catalog,time.Token)){
+       response.EnsureSuccessStatusCode();
+       string payload=await response.Content.ReadAsStringAsync();
+       if(Program.Json.Deserialize<Dictionary<string,object>>(payload).ContainsKey("modes"))return;
+      }
      }
     }catch{}
     throw new IOException("日常口语服务未启动。请先运行「启动日常口语.cmd」，然后重试。");
