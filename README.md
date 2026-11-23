@@ -43,8 +43,6 @@ Inspire 1–4 和 FOS 1 均可逐课学习，教材录音及来源信息随课�
 
 ## 源码
 
-[总体设计概览与 AI 协作指引](docs/DESIGN_OVERVIEW.md)
-
 Node.js 20+：`npm ci`、`npm run dev`。口语运行时构建见 [构建说明](native/BUILD.md)。用户直接下载成品，无需安装开发工具。
 
 程序采用 GPL-3.0-only，第三方模型及依赖保留其许可。Copyright (C) 2026 启航 AI 俱乐部。
