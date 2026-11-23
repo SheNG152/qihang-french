@@ -6,7 +6,7 @@
 
 ## 当前功能
 
-桌面端还支持逐句读课文。首次在仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，启动本机口语助手和法语识别服务后，打开 [桌面朗读](http://127.0.0.1:8127/?desktop=1&read=1)。课次来自本机的 `.media/lecture/`，每篇需要同名课文 ID 的 JSON 和对应 Piste 的三位编号 WAV（16 kHz、单声道 PCM16，如 `027.wav`）。请使用已获授权的材料；空目录时课次列表为空。识别、逐词反馈、续读及复习队列均在本机运行。
+桌面端支持逐句读课文。首次在仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，启动本机口语助手和法语识别服务后，打开 [桌面朗读](http://127.0.0.1:8127/?desktop=1&read=1)。内置八篇原创主题练习，也可在 `.media/lecture/` 安装已获授权的原声课包。识别、逐词反馈、续读和复习队列均在本机运行。
 
 | 模块 | 已实现内容 |
 | --- | --- |
@@ -49,7 +49,7 @@ macOS / Linux使用 `python3.12 -m venv .venv` 与 `.venv/bin/python` 执行同�
 
 ### 桌面日常口语
 
-从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，启动本机口语服务，再打开 [日常练习](http://127.0.0.1:8127/?desktop=1&daily=1)。入口卡展示发音、节奏、词形、听题、应答及组织表达的训练侧重。课文、接拍串说和看提示换一格的素材安装和功能开关见 [日常口语与需练习本](DAILY_PRACTICE.md)。
+从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`。安装本机模型后，双击 `启动日常口语.cmd` 或运行 `python launch.py --daily`，即可打开 [日常练习](http://127.0.0.1:8127/?desktop=1&daily=1)。内容范围、软件入口和安装步骤见 [项目概览](../docs/项目概览.md)。
 
 ### 模型与下载
 

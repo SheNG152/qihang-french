@@ -66,9 +66,21 @@ function useSession(next) {
   session.value = next
   earlyHint.value = false
 }
-async function load() {
+async function load(lesson = props.review?.lessonId) {
+  busy.value = 'loading'
+  error.value = ''
   try {
-    catalog.value = await json(base)
+    catalog.value = await json(base + (lesson ? '?lesson=' + encodeURIComponent(lesson) : ''))
+    if (!lesson && !props.adventure && !props.review) {
+      let saved
+      try { saved = localStorage.getItem('qihang-fluency-lesson') } catch {}
+      if (saved !== catalog.value.lesson.lesson_id && catalog.value.lessons?.some(item => item.id === saved)) {
+        catalog.value = await json(base + '?lesson=' + encodeURIComponent(saved))
+      }
+    }
+    if (lesson && !props.adventure && !props.review) {
+      try { localStorage.setItem('qihang-fluency-lesson', lesson) } catch {}
+    }
     if (props.adventure) {
       const state = await recoverAdventure(json, base, props.adventure)
       if (state) useSession(state)
@@ -85,7 +97,7 @@ async function start(review = null) {
   error.value = ''
   try {
     const next = await json(base, {method:'POST',headers:writeHeaders('application/json'),
-      body:JSON.stringify({...props.adventure, lesson:catalog.value.lesson.lesson_id,
+      body:JSON.stringify({...props.adventure, lesson:review?.lessonId || catalog.value.lesson.lesson_id,
         review:review ? {item:review.unitId,version:review.contentRevision} : null})})
     useSession(next)
     if (review && !disposed) emit('review-session', next.id)
@@ -225,14 +237,21 @@ onBeforeUnmount(() => {
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
     <button v-if="!adventure && session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
       class="secondary" :disabled="!!busy || playing" @click="start()">开始新版练习</button>
+    <button v-if="!adventure && !review && session && catalog?.lessons?.length > 1" class="text-link"
+      :disabled="!!busy" @click="checkpoint(); stopPlayer(); session = null">返回课次选择</button>
     <template v-if="!session && catalog">
+      <label v-if="!adventure && !review && catalog.lessons?.length > 1">练习课次
+        <select :value="catalog.lesson.lesson_id" :disabled="!!busy" @change="load($event.target.value)">
+          <option v-for="lesson in catalog.lessons" :key="lesson.id" :value="lesson.id">{{ lesson.label }} · {{ lesson.title.zh }}</option>
+        </select>
+      </label>
       <p class="muted">{{ catalog.lesson.label }} · {{ chainsCount }} 条节奏链</p>
       <h2>{{ catalog.lesson.title.zh }}</h2>
       <p>每条可以先逐块热身，再连起来说。热身计入开口时间，整条连说才会给判定。</p>
       <button class="speak" :disabled="!!busy" @click="start()">开始练习</button>
       <button v-if="!adventure && catalog.recent?.phase === 'ended'" class="secondary" @click="previousReport">查看上次结果</button>
     </template>
-    <p v-else-if="!catalog && busy" role="status">正在加载试点课次…</p>
+    <p v-else-if="!catalog && busy" role="status">正在加载口语课次…</p>
     <template v-else-if="stage === 'report'">
       <h2>本轮结果</h2>
       <div class="metrics">

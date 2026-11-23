@@ -41,4 +41,6 @@ __pycache__/
 test-results/
 qihang-daily-test-*/
 *.jsonl
-content/
+/content/*
+!/content/starter-speaking/
+!/content/starter-speaking/**/*.wav

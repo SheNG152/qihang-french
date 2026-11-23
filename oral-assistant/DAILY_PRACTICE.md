@@ -1,6 +1,6 @@
 # 日常口语与需练习本
 
-先从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，然后按 [口语助手安装说明](README.md) 安装本机依赖及法语模型。运行独立口语服务后，可从 `http://127.0.0.1:8127/?desktop=1&daily=1` 进入。读课文需在本地安装 [课文包](LECTURE.md)，A、B 还需在服务的数据目录通过 `daily-practice.json` 启用并安装对应课包。
+先从仓库根目录运行 `npm ci` 和 `node scripts/build-lecture.mjs`，再按 [口语助手安装说明](README.md) 完成一次本机运行环境和法语模型安装。在 Windows 双击 `启动日常口语.cmd`，或在主软件的电脑口语面板点击「打开电脑日常口语」。入口为 `http://127.0.0.1:8127/?desktop=1&daily=1`。八个单元的原创主题练习与示范音已随源码提供，完成模型安装后可离线练习。`daily-practice.json` 仍可显式关闭 A、B。
 
 Windows 独立试玩可在 `oral-assistant` 双击 `启动日常口语第2步.cmd`。它预热已安装的本机 Whisper，再打开 `http://127.0.0.1:18983/?desktop=1&daily=1`，识别占用 18984。持久试玩数据默认在 `.local/daily-preview`，也可通过 `--data-dir` 指定当前需要的试玩目录，`--temporary-data` 使用独立临时目录。模型默认在本服务下，外置模型和依赖可以通过 `--runtime-dir` 指定其原服务目录。
 

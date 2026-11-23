@@ -36,7 +36,7 @@ function focusPracticeCards(){
   normalPractice.value?.querySelector('button')?.focus()
 }
 const dailyNotes=ref([]), dailyReview=ref(null), todayRows=ref([])
-const dailySettings=ref({})
+const dailySettings=ref({}), recognizerReady=ref(null)
 const dailyCards=computed(()=>dailyModes.filter(mode=>dailySettings.value[mode.id]))
 const practiceCards=computed(()=>[lectureCard,...dailyCards.value])
 const dailyMode=computed(()=>dailyCards.value.find(mode=>view.value===mode.id))
@@ -121,7 +121,7 @@ async function dailyCatalog(){
     await client.ready
     if(!client.localService())return
   }
-  try{dailySettings.value=(await api(dailyBase)).modes||{}}
+  try{const data=await api(dailyBase);dailySettings.value=data.modes||{};recognizerReady.value=data.recognizer_ready??null}
   catch{dailySettings.value={}}
 }
 async function catalog(){
@@ -467,6 +467,7 @@ function beforeUnload(e){
 }
 function back(){
   if(gamePractice.value)returnGame('从原黑洞可以继续这轮冒险。')
+  else if(view.value==='overview')nav('games')
   else if(view.value==='adventure')nav('games')
   else if(dailyMode.value)dailyReview.value?shelf('notebook'):nav('games')
   else if(['scope','notebook','read','offer','report'].includes(view.value)){
@@ -488,7 +489,7 @@ function pop(e){
   if(route==='scope'||route==='notebook'||route==='read'||route==='report')shelf(route==='notebook'?'notebook':'scope',false)
   else if(dailyCards.value.some(mode=>mode.id===route))openDailyMode(route,false).then(entered=>{if(entered)restoreDailyReview()})
   else{
-    nav(route==='games'||(route==='adventure'&&gameAvailable)?route:'home',false)
+    nav(['games','overview'].includes(route)||(route==='adventure'&&gameAvailable)?route:'home',false)
   }
 }
 function blur(){if(['open','live'].includes(mic.value))stopMic()}
@@ -564,6 +565,7 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
 <template><main class="desk guided">
 <header class="mast"><div class="brand"><span class="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>启航法语<span class="divider"/>口语练习</div><nav v-if="view!=='home'"><button v-if="canSave" class="secondary" :disabled="exitBusy" @click="saveExit">{{gamePractice?'保存并回地图':'保存并退出'}}</button><button v-else-if="view!=='games'" class="back" @click="back">← {{gamePractice?'返回地图':dailyReview||view==='read'&&batchSize?'需练习本':view==='scope'||view==='adventure'||dailyMode?'日常练习':'课次列表'}}</button><button class="back" :disabled="canSave&&exitBusy" @click="nav('home')">模式选择</button></nav></header>
 <p class="alert" role="alert" v-if="error">{{error}} <button v-if="['scope','notebook'].includes(view)" @click="shelf(view,false)">重试</button><button v-else-if="gamePractice?.mode==='lecture'&&!s" @click="openGamePractice(gamePractice,false)">重试</button></p>
+<p v-if="view==='games' && recognizerReady===false" class="alert" role="status">本机法语识别尚未就绪。可以试听示范，录音判定需要先启动本机识别服务。<button class="text-link" @click="dailyCatalog">刷新识别状态</button></p>
 <section v-if="view==='home'" class="landing"><p class="overline">Atelier de français</p><h1>口语练习室</h1><div class="mode-grid">
 <button class="mode daily" @click="nav('games')"><span class="card-fr">Pratique</span><span class="bars" aria-hidden="true"><i v-for="(h,i) in [25,45,68,43,80,96,72,47,68,40,24]" :key="i" :style="{'--bar':h+'%'}"/></span><strong>日常练习</strong><span class="card-foot">跟着课本，练好每一句。<b>↗</b></span></button>
 <button class="mode exam exam-practice" aria-labelledby="exam-title" aria-describedby="exam-skills exam-summary" @click="exam">
@@ -572,7 +574,15 @@ onBeforeUnmount(()=>{clearInterval(tick);pagehide();gameRadio.value?.dispose();u
   <span class="skill-key">外圈主练 · 内圈兼练</span>
   <span id="exam-summary" class="card-foot">听考官提问，练习问答和情景互动。<b aria-hidden="true">↗</b></span>
 </button></div></section>
+<section v-else-if="view==='overview'" class="landing narrow">
+  <p class="overline" lang="fr">À propos</p><h1>启航法语 · 项目概览</h1>
+  <p>在桌面端练法语发音、节奏和词形。原创口语练习按 Inspire 1 的八个单元组织，示范音可以离线播放。</p>
+  <ul><li>读课文 · 8 篇原创短文，练发音与逐句跟读。</li><li>接拍串说 · 8 课，每课 6 条节奏链。</li><li>看提示换一格 · 日常运动主题，3 个句框、12 张提示卡。</li></ul>
+  <p>练完可在「今日练习」看进度，或打开「需练习本」复练。喜欢边玩边练，可以进入口语小镇。</p>
+  <button class="speak" @click="nav('games')">进入日常练习</button>
+</section>
 <section v-else-if="view==='games'" class="landing"><p class="overline">Pratique</p><h1>日常练习</h1>
+  <button class="text-link" @click="nav('overview')">项目概览</button>
   <div v-if="gameAvailable" class="practice-launches">
     <button class="game-launch normal-launch" @click="focusPracticeCards">
       <span><strong>正常开始</strong><small>直接选择练习</small></span><b aria-hidden="true">↓</b>

@@ -98,9 +98,12 @@ function accept(next) {
   session.value = next
   showHelp.value = false
 }
-async function load() {
+async function load(lesson = props.review?.lessonId) {
+  busy.value = 'loading'
+  error.value = ''
+  heardClips.value = []
   try {
-    catalog.value = await json(base)
+    catalog.value = await json(base + (lesson ? '?lesson=' + encodeURIComponent(lesson) : ''))
     const recent = catalog.value.recent
     if (props.adventure) {
       const state = await recoverAdventure(json, base, props.adventure)
@@ -151,7 +154,7 @@ async function confirmAudition() {
   try {
     const ids = frame.value.candidates.map(item => item.id)
     if (ids.every(id => heardClips.value.includes(id))) {
-      await json(base + '/audition', options({fingerprint:catalog.value.fingerprint, heard:ids}))
+      await json(base + '/audition', options({lesson:catalog.value.lesson.lesson_id, fingerprint:catalog.value.fingerprint, heard:ids}))
       catalog.value.audition_confirmed = true
     }
   } catch (err) { error.value = err.message }
@@ -161,7 +164,7 @@ async function start(review = null) {
   busy.value = 'opening'
   error.value = ''
   try {
-    const next = await json(base, options({...props.adventure, lesson:catalog.value.lesson.lesson_id,
+    const next = await json(base, options({...props.adventure, lesson:review?.lessonId || catalog.value.lesson.lesson_id,
       review:review ? {item:review.unitId,version:review.contentRevision} : null}))
     stopAudio()
     takes.value.clear()
@@ -331,11 +334,18 @@ onBeforeUnmount(() => { disposed = true; unregisterAudio?.(); window.removeEvent
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
     <button v-if="!adventure && session?.phase === 'active' && session.lesson.version < catalog?.lesson.version"
       class="secondary" :disabled="!!busy || !!playing" @click="start()">开始新版练习</button>
+    <button v-if="!adventure && !review && session && catalog?.lessons?.length > 1" class="text-link"
+      :disabled="!!busy" @click="checkpoint(); stopAudio(); session = null">返回课次选择</button>
     <template v-if="catalog && !session">
+      <label v-if="!adventure && !review && catalog.lessons?.length > 1">练习课次
+        <select :value="catalog.lesson.lesson_id" :disabled="!!busy" @change="load($event.target.value)">
+          <option v-for="lesson in catalog.lessons" :key="lesson.id" :value="lesson.id">{{ lesson.label }} · {{ lesson.title.zh }}</option>
+        </select>
+      </label>
       <p class="muted">{{ catalog.lesson.label }} · {{ frames.length }} 个句框 · {{ cardCount }} 张提示卡</p>
       <h2>{{ catalog.lesson.title.zh }}</h2>
       <p>每张卡提示一种说法。等滴声，读高亮的完整法语句子。每组答完 4 张，再一起看反馈。</p>
-      <p v-if="!catalog.audition_confirmed">先听完两段课文原声，确认你能分清两种说法。</p>
+      <p v-if="!catalog.audition_confirmed">先听完两段示范，确认你能分清两种说法。</p>
       <ul class="options">
         <li v-for="candidate in frame.candidates" :key="candidate.id">
           <span lang="fr">{{ full(candidate) }}</span>

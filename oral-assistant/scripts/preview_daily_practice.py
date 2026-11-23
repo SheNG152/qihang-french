@@ -15,6 +15,7 @@ USER_PREVIEW = ROOT / ".local/daily-preview"
 sys.path.insert(0, str(ROOT))
 
 from french_asr import FrenchEngine
+from daily_content import daily_packs, select_lesson
 from fluency_session import DEMO_PACK
 from slot_session import DEMO_PACK as SLOT_PACK
 from server import make_app
@@ -40,18 +41,24 @@ async def serve(args, data):
     engine = installed_runtime(args.runtime_dir)
     if not engine.state["available"]:
         raise RuntimeError("未找到已安装的本机法语模型或依赖")
-    if not args.disable_a and not DEMO_PACK.is_file():
-        raise RuntimeError("缺少接拍串说课包，请运行 scripts/prepare_fluency_demo.py")
-    if not args.disable_b and not SLOT_PACK.is_file():
-        raise RuntimeError("缺少看提示换一格课包，请运行 scripts/prepare_slot_demo.py")
+    chains = daily_packs(DEMO_PACK, DEMO_PACK) if not args.disable_a else {}
+    frames = daily_packs(SLOT_PACK, SLOT_PACK) if not args.disable_b else {}
+    if not args.disable_a and not chains or not args.disable_b and not frames:
+        raise RuntimeError('项目缺少内置口语课包，请检查源码是否完整。')
     if not args.disable_a or not args.disable_b:
         print("正在预热本机法语模型…", flush=True)
         await engine.warmup()
-        sample = DEMO_PACK.parent / "s13-full.wav" if not args.disable_a else SLOT_PACK.parent / "slot-muscu.wav"
+        if chains:
+            path, pack = select_lesson(chains)
+            sample = path.parent / pack['chains'][0]['demo_wav']
+        else:
+            path, pack = select_lesson(frames)
+            sample = path.parent / pack['frames'][0]['candidates'][0]['demo_wav']
         await engine.transcribe(sample.read_bytes(), word_evidence=True)
-        if not args.disable_b and (engine.alternate_path / "model.bin").is_file():
+        if frames and (engine.alternate_path / "model.bin").is_file():
+            path, pack = select_lesson(frames)
             try:
-                await engine.transcribe_alternate_wav((SLOT_PACK.parent / "slot-muscu.wav").read_bytes())
+                await engine.transcribe_alternate_wav((path.parent / pack['frames'][0]['candidates'][0]['demo_wav']).read_bytes())
             except (ValueError, RuntimeError) as exc:
                 print(f"B 备用识别预热未完成：{exc}", flush=True)
     atomic_json(data / "daily-practice.json", {

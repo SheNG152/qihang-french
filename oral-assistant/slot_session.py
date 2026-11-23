@@ -12,6 +12,7 @@ from aiohttp import web
 from daily_practice_config import ModeSettings, SlotRules, rule_settings
 from daily_practice_summary import note, select_review, slot_results, speech_intervals
 from game_practice import adventure_request, tag
+from daily_content import daily_packs, lesson_choices, select_lesson
 from practice_records import Mode, PracticeJournal, Verdict, record, update_clock
 from recording_window import RecordingWindow, SAMPLE_BYTES, SAMPLE_RATE, receive_window
 from scripts.validate_daily_practice import validate
@@ -130,19 +131,19 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
     audition_note = store.root / "audition.json"
     busy = set()
 
-    def content():
-        if not pack_path.is_file():
-            raise web.HTTPNotFound()
-        raw = pack_path.read_bytes()
-        lesson = json.loads(raw)
+    def packs():
+        return daily_packs(pack_path, DEMO_PACK)
+
+    def content(path, lesson):
+        raw = path.read_bytes()
         frames = lesson["frames"]
         if not frames or any(frame["validation"]["blind_test"] == "淘汰" for frame in frames):
             raise ValueError("课包没有可用的词形对")
         if len(frames) > 1:
-            validate(pack_path, "formal")
+            validate(path, "formal")
         fingerprint = sha256(raw)
         for item in (item for frame in frames for item in frame["candidates"]):
-            fingerprint.update((pack_path.parent / item["demo_wav"]).read_bytes())
+            fingerprint.update((path.parent / item["demo_wav"]).read_bytes())
         return lesson, fingerprint.hexdigest()
 
     def confirmed(lesson, fingerprint):
@@ -172,27 +173,31 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         return session, rev == session["revision"]
 
     async def catalog(request):
-        lesson, fingerprint = content()
+        lessons = packs()
+        lesson, fingerprint = content(*select_lesson(lessons, request.query.get('lesson')))
         recent = next((row for row in store.listing(regular=True) if row["part"] == lesson["lesson_id"]), None)
-        return web.json_response({"lesson":lesson, "recent":recent,
+        return web.json_response({"lesson":lesson, "lessons":lesson_choices(lessons), "recent":recent,
                                   "audition_confirmed":confirmed(lesson, fingerprint), "fingerprint":fingerprint})
 
     async def audition(request):
         body = await request.json()
-        lesson, fingerprint = content()
+        path, lesson = select_lesson(packs(), body.get('lesson'))
+        lesson, fingerprint = content(path, lesson)
         ids = [item["id"] for item in lesson["frames"][0]["candidates"]]
         if body.get("fingerprint") != fingerprint or body.get("heard") != ids:
             raise ValueError("请先播放并听完两段原声")
-        validate(pack_path)
+        validate(path)
         atomic_json(audition_note, {"fingerprint":fingerprint, "confirmed_at":time.time()})
         return web.json_response({"confirmed":True})
 
     async def audio(request):
-        lesson, _ = content()
         name = request.match_info["file"]
-        if name not in {item["demo_wav"] for frame in lesson["frames"] for item in frame["candidates"]}:
+        if Path(name).name != name or '\\' in name:
             raise web.HTTPNotFound()
-        return web.FileResponse(pack_path.parent / name)
+        for path, lesson in packs().values():
+            if any(name == item['demo_wav'] for frame in lesson['frames'] for item in frame['candidates']):
+                return web.FileResponse(path.parent / name)
+        raise web.HTTPNotFound()
 
     def tasks_for(frame):
         return [{"prompt":item, "level":0} for item in sample(frame["prompts"], k=len(frame["prompts"]))]
@@ -202,8 +207,8 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         game, previous = adventure_request(store, body, "slot")
         if previous:
             return view(previous)
-        lesson, fingerprint = content()
-        if body.get("lesson") != lesson["lesson_id"] or not confirmed(lesson, fingerprint):
+        lesson, fingerprint = content(*select_lesson(packs(), body.get('lesson')))
+        if not confirmed(lesson, fingerprint):
             raise ValueError("请先确认已听清两段原声")
         if game:
             lesson = {**lesson, "frames":lesson["frames"][:1]}

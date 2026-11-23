@@ -111,6 +111,8 @@ def notebook(root, packs):
         if not unit:
             continue
         current = packs[mode]
+        if current and 'lesson_id' not in current:
+            current = current.get(state['part'])
         is_current = (current and current["lesson_id"] == state["part"] and version == current["version"]
                       and any(part["id"] == unit_id for part in current[field]))
         title = " ".join(unit["groups"]) if mode == Mode.FLUENCY else unit["template"].replace("{slot}", "…")

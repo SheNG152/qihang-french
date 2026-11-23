@@ -4,7 +4,9 @@
 
 ## 安装一篇课文
 
-在服务的 `.media/lecture/` 放一份 UTF-8 JSON 和对应教材原轨。音轨按三位 Piste 号命名（如 `073.wav`），格式为单声道 PCM16、16 kHz；保留原轨开头以保持时间坐标一致。已有音轨可以被多篇课文引用。该私有目录被 Git 忽略。此版仅在本机安装了 U4 L12 Piste 073，未把教材音频加入公开安装包。
+内置的 8 篇 Inspire 1 原创主题课文可直接打开。下面的步骤只用于额外添加已获授权的教材原声课包。
+
+在服务的 `.media/lecture/` 放一份 UTF-8 JSON 和对应教材原轨。音轨按三位 Piste 号命名（如 `073.wav`），格式为单声道 PCM16、16 kHz；保留原轨开头以保持时间坐标一致。已有音轨可以被多篇课文引用。该私有目录被 Git 忽略。
 
 JSON 文件名等于 id。顶层字段为 schema、id、unit、lesson、title（fr、zh）、source、roles、piste、rate（normal、slow）、sentences。每句包含稳定 id、role、fr、zh、piste、start、end（原轨秒数）、difficult、variants。变体写整句，仅用于认可同一读法的转写差异。对话按角色分轮；独白使用旁白。整段播放范围为首句开始至末句结束。
 

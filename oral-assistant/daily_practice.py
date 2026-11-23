@@ -1,10 +1,10 @@
 """Local feature discovery and a no-score diagnostic for the shared speaking foundation."""
-import json
 from pathlib import Path
 
 from aiohttp import web
 
 from daily_practice_config import load_settings
+from daily_content import BUILTIN, daily_packs
 from daily_practice_summary import notebook, today
 from fluency_session import DEMO_PACK as CHAINS, install as install_fluency
 from practice_records import Mode
@@ -14,7 +14,9 @@ from word_alignment import TOKEN_LIMIT, Word, align, tokens, words_in_window
 
 
 def install(app, data_dir):
-    settings = load_settings(data_dir)
+    installed = {mode:path for mode, path in ((Mode.FLUENCY, CHAINS), (Mode.SLOT, FRAMES))
+                 if any((BUILTIN / 'daily').glob(f'*/{path.name}'))}
+    settings = load_settings(data_dir, installed)
     base = "/api/daily-practice"
     settings_root = Path(data_dir)
     daily_root = settings_root / "daily-speaking/v1"
@@ -22,16 +24,21 @@ def install(app, data_dir):
                if settings[mode].enabled}
 
     async def catalog(request):
-        return web.json_response({
+        recognizer = app.get('french_asr')
+        state = await recognizer.refresh() if hasattr(recognizer, 'refresh') else None
+        response = {
             "modes": {mode: {"window_seconds": config.window_seconds}
-                      for mode, config in settings.items() if config.enabled}
-        })
+                      for mode, config in settings.items() if config.enabled},
+        }
+        if isinstance(state, dict):
+            response['recognizer_ready'] = bool(state.get('available'))
+        return web.json_response(response)
 
     async def notes(request):
         packs = {}
         for mode, path in enabled.items():
             try:
-                packs[mode] = json.loads(path.read_text(encoding="utf-8"))
+                packs[mode] = {key: lesson for key, (_, lesson) in daily_packs(path, path).items()}
             except (OSError, ValueError):
                 packs[mode] = None
         return web.json_response({"items":notebook(daily_root, packs)})

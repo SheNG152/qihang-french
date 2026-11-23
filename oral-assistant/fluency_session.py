@@ -11,6 +11,7 @@ from daily_practice_config import FluencyRules, ModeSettings, rule_settings
 from daily_practice_summary import note, select_review, speech_intervals
 from fluency_rules import score
 from game_practice import adventure_request, tag
+from daily_content import daily_packs, lesson_choices, select_lesson
 from practice_records import Mode, PracticeJournal, Verdict, record, update_clock
 from recording_window import SAMPLE_RATE, receive_window
 from store import Store
@@ -34,10 +35,8 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
     journal = PracticeJournal(store.root / "decisions")
     busy = set()
 
-    def pack():
-        if not pack_path.is_file():
-            raise web.HTTPNotFound()
-        return json.loads(pack_path.read_text(encoding="utf-8"))
+    def packs():
+        return daily_packs(pack_path, DEMO_PACK)
 
     def view(session):
         return web.json_response({**session, "summary": rollup(session)})
@@ -57,9 +56,10 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         return session, revision == session["revision"]
 
     async def catalog(request):
-        content = pack()
+        lessons = packs()
+        _, content = select_lesson(lessons, request.query.get('lesson'))
         recent = next((row for row in store.listing(regular=True) if row["part"] == content["lesson_id"]), None)
-        return web.json_response({"lesson": content, "recent": recent,
+        return web.json_response({"lesson": content, "lessons":lesson_choices(lessons), "recent": recent,
                                   "window_seconds": settings.window_seconds})
 
     async def start(request):
@@ -67,9 +67,7 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
         game, previous = adventure_request(store, body, "fluency")
         if previous:
             return view(previous)
-        content = pack()
-        if body.get("lesson") != content["lesson_id"]:
-            raise ValueError("未知节奏链课次")
+        _, content = select_lesson(packs(), body.get("lesson"))
         if game:
             content = {**content, "chains":content["chains"][:3]}
         review = body.get("review")
@@ -94,9 +92,12 @@ def install(app, data_dir, settings, pack_path=DEMO_PACK):
 
     async def audio(request):
         name = request.match_info["file"]
-        if name not in {row[key] for row in pack()["chains"] for key in ("demo_wav", "short_demo_wav")}:
+        if Path(name).name != name or '\\' in name:
             raise web.HTTPNotFound()
-        return web.FileResponse(pack_path.parent / name)
+        for path, lesson in packs().values():
+            if any(name in (row['demo_wav'], row['short_demo_wav']) for row in lesson['chains']):
+                return web.FileResponse(path.parent / name)
+        raise web.HTTPNotFound()
 
     async def submit(request):
         session, fresh = current(request)

@@ -17,6 +17,7 @@ import lecture_desktop
 import guided_reading
 import reading_library
 from game_practice import adventure_request, tag
+from daily_content import BUILTIN
 from practice_records import Mode, Verdict, record as practice_record
 from store import Store
 
@@ -49,16 +50,17 @@ def read_pack(path):
 
 def catalog(media, playable=False):
     packs = {}
-    for path in sorted(media.glob("*.json")):
+    roots = [media, BUILTIN / 'lecture'] if media == MEDIA else [media]
+    for path in (path for root in roots for path in sorted(root.glob('*.json'))):
         try:
             p = read_pack(path)
             if playable:
-                p["contentRevision"] = reading_library.revision(p, media)
+                p["contentRevision"] = reading_library.revision(p, path.parent)
         except (OSError, ValueError, KeyError, TypeError, EOFError, wave.Error):
             if playable:
                 continue
             raise
-        packs[p["id"]] = p
+        packs.setdefault(p["id"], p)
     return packs
 
 
@@ -246,7 +248,8 @@ def install(app, data_dir, media=MEDIA):
         selected = lines if key == "full" else [x for x in lines if x["id"] == key]
         if not selected:
             raise web.HTTPNotFound()
-        path = media/("%03d.wav" % selected[0]["piste"])
+        root = BUILTIN / 'lecture' if media == MEDIA and s['part'].startswith('studio-') else media
+        path = root/("%03d.wav" % selected[0]["piste"])
         if not path.is_file():
             raise ValueError("缺少本机教材音轨 "+path.name)
         with wave.open(str(path),"rb") as src:
